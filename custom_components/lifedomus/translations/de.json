@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Lifedomus-Gateways entdecken",
+        "description": "Wählen Sie ein Gateway aus oder geben Sie den Host manuell ein.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "gateway_manual": {
+        "title": "Host manuell eingeben",
+        "description": "Geben Sie den Host (IP-Adresse oder Hostname) Ihres Lifedomus-Gateways ein.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "site_select": {
+        "title": "Standort auswählen",
+        "description": "Wählen Sie den Standort, der auf diesem Gateway konfiguriert werden soll.",
+        "data": {
+          "site_key": "Standort"
+        }
+      },
+      "user_select": {
+        "title": "Benutzer auswählen",
+        "description": "Wählen Sie den Benutzer für diesen Standort.",
+        "data": {
+          "user_key": "Benutzer"
+        }
+      },
+      "password": {
+        "title": "Authentifizierung",
+        "description": "Geben Sie das Passwort für den ausgewählten Benutzer ein.",
+        "data": {
+          "password": "Passwort"
+        }
+      },
+      "alarm_code": {
+        "title": "Alarmzentrale erkannt",
+        "description": "Auf diesem Standort wurde eine Alarmzentrale erkannt. Geben Sie jetzt den 6-stelligen Zugangscode ein oder lassen Sie das Feld leer, um zu überspringen. Während der Neukonfiguration können Sie den gespeicherten Code auch löschen.",
+        "data": {
+          "alarm_code": "Alarmcode",
+          "clear_alarm_code": "Gespeicherten Alarmcode löschen"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Der Alarmcode wurde vom Gateway abgelehnt.",
+      "cannot_connect": "Verbindung zum Gateway fehlgeschlagen.",
+      "invalid_auth": "Ungültige Authentifizierung.",
+      "invalid_alarm_code": "Ungültiger Alarmcode (6 Ziffern erforderlich).",
+      "unknown": "Unbekannter Fehler."
+    },
+    "abort": {
+      "invalid_uuid": "Die Gateway-UUID konnte nicht abgerufen werden.",
+      "invalid_version": "Die Gateway-Version konnte nicht abgerufen werden.",
+      "no_site_configured": "Auf diesem Gateway ist kein Standort konfiguriert.",
+      "no_user_configured": "Für diesen Standort ist kein Benutzer konfiguriert.",
+      "reconfigure_successful": "Neukonfiguration abgeschlossen. Der Eintrag wurde aktualisiert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus-Optionen",
+        "description": "Globale Einstellungen für die Lifedomus-Integration.",
+        "data": {
+          "update_interval": "Aktualisierungsintervall (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Betriebsmodus",
+        "state": {
+          "full_arming": "Alle Zonen scharf",
+          "maintenance": "Wartungsmodus",
+          "partial_arming": "Teilweise scharf",
+          "stop": "Unscharf"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Vollscharf"
+      },
+      "alarm_stop": {
+        "name": "Stop"
+      },
+      "alarm_ack_events": {
+        "name": "Ereignisse quittieren"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarm ausgelöst"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Verzögerter Alarm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Stiller Alarm"
+      },
+      "state_alarm_intrusion": {
+        "name": "Einbruch"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Batteriestatus"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Sabotageverdacht"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Deaktivierte Produkte"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Nicht erreichbare Produkte"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Offene Eingänge"
+      },
+      "state_alarm_warn_power": {
+        "name": "Stromversorgung"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Selbstschutz"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM-Karte"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Technischer Fehler"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekommunikation"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Fernüberwachung"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Unbestätigte Ereignisse"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Videolink"
+      }
+    }
+  }
+}

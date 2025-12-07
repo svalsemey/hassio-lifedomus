@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "发现 Lifedomus 网关",
+        "description": "选择一个网关，或手动输入主机。",
+        "data": {
+          "host": "主机"
+        }
+      },
+      "gateway_manual": {
+        "title": "手动输入主机",
+        "description": "输入 Lifedomus 网关的主机（IP 地址或主机名）。",
+        "data": {
+          "host": "主机"
+        }
+      },
+      "site_select": {
+        "title": "选择站点",
+        "description": "选择要在此网关上配置的站点。",
+        "data": {
+          "site_key": "站点"
+        }
+      },
+      "user_select": {
+        "title": "选择用户",
+        "description": "为此站点选择用户。",
+        "data": {
+          "user_key": "用户"
+        }
+      },
+      "password": {
+        "title": "身份验证",
+        "description": "输入所选用户的密码。",
+        "data": {
+          "password": "密码"
+        }
+      },
+      "alarm_code": {
+        "title": "检测到报警面板",
+        "description": "在此站点检测到报警面板。现在输入 6 位访问代码，或留空以跳过。在重新配置期间，您也可以清除已保存的代码。",
+        "data": {
+          "alarm_code": "报警代码",
+          "clear_alarm_code": "清除已保存的报警代码"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "报警代码被网关拒绝。",
+      "cannot_connect": "无法连接到网关。",
+      "invalid_auth": "无效的身份验证。",
+      "invalid_alarm_code": "无效的报警代码（需要 6 位数字）。",
+      "unknown": "未知错误。"
+    },
+    "abort": {
+      "invalid_uuid": "无法获取网关 UUID。",
+      "invalid_version": "无法获取网关版本。",
+      "no_site_configured": "此网关上未配置任何站点。",
+      "no_user_configured": "此站点未配置任何用户。",
+      "reconfigure_successful": "重新配置完成。条目已更新。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus 选项",
+        "description": "Lifedomus 集成的全局设置。",
+        "data": {
+          "update_interval": "更新间隔（秒）"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "运行模式",
+        "state": {
+          "full_arming": "所有区域已启用",
+          "maintenance": "维护模式",
+          "partial_arming": "部分启用",
+          "stop": "已禁用"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "完全启用"
+      },
+      "alarm_stop": {
+        "name": "停止"
+      },
+      "alarm_ack_events": {
+        "name": "确认事件"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "报警已触发"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "延迟报警"
+      },
+      "state_alarm_alert_silent": {
+        "name": "静音报警"
+      },
+      "state_alarm_intrusion": {
+        "name": "入侵"
+      },
+      "state_alarm_warn_battery": {
+        "name": "电池状态"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "拆除可疑"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "已禁用产品"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "无法访问的产品"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "开启的入口"
+      },
+      "state_alarm_warn_power": {
+        "name": "电源"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "自我保护"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM 卡"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "技术故障"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "电信"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "远程监控"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "未确认事件"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "视频链接"
+      }
+    }
+  }
+}

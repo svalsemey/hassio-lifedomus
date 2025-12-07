@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Découvrir les passerelles Lifedomus",
+        "description": "Sélectionnez une passerelle ou choisissez de saisir un hôte manuellement.",
+        "data": {
+          "host": "Hôte"
+        }
+      },
+      "gateway_manual": {
+        "title": "Saisie manuelle de l’hôte",
+        "description": "Entrez l’hôte (adresse IP ou nom DNS) de votre passerelle Lifedomus.",
+        "data": {
+          "host": "Hôte"
+        }
+      },
+      "site_select": {
+        "title": "Sélectionner un site",
+        "description": "Choisissez le site à configurer sur cette passerelle.",
+        "data": {
+          "site_key": "Site"
+        }
+      },
+      "user_select": {
+        "title": "Sélectionner un utilisateur",
+        "description": "Choisissez l’utilisateur pour ce site.",
+        "data": {
+          "user_key": "Utilisateur"
+        }
+      },
+      "password": {
+        "title": "Authentification",
+        "description": "Saisissez le mot de passe de l’utilisateur sélectionné.",
+        "data": {
+          "password": "Mot de passe"
+        }
+      },
+      "alarm_code": {
+        "title": "Centrale d'alarme détectée",
+        "description": "Une centrale d'alarme a été détectée sur ce site. Saisissez le code d'accès à 6 chiffres maintenant, ou laissez le champ vide pour ignorer. En reconfiguration, vous pouvez aussi effacer le code enregistré.",
+        "data": {
+          "alarm_code": "Code d'alarme",
+          "clear_alarm_code": "Effacer le code enregistré"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Le code d’alarme a été refusé par la passerelle.",
+      "cannot_connect": "Échec de connexion à la passerelle.",
+      "invalid_auth": "Authentification invalide.",
+      "invalid_alarm_code": "Code d’alarme invalide (6 chiffres requis).",
+      "unknown": "Erreur inconnue."
+    },
+    "abort": {
+      "invalid_uuid": "Impossible de récupérer l’UUID de la passerelle.",
+      "invalid_version": "Impossible de récupérer la version de la passerelle.",
+      "no_site_configured": "Aucun site configuré sur cette passerelle.",
+      "no_user_configured": "Aucun utilisateur configuré sur ce site.",
+      "reconfigure_successful": "Reconfiguration terminée. L’entrée a été mise à jour."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options Lifedomus",
+        "description": "Paramètres globaux de l’intégration Lifedomus.",
+        "data": {
+          "update_interval": "Intervalle de mise à jour (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Mode de fonctionnement",
+        "state": {
+          "full_arming": "Toutes zones activées",
+          "maintenance": "Mode maintenance",
+          "partial_arming": "Certaines zones activées",
+          "stop": "Désactivée"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Armement total"
+      },
+      "alarm_stop": {
+        "name": "Arrêt"
+      },
+      "alarm_ack_events": {
+        "name": "Acquitter les événements"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarme déclenchée"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Alarme retardée"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Alarme silencieuse"
+      },
+      "state_alarm_intrusion": {
+        "name": "Intrusion"
+      },
+      "state_alarm_warn_battery": {
+        "name": "État de la batterie"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Arrachement suspecté"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Produits inhibés"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Produits injoignables"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Ouvertures"
+      },
+      "state_alarm_warn_power": {
+        "name": "Alimentation"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Autoprotection"
+      },
+      "state_alarm_warn_sim": {
+        "name": "Carte SIM"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Défaut technique"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Télécommunication"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Télésurveillance"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Événements non acquittés"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Lien vidéo"
+      }
+    }
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Обнаружение шлюзов Lifedomus",
+        "description": "Выберите шлюз или введите хост вручную.",
+        "data": {
+          "host": "Хост"
+        }
+      },
+      "gateway_manual": {
+        "title": "Ручной ввод хоста",
+        "description": "Введите хост (IP-адрес или имя) вашего шлюза Lifedomus.",
+        "data": {
+          "host": "Хост"
+        }
+      },
+      "site_select": {
+        "title": "Выбор сайта",
+        "description": "Выберите сайт для настройки на этом шлюзе.",
+        "data": {
+          "site_key": "Сайт"
+        }
+      },
+      "user_select": {
+        "title": "Выбор пользователя",
+        "description": "Выберите пользователя для этого сайта.",
+        "data": {
+          "user_key": "Пользователь"
+        }
+      },
+      "password": {
+        "title": "Аутентификация",
+        "description": "Введите пароль выбранного пользователя.",
+        "data": {
+          "password": "Пароль"
+        }
+      },
+      "alarm_code": {
+        "title": "Обнаружена панель сигнализации",
+        "description": "На этом сайте обнаружена панель сигнализации. Введите 6-значный код доступа или оставьте поле пустым, чтобы пропустить. При перенастройке можно также очистить сохранённый код.",
+        "data": {
+          "alarm_code": "Код сигнализации",
+          "clear_alarm_code": "Очистить сохранённый код сигнализации"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Код сигнализации отклонён шлюзом.",
+      "cannot_connect": "Не удалось подключиться к шлюзу.",
+      "invalid_auth": "Недопустимая аутентификация.",
+      "invalid_alarm_code": "Недопустимый код сигнализации (требуется 6 цифр).",
+      "unknown": "Неизвестная ошибка."
+    },
+    "abort": {
+      "invalid_uuid": "Не удалось получить UUID шлюза.",
+      "invalid_version": "Не удалось получить версию шлюза.",
+      "no_site_configured": "На этом шлюзе не настроен ни один сайт.",
+      "no_user_configured": "Для этого сайта не настроен пользователь.",
+      "reconfigure_successful": "Перенастройка завершена. Запись обновлена."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Параметры Lifedomus",
+        "description": "Глобальные настройки интеграции Lifedomus.",
+        "data": {
+          "update_interval": "Интервал обновления (с)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Режим работы",
+        "state": {
+          "full_arming": "Все зоны активированы",
+          "maintenance": "Режим обслуживания",
+          "partial_arming": "Частично активировано",
+          "stop": "Отключено"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Полная активация"
+      },
+      "alarm_stop": {
+        "name": "Стоп"
+      },
+      "alarm_ack_events": {
+        "name": "Подтвердить события"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Сигнализация сработала"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Задержанная сигнализация"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Тихая сигнализация"
+      },
+      "state_alarm_intrusion": {
+        "name": "Вторжение"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Состояние батареи"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Подозрение на снятие"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Продукты отключены"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Недоступные продукты"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Открытые входы"
+      },
+      "state_alarm_warn_power": {
+        "name": "Питание"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Самозащита"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM-карта"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Техническая неисправность"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Телекоммуникации"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Дистанционный мониторинг"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Неподтверждённые события"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Видео-ссылка"
+      }
+    }
+  }
+}

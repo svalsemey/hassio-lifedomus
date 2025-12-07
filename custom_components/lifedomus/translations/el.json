@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Εντοπισμός πυλών Lifedomus",
+        "description": "Επιλέξτε μία πύλη ή εισαγάγετε έναν κεντρικό υπολογιστή χειροκίνητα.",
+        "data": {
+          "host": "Κεντρικός υπολογιστής"
+        }
+      },
+      "gateway_manual": {
+        "title": "Χειροκίνητη εισαγωγή κεντρικού υπολογιστή",
+        "description": "Εισαγάγετε τον κεντρικό υπολογιστή (διεύθυνση IP ή όνομα) της πύλης Lifedomus.",
+        "data": {
+          "host": "Κεντρικός υπολογιστής"
+        }
+      },
+      "site_select": {
+        "title": "Επιλέξτε ιστότοπο",
+        "description": "Επιλέξτε τον ιστότοπο που θα ρυθμιστεί σε αυτήν την πύλη.",
+        "data": {
+          "site_key": "Ιστότοπος"
+        }
+      },
+      "user_select": {
+        "title": "Επιλέξτε χρήστη",
+        "description": "Επιλέξτε τον χρήστη για αυτόν τον ιστότοπο.",
+        "data": {
+          "user_key": "Χρήστης"
+        }
+      },
+      "password": {
+        "title": "Πιστοποίηση",
+        "description": "Εισαγάγετε τον κωδικό πρόσβασης για τον επιλεγμένο χρήστη.",
+        "data": {
+          "password": "Κωδικός πρόσβασης"
+        }
+      },
+      "alarm_code": {
+        "title": "Εντοπίστηκε πάνελ συναγερμού",
+        "description": "Εντοπίστηκε πάνελ συναγερμού σε αυτόν τον ιστότοπο. Εισαγάγετε τώρα τον 6ψήφιο κωδικό πρόσβασης ή αφήστε το πεδίο κενό για παράκαμψη. Κατά την επαναρύθμιση, μπορείτε επίσης να διαγράψετε τον αποθηκευμένο κωδικό.",
+        "data": {
+          "alarm_code": "Κωδικός συναγερμού",
+          "clear_alarm_code": "Διαγραφή αποθηκευμένου κωδικού συναγερμού"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Ο κωδικός συναγερμού απορρίφθηκε από την πύλη.",
+      "cannot_connect": "Αποτυχία σύνδεσης με την πύλη.",
+      "invalid_auth": "Μη έγκυρη πιστοποίηση.",
+      "invalid_alarm_code": "Μη έγκυρος κωδικός συναγερμού (απαιτούνται 6 ψηφία).",
+      "unknown": "Άγνωστο σφάλμα."
+    },
+    "abort": {
+      "invalid_uuid": "Δεν ήταν δυνατή η ανάκτηση του UUID της πύλης.",
+      "invalid_version": "Δεν ήταν δυνατή η ανάκτηση της έκδοσης της πύλης.",
+      "no_site_configured": "Δεν έχει ρυθμιστεί ιστότοπος σε αυτήν την πύλη.",
+      "no_user_configured": "Δεν έχει ρυθμιστεί χρήστης για αυτόν τον ιστότοπο.",
+      "reconfigure_successful": "Η επαναρύθμιση ολοκληρώθηκε. Η εγγραφή ενημερώθηκε."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Επιλογές Lifedomus",
+        "description": "Γενικές ρυθμίσεις για την ενσωμάτωση Lifedomus.",
+        "data": {
+          "update_interval": "Διάστημα ενημέρωσης (δ)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Λειτουργία",
+        "state": {
+          "full_arming": "Όλες οι ζώνες οπλισμένες",
+          "maintenance": "Λειτουργία συντήρησης",
+          "partial_arming": "Μερικώς οπλισμένο",
+          "stop": "Αφοπλισμένο"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Πλήρης οπλισμός"
+      },
+      "alarm_stop": {
+        "name": "Διακοπή"
+      },
+      "alarm_ack_events": {
+        "name": "Επιβεβαίωση συμβάντων"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Ενεργοποιήθηκε συναγερμός"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Καθυστερημένος συναγερμός"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Σιωπηλός συναγερμός"
+      },
+      "state_alarm_intrusion": {
+        "name": "Παραβίαση"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Κατάσταση μπαταρίας"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Ύποπτη αφαίρεση"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Απενεργοποιημένες συσκευές"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Μη προσβάσιμα προϊόντα"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Ανοιχτές είσοδοι"
+      },
+      "state_alarm_warn_power": {
+        "name": "Τροφοδοσία"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Αυτοπροστασία"
+      },
+      "state_alarm_warn_sim": {
+        "name": "Κάρτα SIM"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Τεχνικό σφάλμα"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Τηλεπικοινωνίες"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Απομακρυσμένη παρακολούθηση"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Μη επιβεβαιωμένα συμβάντα"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Σύνδεσμος βίντεο"
+      }
+    }
+  }
+}

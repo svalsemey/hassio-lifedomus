@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Lifedomus átjárók felderítése",
+        "description": "Válasszon egy átjárót, vagy adja meg a hostot manuálisan.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "gateway_manual": {
+        "title": "Host kézi megadása",
+        "description": "Adja meg a Lifedomus átjáró hostját (IP-cím vagy hostnév).",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "site_select": {
+        "title": "Helyszín kiválasztása",
+        "description": "Válassza ki a helyszínt, amelyet ezen az átjárón konfigurálni szeretne.",
+        "data": {
+          "site_key": "Helyszín"
+        }
+      },
+      "user_select": {
+        "title": "Felhasználó kiválasztása",
+        "description": "Válassza ki a felhasználót ehhez a helyszínhez.",
+        "data": {
+          "user_key": "Felhasználó"
+        }
+      },
+      "password": {
+        "title": "Hitelesítés",
+        "description": "Adja meg a kiválasztott felhasználó jelszavát.",
+        "data": {
+          "password": "Jelszó"
+        }
+      },
+      "alarm_code": {
+        "title": "Riasztópanel észlelve",
+        "description": "Ezen a helyszínen riasztópanelt észleltünk. Adja meg most a 6 jegyű hozzáférési kódot, vagy hagyja üresen a mezőt a kihagyáshoz. Újrakonfigurálás során a mentett kódot is törölheti.",
+        "data": {
+          "alarm_code": "Riasztókód",
+          "clear_alarm_code": "Mentett riasztókód törlése"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Az átjáró elutasította a riasztókódot.",
+      "cannot_connect": "Nem sikerült csatlakozni az átjáróhoz.",
+      "invalid_auth": "Érvénytelen hitelesítés.",
+      "invalid_alarm_code": "Érvénytelen riasztókód (6 számjegy szükséges).",
+      "unknown": "Ismeretlen hiba."
+    },
+    "abort": {
+      "invalid_uuid": "Nem sikerült lekérni az átjáró UUID-ját.",
+      "invalid_version": "Nem sikerült lekérni az átjáró verzióját.",
+      "no_site_configured": "Ezen az átjárón nincs konfigurált helyszín.",
+      "no_user_configured": "Ehhez a helyszínhez nincs konfigurált felhasználó.",
+      "reconfigure_successful": "Újrakonfigurálás befejeződött. A bejegyzés frissítve lett."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus beállítások",
+        "description": "A Lifedomus integráció globális beállításai.",
+        "data": {
+          "update_interval": "Frissítési időköz (mp)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Üzemmód",
+        "state": {
+          "full_arming": "Minden zóna élesítve",
+          "maintenance": "Karbantartási mód",
+          "partial_arming": "Részleges élesítés",
+          "stop": "Hatástalanítva"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Teljes élesítés"
+      },
+      "alarm_stop": {
+        "name": "Leállítás"
+      },
+      "alarm_ack_events": {
+        "name": "Események nyugtázása"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Riasztás aktiválva"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Késleltetett riasztás"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Néma riasztás"
+      },
+      "state_alarm_intrusion": {
+        "name": "Betörés"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Akkumulátor állapota"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Eltávolítás gyanúja"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Letiltott termékek"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Nem elérhető termékek"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Nyitott bejáratok"
+      },
+      "state_alarm_warn_power": {
+        "name": "Tápellátás"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Önvédelem"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM-kártya"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Műszaki hiba"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Távközlés"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Távfelügyelet"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Vissza nem igazolt események"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Videó hivatkozás"
+      }
+    }
+  }
+}

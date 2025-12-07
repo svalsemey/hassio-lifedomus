@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Wykryj bramki Lifedomus",
+        "description": "Wybierz bramkę lub wprowadź hosta ręcznie.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "gateway_manual": {
+        "title": "Ręczne wprowadzenie hosta",
+        "description": "Wprowadź hosta (adres IP lub nazwę hosta) swojej bramki Lifedomus.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "site_select": {
+        "title": "Wybierz witrynę",
+        "description": "Wybierz witrynę do skonfigurowania na tej bramce.",
+        "data": {
+          "site_key": "Witryna"
+        }
+      },
+      "user_select": {
+        "title": "Wybierz użytkownika",
+        "description": "Wybierz użytkownika dla tej witryny.",
+        "data": {
+          "user_key": "Użytkownik"
+        }
+      },
+      "password": {
+        "title": "Uwierzytelnianie",
+        "description": "Wprowadź hasło wybranego użytkownika.",
+        "data": {
+          "password": "Hasło"
+        }
+      },
+      "alarm_code": {
+        "title": "Wykryto panel alarmowy",
+        "description": "Na tej witrynie wykryto panel alarmowy. Wprowadź teraz 6-cyfrowy kod dostępu lub pozostaw pole puste, aby pominąć. Podczas rekonfiguracji możesz także wyczyścić zapisany kod.",
+        "data": {
+          "alarm_code": "Kod alarmu",
+          "clear_alarm_code": "Wyczyść zapisany kod alarmu"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Kod alarmu został odrzucony przez bramkę.",
+      "cannot_connect": "Nie udało się połączyć z bramką.",
+      "invalid_auth": "Nieprawidłowe uwierzytelnienie.",
+      "invalid_alarm_code": "Nieprawidłowy kod alarmu (wymagane 6 cyfr).",
+      "unknown": "Nieznany błąd."
+    },
+    "abort": {
+      "invalid_uuid": "Nie można pobrać UUID bramki.",
+      "invalid_version": "Nie można pobrać wersji bramki.",
+      "no_site_configured": "Na tej bramce nie skonfigurowano żadnej witryny.",
+      "no_user_configured": "Dla tej witryny nie skonfigurowano użytkownika.",
+      "reconfigure_successful": "Rekonfiguracja zakończona. Wpis został zaktualizowany."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje Lifedomus",
+        "description": "Ustawienia globalne integracji Lifedomus.",
+        "data": {
+          "update_interval": "Interwał aktualizacji (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Tryb pracy",
+        "state": {
+          "full_arming": "Wszystkie strefy uzbrojone",
+          "maintenance": "Tryb konserwacji",
+          "partial_arming": "Częściowo uzbrojony",
+          "stop": "Rozbrojony"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Pełne uzbrojenie"
+      },
+      "alarm_stop": {
+        "name": "Zatrzymaj"
+      },
+      "alarm_ack_events": {
+        "name": "Potwierdź zdarzenia"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarm wyzwolony"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Opóźniony alarm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Cichy alarm"
+      },
+      "state_alarm_intrusion": {
+        "name": "Wtargnięcie"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Stan baterii"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Podejrzenie usunięcia"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Wyłączone produkty"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Produkty niedostępne"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Otwarte wejścia"
+      },
+      "state_alarm_warn_power": {
+        "name": "Zasilanie"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Autoochrona"
+      },
+      "state_alarm_warn_sim": {
+        "name": "Karta SIM"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Usterka techniczna"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekomunikacja"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Zdalny nadzór"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Niepotwierdzone zdarzenia"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Łącze wideo"
+      }
+    }
+  }
+}

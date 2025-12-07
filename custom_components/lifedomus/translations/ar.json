@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "اكتشاف بوابات Lifedomus",
+        "description": "حدد بوابة أو اختر إدخال المضيف يدويًا.",
+        "data": {
+          "host": "المضيف"
+        }
+      },
+      "gateway_manual": {
+        "title": "إدخال المضيف يدويًا",
+        "description": "أدخل المضيف (عنوان IP أو اسم المضيف) لبوابة Lifedomus.",
+        "data": {
+          "host": "المضيف"
+        }
+      },
+      "site_select": {
+        "title": "اختيار موقع",
+        "description": "اختر الموقع الذي تريد تهيئته على هذه البوابة.",
+        "data": {
+          "site_key": "الموقع"
+        }
+      },
+      "user_select": {
+        "title": "اختيار مستخدم",
+        "description": "اختر المستخدم لهذا الموقع.",
+        "data": {
+          "user_key": "المستخدم"
+        }
+      },
+      "password": {
+        "title": "المصادقة",
+        "description": "أدخل كلمة المرور للمستخدم المحدد.",
+        "data": {
+          "password": "كلمة المرور"
+        }
+      },
+      "alarm_code": {
+        "title": "تم اكتشاف لوحة إنذار",
+        "description": "تم اكتشاف لوحة إنذار في هذا الموقع. أدخل رمز الوصول المكوّن من 6 أرقام الآن، أو اترك الحقل فارغًا لتخطيه. أثناء إعادة التهيئة، يمكنك أيضًا مسح الرمز المخزن.",
+        "data": {
+          "alarm_code": "رمز الإنذار",
+          "clear_alarm_code": "مسح رمز الإنذار المخزن"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "تم رفض رمز الإنذار بواسطة البوابة.",
+      "cannot_connect": "فشل الاتصال بالبوابة.",
+      "invalid_auth": "مصادقة غير صالحة.",
+      "invalid_alarm_code": "رمز إنذار غير صالح (مطلوب 6 أرقام).",
+      "unknown": "خطأ غير معروف."
+    },
+    "abort": {
+      "invalid_uuid": "تعذر استرداد UUID الخاص بالبوابة.",
+      "invalid_version": "تعذر استرداد إصدار البوابة.",
+      "no_site_configured": "لا يوجد موقع مهيأ على هذه البوابة.",
+      "no_user_configured": "لا يوجد مستخدم مهيأ لهذا الموقع.",
+      "reconfigure_successful": "اكتملت إعادة التهيئة. تم تحديث الإدخال."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "خيارات Lifedomus",
+        "description": "الإعدادات العامة لتكامل Lifedomus.",
+        "data": {
+          "update_interval": "فاصل التحديث (ث)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "وضع التشغيل",
+        "state": {
+          "full_arming": "جميع المناطق مفعلة",
+          "maintenance": "وضع الصيانة",
+          "partial_arming": "تفعيل جزئي",
+          "stop": "غير مُسلّح"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "تسليح كامل"
+      },
+      "alarm_stop": {
+        "name": "إيقاف"
+      },
+      "alarm_ack_events": {
+        "name": "تأكيد الأحداث"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "تم إطلاق الإنذار"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "إنذار مؤجل"
+      },
+      "state_alarm_alert_silent": {
+        "name": "إنذار صامت"
+      },
+      "state_alarm_intrusion": {
+        "name": "اقتحام"
+      },
+      "state_alarm_warn_battery": {
+        "name": "حالة البطارية"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "اشتباه نزع"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "أجهزة معطلة"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "منتجات يتعذر الوصول إليها"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "مداخل مفتوحة"
+      },
+      "state_alarm_warn_power": {
+        "name": "الطاقة"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "الحماية الذاتية"
+      },
+      "state_alarm_warn_sim": {
+        "name": "بطاقة SIM"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "عطل تقني"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "اتصالات"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "مراقبة عن بُعد"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "أحداث غير مؤكدة"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "اتصال فيديو"
+      }
+    }
+  }
+}

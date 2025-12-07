@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Lifedomus-gateways detecteren",
+        "description": "Selecteer een gateway of voer handmatig een host in.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "gateway_manual": {
+        "title": "Handmatige hostinvoer",
+        "description": "Voer de host (IP-adres of hostnaam) van uw Lifedomus-gateway in.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "site_select": {
+        "title": "Selecteer een site",
+        "description": "Kies de site die u op deze gateway wilt configureren.",
+        "data": {
+          "site_key": "Site"
+        }
+      },
+      "user_select": {
+        "title": "Selecteer een gebruiker",
+        "description": "Kies de gebruiker voor deze site.",
+        "data": {
+          "user_key": "Gebruiker"
+        }
+      },
+      "password": {
+        "title": "Authenticatie",
+        "description": "Voer het wachtwoord in voor de geselecteerde gebruiker.",
+        "data": {
+          "password": "Wachtwoord"
+        }
+      },
+      "alarm_code": {
+        "title": "Alarmpaneel gedetecteerd",
+        "description": "Op deze site is een alarmpaneel gedetecteerd. Voer nu de 6-cijferige toegangscode in of laat het veld leeg om over te slaan. Tijdens herconfiguratie kunt u de opgeslagen code ook wissen.",
+        "data": {
+          "alarm_code": "Alarmcode",
+          "clear_alarm_code": "Opgeslagen alarmcode wissen"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "De alarmcode is geweigerd door de gateway.",
+      "cannot_connect": "Kan geen verbinding maken met de gateway.",
+      "invalid_auth": "Ongeldige authenticatie.",
+      "invalid_alarm_code": "Ongeldige alarmcode (6 cijfers vereist).",
+      "unknown": "Onbekende fout."
+    },
+    "abort": {
+      "invalid_uuid": "De gateway-UUID kon niet worden opgehaald.",
+      "invalid_version": "De gatewayversie kon niet worden opgehaald.",
+      "no_site_configured": "Geen site geconfigureerd op deze gateway.",
+      "no_user_configured": "Geen gebruiker geconfigureerd voor deze site.",
+      "reconfigure_successful": "Herconfiguratie voltooid. De invoer is bijgewerkt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus-opties",
+        "description": "Algemene instellingen voor de Lifedomus-integratie.",
+        "data": {
+          "update_interval": "Update-interval (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Bedrijfsmodus",
+        "state": {
+          "full_arming": "Alle zones ingeschakeld",
+          "maintenance": "Onderhoudsmodus",
+          "partial_arming": "Gedeeltelijk ingeschakeld",
+          "stop": "Uitgeschakeld"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Volledig inschakelen"
+      },
+      "alarm_stop": {
+        "name": "Stop"
+      },
+      "alarm_ack_events": {
+        "name": "Gebeurtenissen bevestigen"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarm geactiveerd"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Vertraald alarm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Stil alarm"
+      },
+      "state_alarm_intrusion": {
+        "name": "Inbraak"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Batterijstatus"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Verwijderingsverdacht"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Uitgeschakelde producten"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Onbereikbare producten"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Open ingangen"
+      },
+      "state_alarm_warn_power": {
+        "name": "Stroomvoorziening"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Zelfbescherming"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM-kaart"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Technische fout"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telecommunicatie"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Telebewaking"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Niet-bevestigde gebeurtenissen"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Videokoppeling"
+      }
+    }
+  }
+}

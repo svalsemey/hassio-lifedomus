@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Upptäck Lifedomus-gateways",
+        "description": "Välj en gateway eller ange en värd manuellt.",
+        "data": {
+          "host": "Värd"
+        }
+      },
+      "gateway_manual": {
+        "title": "Manuell värdinmatning",
+        "description": "Ange värden (IP-adress eller värdnamn) för din Lifedomus-gateway.",
+        "data": {
+          "host": "Värd"
+        }
+      },
+      "site_select": {
+        "title": "Välj en plats",
+        "description": "Välj platsen som ska konfigureras på denna gateway.",
+        "data": {
+          "site_key": "Plats"
+        }
+      },
+      "user_select": {
+        "title": "Välj en användare",
+        "description": "Välj användaren för denna plats.",
+        "data": {
+          "user_key": "Användare"
+        }
+      },
+      "password": {
+        "title": "Autentisering",
+        "description": "Ange lösenordet för den valda användaren.",
+        "data": {
+          "password": "Lösenord"
+        }
+      },
+      "alarm_code": {
+        "title": "Larmcentral upptäckt",
+        "description": "En larmcentral upptäcktes på denna plats. Ange den sexsiffriga åtkomstkoden nu eller lämna fältet tomt för att hoppa över. Under omkonfiguration kan du också rensa den sparade koden.",
+        "data": {
+          "alarm_code": "Larmkod",
+          "clear_alarm_code": "Rensa sparad larmkod"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Larmkoden avvisades av gatewayen.",
+      "cannot_connect": "Det gick inte att ansluta till gatewayen.",
+      "invalid_auth": "Ogiltig autentisering.",
+      "invalid_alarm_code": "Ogiltig larmkod (6 siffror krävs).",
+      "unknown": "Okänt fel."
+    },
+    "abort": {
+      "invalid_uuid": "Det gick inte att hämta gateway-UUID.",
+      "invalid_version": "Det gick inte att hämta gateway-versionen.",
+      "no_site_configured": "Ingen plats konfigurerad på denna gateway.",
+      "no_user_configured": "Ingen användare konfigurerad för denna plats.",
+      "reconfigure_successful": "Omkonfiguration slutförd. Posten uppdaterades."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus-alternativ",
+        "description": "Globala inställningar för Lifedomus-integrationen.",
+        "data": {
+          "update_interval": "Uppdateringsintervall (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Driftsläge",
+        "state": {
+          "full_arming": "Alla zoner aktiverade",
+          "maintenance": "Underhållsläge",
+          "partial_arming": "Delvis aktiverad",
+          "stop": "Inaktiverad"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Full aktivering"
+      },
+      "alarm_stop": {
+        "name": "Stoppa"
+      },
+      "alarm_ack_events": {
+        "name": "Kvittera händelser"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Larm utlöst"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Fördröjt larm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Tyst larm"
+      },
+      "state_alarm_intrusion": {
+        "name": "Intrång"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Batteristatus"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Misstänkt borttagning"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Inaktiverade produkter"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Oåtkomliga produkter"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Öppna ingångar"
+      },
+      "state_alarm_warn_power": {
+        "name": "Strömförsörjning"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Självskydd"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM-kort"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Tekniskt fel"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekommunikation"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Fjärrövervakning"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Ej kvitterade händelser"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Videolänk"
+      }
+    }
+  }
+}

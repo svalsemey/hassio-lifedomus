@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Lifedomus ağ geçitlerini keşfet",
+        "description": "Bir ağ geçidi seçin veya bir ana bilgisayarı manuel olarak girin.",
+        "data": {
+          "host": "Ana bilgisayar"
+        }
+      },
+      "gateway_manual": {
+        "title": "Manuel ana bilgisayar girişi",
+        "description": "Lifedomus ağ geçidinizin ana bilgisayarını (IP adresi veya ana bilgisayar adı) girin.",
+        "data": {
+          "host": "Ana bilgisayar"
+        }
+      },
+      "site_select": {
+        "title": "Bir site seçin",
+        "description": "Bu ağ geçidinde yapılandırılacak siteyi seçin.",
+        "data": {
+          "site_key": "Site"
+        }
+      },
+      "user_select": {
+        "title": "Bir kullanıcı seçin",
+        "description": "Bu site için kullanıcıyı seçin.",
+        "data": {
+          "user_key": "Kullanıcı"
+        }
+      },
+      "password": {
+        "title": "Kimlik doğrulama",
+        "description": "Seçilen kullanıcı için parolayı girin.",
+        "data": {
+          "password": "Parola"
+        }
+      },
+      "alarm_code": {
+        "title": "Alarm paneli algılandı",
+        "description": "Bu sitede bir alarm paneli algılandı. Şimdi 6 haneli erişim kodunu girin veya atlamak için alanı boş bırakın. Yeniden yapılandırma sırasında, kaydedilmiş kodu da temizleyebilirsiniz.",
+        "data": {
+          "alarm_code": "Alarm kodu",
+          "clear_alarm_code": "Kaydedilmiş alarm kodunu temizle"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Alarm kodu ağ geçidi tarafından reddedildi.",
+      "cannot_connect": "Ağ geçidine bağlanılamadı.",
+      "invalid_auth": "Geçersiz kimlik doğrulama.",
+      "invalid_alarm_code": "Geçersiz alarm kodu (6 hane gerekli).",
+      "unknown": "Bilinmeyen hata."
+    },
+    "abort": {
+      "invalid_uuid": "Ağ geçidi UUID'si alınamadı.",
+      "invalid_version": "Ağ geçidi sürümü alınamadı.",
+      "no_site_configured": "Bu ağ geçidinde yapılandırılmış bir site yok.",
+      "no_user_configured": "Bu site için yapılandırılmış kullanıcı yok.",
+      "reconfigure_successful": "Yeniden yapılandırma tamamlandı. Girdi güncellendi."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus seçenekleri",
+        "description": "Lifedomus entegrasyonu için genel ayarlar.",
+        "data": {
+          "update_interval": "Güncelleme aralığı (sn)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Çalışma modu",
+        "state": {
+          "full_arming": "Tüm bölgeler etkin",
+          "maintenance": "Bakım modu",
+          "partial_arming": "Kısmen etkin",
+          "stop": "Devre dışı"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Tam etkinleştirme"
+      },
+      "alarm_stop": {
+        "name": "Durdur"
+      },
+      "alarm_ack_events": {
+        "name": "Olayları onayla"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarm tetiklendi"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Gecikmeli alarm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Sessiz alarm"
+      },
+      "state_alarm_intrusion": {
+        "name": "İzinsiz giriş"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Pil durumu"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Sökülme şüphesi"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Devre dışı bırakılmış ürünler"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Ulaşılamayan ürünler"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Açık girişler"
+      },
+      "state_alarm_warn_power": {
+        "name": "Güç"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Kendi kendini koruma"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM kart"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Teknik arıza"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekomünikasyon"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Uzaktan izleme"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Onaylanmamış olaylar"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Video bağlantısı"
+      }
+    }
+  }
+}

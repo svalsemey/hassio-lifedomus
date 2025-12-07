@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Rileva gateway Lifedomus",
+        "description": "Seleziona un gateway o inserisci manualmente un host.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "gateway_manual": {
+        "title": "Inserimento manuale host",
+        "description": "Inserisci l'host (indirizzo IP o nome host) del tuo gateway Lifedomus.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "site_select": {
+        "title": "Seleziona un sito",
+        "description": "Scegli il sito da configurare su questo gateway.",
+        "data": {
+          "site_key": "Sito"
+        }
+      },
+      "user_select": {
+        "title": "Seleziona un utente",
+        "description": "Scegli l'utente per questo sito.",
+        "data": {
+          "user_key": "Utente"
+        }
+      },
+      "password": {
+        "title": "Autenticazione",
+        "description": "Inserisci la password per l'utente selezionato.",
+        "data": {
+          "password": "Password"
+        }
+      },
+      "alarm_code": {
+        "title": "Pannello d'allarme rilevato",
+        "description": "È stato rilevato un pannello d'allarme in questo sito. Inserisci ora il codice di accesso a 6 cifre oppure lascia il campo vuoto per saltare. Durante la riconfigurazione puoi anche cancellare il codice salvato.",
+        "data": {
+          "alarm_code": "Codice allarme",
+          "clear_alarm_code": "Cancella codice allarme salvato"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Il codice allarme è stato rifiutato dal gateway.",
+      "cannot_connect": "Connessione al gateway non riuscita.",
+      "invalid_auth": "Autenticazione non valida.",
+      "invalid_alarm_code": "Codice allarme non valido (richieste 6 cifre).",
+      "unknown": "Errore sconosciuto."
+    },
+    "abort": {
+      "invalid_uuid": "Impossibile recuperare l'UUID del gateway.",
+      "invalid_version": "Impossibile recuperare la versione del gateway.",
+      "no_site_configured": "Nessun sito configurato su questo gateway.",
+      "no_user_configured": "Nessun utente configurato per questo sito.",
+      "reconfigure_successful": "Riconfigurazione completata. La voce è stata aggiornata."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opzioni Lifedomus",
+        "description": "Impostazioni globali per l'integrazione Lifedomus.",
+        "data": {
+          "update_interval": "Intervallo di aggiornamento (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Modalità operativa",
+        "state": {
+          "full_arming": "Tutte le zone attive",
+          "maintenance": "Modalità manutenzione",
+          "partial_arming": "Parzialmente attivo",
+          "stop": "Disattivato"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Inserimento totale"
+      },
+      "alarm_stop": {
+        "name": "Arresta"
+      },
+      "alarm_ack_events": {
+        "name": "Conferma eventi"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Allarme attivato"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Allarme ritardato"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Allarme silenzioso"
+      },
+      "state_alarm_intrusion": {
+        "name": "Intrusione"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Stato batteria"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Sospetto di rimozione"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Prodotti inibiti"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Prodotti irraggiungibili"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Aperture"
+      },
+      "state_alarm_warn_power": {
+        "name": "Alimentazione"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Autoprotezione"
+      },
+      "state_alarm_warn_sim": {
+        "name": "Scheda SIM"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Guasto tecnico"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telecomunicazioni"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Telesorveglianza"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Eventi non confermati"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Link video"
+      }
+    }
+  }
+}

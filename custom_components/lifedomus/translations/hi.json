@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Lifedomus गेटवे खोजें",
+        "description": "एक गेटवे चुनें या होस्ट को मैन्युअली दर्ज करें।",
+        "data": {
+          "host": "होस्ट"
+        }
+      },
+      "gateway_manual": {
+        "title": "मैन्युअल होस्ट प्रविष्टि",
+        "description": "अपने Lifedomus गेटवे का होस्ट (IP पता या होस्टनेम) दर्ज करें।",
+        "data": {
+          "host": "होस्ट"
+        }
+      },
+      "site_select": {
+        "title": "साइट चुनें",
+        "description": "इस गेटवे पर कॉन्फ़िगर करने के लिए साइट चुनें।",
+        "data": {
+          "site_key": "साइट"
+        }
+      },
+      "user_select": {
+        "title": "उपयोगकर्ता चुनें",
+        "description": "इस साइट के लिए उपयोगकर्ता चुनें।",
+        "data": {
+          "user_key": "उपयोगकर्ता"
+        }
+      },
+      "password": {
+        "title": "प्रमाणीकरण",
+        "description": "चयनित उपयोगकर्ता के लिए पासवर्ड दर्ज करें।",
+        "data": {
+          "password": "पासवर्ड"
+        }
+      },
+      "alarm_code": {
+        "title": "अलार्म पैनल मिला",
+        "description": "इस साइट पर अलार्म पैनल मिला। अभी 6-अंकों का एक्सेस कोड दर्ज करें, या छोड़ने के लिए फ़ील्ड खाली छोड़ दें। पुन: कॉन्फ़िगरेशन के दौरान, आप सहेजे गए कोड को साफ भी कर सकते हैं।",
+        "data": {
+          "alarm_code": "अलार्म कोड",
+          "clear_alarm_code": "सहेजा हुआ अलार्म कोड साफ करें"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "गेटवे ने अलार्म कोड अस्वीकार कर दिया।",
+      "cannot_connect": "गेटवे से कनेक्ट करने में विफल।",
+      "invalid_auth": "अमान्य प्रमाणीकरण।",
+      "invalid_alarm_code": "अमान्य अलार्म कोड (6 अंक आवश्यक)।",
+      "unknown": "अज्ञात त्रुटि।"
+    },
+    "abort": {
+      "invalid_uuid": "गेटवे UUID प्राप्त नहीं किया जा सका।",
+      "invalid_version": "गेटवे संस्करण प्राप्त नहीं किया जा सका।",
+      "no_site_configured": "इस गेटवे पर कोई साइट कॉन्फ़िगर नहीं है।",
+      "no_user_configured": "इस साइट के लिए कोई उपयोगकर्ता कॉन्फ़िगर नहीं है।",
+      "reconfigure_successful": "पुन: कॉन्फ़िगरेशन पूर्ण। प्रविष्टि अपडेट की गई।"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus विकल्प",
+        "description": "Lifedomus इंटीग्रेशन की वैश्विक सेटिंग्स।",
+        "data": {
+          "update_interval": "अपडेट अंतराल (से.)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "संचालन मोड",
+        "state": {
+          "full_arming": "सभी ज़ोन सक्रिय",
+          "maintenance": "रखरखाव मोड",
+          "partial_arming": "आंशिक सक्रिय",
+          "stop": "निष्क्रिय"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "पूर्ण सक्रियण"
+      },
+      "alarm_stop": {
+        "name": "रोकें"
+      },
+      "alarm_ack_events": {
+        "name": "ईवेंट स्वीकार करें"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "अलार्म ट्रिगर हुआ"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "विलंबित अलार्म"
+      },
+      "state_alarm_alert_silent": {
+        "name": "साइलेंट अलार्म"
+      },
+      "state_alarm_intrusion": {
+        "name": "घुसपैठ"
+      },
+      "state_alarm_warn_battery": {
+        "name": "बैटरी स्थिति"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "हटाने का संदेह"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "निष्क्रिय उत्पाद"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "अप्राप्य उत्पाद"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "खुले प्रवेश"
+      },
+      "state_alarm_warn_power": {
+        "name": "विद्युत आपूर्ति"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "स्व-सुरक्षा"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM कार्ड"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "तकनीकी त्रुटि"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "दूरसंचार"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "दूरस्थ निगरानी"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "अपुष्ट ईवेंट"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "वीडियो लिंक"
+      }
+    }
+  }
+}

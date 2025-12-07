@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Zaznaj prehode Lifedomus",
+        "description": "Izberite prehod ali ročno vnesite gostitelja.",
+        "data": {
+          "host": "Gostitelj"
+        }
+      },
+      "gateway_manual": {
+        "title": "Ročni vnos gostitelja",
+        "description": "Vnesite gostitelja (IP naslov ali ime gostitelja) za prehod Lifedomus.",
+        "data": {
+          "host": "Gostitelj"
+        }
+      },
+      "site_select": {
+        "title": "Izberite mesto",
+        "description": "Izberite mesto za konfiguracijo na tem prehodu.",
+        "data": {
+          "site_key": "Mesto"
+        }
+      },
+      "user_select": {
+        "title": "Izberite uporabnika",
+        "description": "Izberite uporabnika za to mesto.",
+        "data": {
+          "user_key": "Uporabnik"
+        }
+      },
+      "password": {
+        "title": "Avtentikacija",
+        "description": "Vnesite geslo izbranega uporabnika.",
+        "data": {
+          "password": "Geslo"
+        }
+      },
+      "alarm_code": {
+        "title": "Zaznan alarmni panel",
+        "description": "Na tem mestu je bil zaznan alarmni panel. Zdaj vnesite 6-mestno dostopno kodo ali pustite polje prazno za preskok. Med ponovnim konfiguriranjem lahko izbrišete tudi shranjeno kodo.",
+        "data": {
+          "alarm_code": "Alarmna koda",
+          "clear_alarm_code": "Izbriši shranjeno alarmno kodo"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Alarmna koda je bila zavrnjena s strani prehoda.",
+      "cannot_connect": "Povezava s prehodom ni uspela.",
+      "invalid_auth": "Neveljavna avtentikacija.",
+      "invalid_alarm_code": "Neveljavna alarmna koda (zahtevano 6 številk).",
+      "unknown": "Neznana napaka."
+    },
+    "abort": {
+      "invalid_uuid": "Ni bilo mogoče pridobiti UUID prehoda.",
+      "invalid_version": "Ni bilo mogoče pridobiti različice prehoda.",
+      "no_site_configured": "Na tem prehodu ni konfiguriranega mesta.",
+      "no_user_configured": "Za to mesto ni konfiguriran uporabnik.",
+      "reconfigure_successful": "Ponovna konfiguracija končana. Vnos je bil posodobljen."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti Lifedomus",
+        "description": "Globalne nastavitve za integracijo Lifedomus.",
+        "data": {
+          "update_interval": "Interval posodobitve (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Način delovanja",
+        "state": {
+          "full_arming": "Vse cone aktivne",
+          "maintenance": "Vzdrževalni način",
+          "partial_arming": "Delno aktivne",
+          "stop": "Onemogočeno"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Polna aktivacija"
+      },
+      "alarm_stop": {
+        "name": "Ustavi"
+      },
+      "alarm_ack_events": {
+        "name": "Potrdi dogodke"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarm sprožen"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Zakasnjen alarm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Tihi alarm"
+      },
+      "state_alarm_intrusion": {
+        "name": "Vdor"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Stanje baterije"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Sum odstranitve"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Onemogočeni izdelki"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Nedosegljivi izdelki"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Odprti vhodi"
+      },
+      "state_alarm_warn_power": {
+        "name": "Napajanje"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Samozascita"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM kartica"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Tehnična napaka"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekomunikacije"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Daljinski nadzor"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Nepotrjeni dogodki"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Video povezava"
+      }
+    }
+  }
+}

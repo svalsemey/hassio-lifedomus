@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Lifedomus ゲートウェイを検出",
+        "description": "ゲートウェイを選択するか、ホストを手動で入力してください。",
+        "data": {
+          "host": "ホスト"
+        }
+      },
+      "gateway_manual": {
+        "title": "ホストの手動入力",
+        "description": "Lifedomus ゲートウェイのホスト（IP アドレスまたはホスト名）を入力してください。",
+        "data": {
+          "host": "ホスト"
+        }
+      },
+      "site_select": {
+        "title": "サイトを選択",
+        "description": "このゲートウェイで設定するサイトを選択してください。",
+        "data": {
+          "site_key": "サイト"
+        }
+      },
+      "user_select": {
+        "title": "ユーザーを選択",
+        "description": "このサイトのユーザーを選択してください。",
+        "data": {
+          "user_key": "ユーザー"
+        }
+      },
+      "password": {
+        "title": "認証",
+        "description": "選択したユーザーのパスワードを入力してください。",
+        "data": {
+          "password": "パスワード"
+        }
+      },
+      "alarm_code": {
+        "title": "警報パネルを検出",
+        "description": "このサイトで警報パネルが検出されました。6 桁のアクセスコードを入力するか、空欄のままにしてスキップしてください。再設定時には保存されたコードをクリアできます。",
+        "data": {
+          "alarm_code": "アラームコード",
+          "clear_alarm_code": "保存されたアラームコードを消去"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "アラームコードはゲートウェイに拒否されました。",
+      "cannot_connect": "ゲートウェイへの接続に失敗しました。",
+      "invalid_auth": "無効な認証です。",
+      "invalid_alarm_code": "無効なアラームコード（6 桁が必要）。",
+      "unknown": "不明なエラー。"
+    },
+    "abort": {
+      "invalid_uuid": "ゲートウェイの UUID を取得できませんでした。",
+      "invalid_version": "ゲートウェイのバージョンを取得できませんでした。",
+      "no_site_configured": "このゲートウェイにはサイトが設定されていません。",
+      "no_user_configured": "このサイトにはユーザーが設定されていません。",
+      "reconfigure_successful": "再設定が完了しました。エントリが更新されました。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus オプション",
+        "description": "Lifedomus 連携のグローバル設定。",
+        "data": {
+          "update_interval": "更新間隔（秒）"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "動作モード",
+        "state": {
+          "full_arming": "全ゾーン有効",
+          "maintenance": "メンテナンスモード",
+          "partial_arming": "一部有効",
+          "stop": "無効"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "フル有効化"
+      },
+      "alarm_stop": {
+        "name": "停止"
+      },
+      "alarm_ack_events": {
+        "name": "イベント確認"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "アラーム作動"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "遅延アラーム"
+      },
+      "state_alarm_alert_silent": {
+        "name": "サイレントアラーム"
+      },
+      "state_alarm_intrusion": {
+        "name": "侵入"
+      },
+      "state_alarm_warn_battery": {
+        "name": "バッテリー状態"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "取り外し疑い"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "無効化された製品"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "到達不能な製品"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "開いている入口"
+      },
+      "state_alarm_warn_power": {
+        "name": "電源"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "自己防衛"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM カード"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "技術的な故障"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "通信"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "遠隔監視"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "未確認イベント"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "ビデオリンク"
+      }
+    }
+  }
+}

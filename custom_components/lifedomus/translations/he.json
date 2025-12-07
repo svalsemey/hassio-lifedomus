@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "גילוי שערי Lifedomus",
+        "description": "בחרו שער או הזינו מארח ידנית.",
+        "data": {
+          "host": "מארח"
+        }
+      },
+      "gateway_manual": {
+        "title": "הזנת מארח ידנית",
+        "description": "הזינו את המארח (כתובת IP או שם מארח) של שער Lifedomus.",
+        "data": {
+          "host": "מארח"
+        }
+      },
+      "site_select": {
+        "title": "בחרו אתר",
+        "description": "בחרו את האתר להגדרה בשער זה.",
+        "data": {
+          "site_key": "אתר"
+        }
+      },
+      "user_select": {
+        "title": "בחרו משתמש",
+        "description": "בחרו את המשתמש עבור אתר זה.",
+        "data": {
+          "user_key": "משתמש"
+        }
+      },
+      "password": {
+        "title": "אימות",
+        "description": "הזינו את הסיסמה עבור המשתמש שנבחר.",
+        "data": {
+          "password": "סיסמה"
+        }
+      },
+      "alarm_code": {
+        "title": "לוח אזעקה זוהה",
+        "description": "לוח אזעקה זוהה באתר זה. הזינו כעת קוד גישה בן 6 ספרות, או השאירו את השדה ריק כדי לדלג. במהלך הגדרה מחדש ניתן גם למחוק את הקוד השמור.",
+        "data": {
+          "alarm_code": "קוד אזעקה",
+          "clear_alarm_code": "מחק קוד אזעקה שמור"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "קוד האזעקה נדחה על ידי השער.",
+      "cannot_connect": "החיבור לשער נכשל.",
+      "invalid_auth": "אימות שגוי.",
+      "invalid_alarm_code": "קוד אזעקה שגוי (נדרשות 6 ספרות).",
+      "unknown": "שגיאה לא ידועה."
+    },
+    "abort": {
+      "invalid_uuid": "לא ניתן היה לאחזר את ה-UUID של השער.",
+      "invalid_version": "לא ניתן היה לאחזר את גרסת השער.",
+      "no_site_configured": "לא הוגדר אתר בשער זה.",
+      "no_user_configured": "לא הוגדר משתמש עבור אתר זה.",
+      "reconfigure_successful": "ההגדרה מחדש הושלמה. הערך עודכן."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "אפשרויות Lifedomus",
+        "description": "הגדרות כלליות לשילוב Lifedomus.",
+        "data": {
+          "update_interval": "מרווח עדכון (ש׳)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "מצב פעולה",
+        "state": {
+          "full_arming": "כל האזורים מופעלים",
+          "maintenance": "מצב תחזוקה",
+          "partial_arming": "הפעלה חלקית",
+          "stop": "מנוטרל"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "הפעלה מלאה"
+      },
+      "alarm_stop": {
+        "name": "עצור"
+      },
+      "alarm_ack_events": {
+        "name": "אשר אירועים"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "אזעקה הופעלה"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "אזעקה מושהית"
+      },
+      "state_alarm_alert_silent": {
+        "name": "אזעקה שקטה"
+      },
+      "state_alarm_intrusion": {
+        "name": "פריצה"
+      },
+      "state_alarm_warn_battery": {
+        "name": "מצב סוללה"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "חשד להסרה"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "מכשירים מושבתים"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "מוצרים לא נגישים"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "כניסות פתוחות"
+      },
+      "state_alarm_warn_power": {
+        "name": "אספקת חשמל"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "הגנה עצמית"
+      },
+      "state_alarm_warn_sim": {
+        "name": "כרטיס SIM"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "תקלה טכנית"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "תקשורת טלפונית"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "ניטור מרחוק"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "אירועים שלא אושרו"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "קישור וידאו"
+      }
+    }
+  }
+}

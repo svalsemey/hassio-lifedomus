@@ -1,0 +1,8 @@
+{
+  "name": "Lifedomus",
+  "render_readme": true,
+  "domains": ["lifedomus"],
+  "homeassistant": "2023.11.0",
+  "country": ["FR", "EU"],
+  "iot_class": "local_push"
+}

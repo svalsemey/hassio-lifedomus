@@ -1,0 +1,75 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Discover Lifedomus gateways",
+        "description": "Select a gateway or choose to enter a host manually.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "gateway_manual": {
+        "title": "Manual host entry",
+        "description": "Enter the host (IP address or hostname) of your Lifedomus gateway.",
+        "data": {
+          "host": "Host"
+        }
+      },
+      "site_select": {
+        "title": "Select a site",
+        "description": "Choose the site to configure on this gateway.",
+        "data": {
+          "site_key": "Site"
+        }
+      },
+      "user_select": {
+        "title": "Select a user",
+        "description": "Choose the user for this site.",
+        "data": {
+          "user_key": "User"
+        }
+      },
+      "password": {
+        "title": "Authentication",
+        "description": "Enter the password for the selected user.",
+        "data": {
+          "password": "Password"
+        }
+      },
+      "alarm_code": {
+        "title": "Alarm panel detected",
+        "description": "An alarm panel was detected on this site. Enter the 6-digit access code now, or leave the field empty to skip. During reconfiguration, you can also clear the stored code.",
+        "data": {
+          "alarm_code": "Alarm code",
+          "clear_alarm_code": "Clear stored alarm code"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Alarm code was denied by the gateway.",
+      "cannot_connect": "Failed to connect to the gateway.",
+      "invalid_auth": "Invalid authentication.",
+      "invalid_alarm_code": "Invalid alarm code (6 digits required).",
+      "unknown": "Unknown error."
+    },
+    "abort": {
+      "invalid_uuid": "The gateway UUID could not be retrieved.",
+      "invalid_version": "The gateway version could not be retrieved.",
+      "no_site_configured": "No site configured on this gateway.",
+      "no_user_configured": "No user configured on this site.",
+      "reconfigure_successful": "Reconfiguration completed. The entry was updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus options",
+        "description": "Global settings for the Lifedomus integration.",
+        "data": {
+          "update_interval": "Update interval (s)"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Detectați gateway-urile Lifedomus",
+        "description": "Selectați un gateway sau introduceți manual un host.",
+        "data": {
+          "host": "Gazdă"
+        }
+      },
+      "gateway_manual": {
+        "title": "Introducere manuală a gazdei",
+        "description": "Introduceți gazda (adresa IP sau numele) gateway-ului Lifedomus.",
+        "data": {
+          "host": "Gazdă"
+        }
+      },
+      "site_select": {
+        "title": "Selectați un site",
+        "description": "Alegeți site-ul de configurat pe acest gateway.",
+        "data": {
+          "site_key": "Site"
+        }
+      },
+      "user_select": {
+        "title": "Selectați un utilizator",
+        "description": "Alegeți utilizatorul pentru acest site.",
+        "data": {
+          "user_key": "Utilizator"
+        }
+      },
+      "password": {
+        "title": "Autentificare",
+        "description": "Introduceți parola pentru utilizatorul selectat.",
+        "data": {
+          "password": "Parolă"
+        }
+      },
+      "alarm_code": {
+        "title": "Panou de alarmă detectat",
+        "description": "Un panou de alarmă a fost detectat pe acest site. Introduceți acum codul de acces din 6 cifre sau lăsați câmpul gol pentru a omite. În timpul reconfigurării puteți, de asemenea, să ștergeți codul salvat.",
+        "data": {
+          "alarm_code": "Cod alarmă",
+          "clear_alarm_code": "Șterge codul de alarmă salvat"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Codul de alarmă a fost refuzat de gateway.",
+      "cannot_connect": "Conectarea la gateway a eșuat.",
+      "invalid_auth": "Autentificare invalidă.",
+      "invalid_alarm_code": "Cod de alarmă invalid (sunt necesare 6 cifre).",
+      "unknown": "Eroare necunoscută."
+    },
+    "abort": {
+      "invalid_uuid": "UUID-ul gateway-ului nu a putut fi preluat.",
+      "invalid_version": "Versiunea gateway-ului nu a putut fi preluată.",
+      "no_site_configured": "Niciun site configurat pe acest gateway.",
+      "no_user_configured": "Niciun utilizator configurat pentru acest site.",
+      "reconfigure_successful": "Reconfigurare finalizată. Intrarea a fost actualizată."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opțiuni Lifedomus",
+        "description": "Setări globale pentru integrarea Lifedomus.",
+        "data": {
+          "update_interval": "Interval de actualizare (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Mod de funcționare",
+        "state": {
+          "full_arming": "Toate zonele activate",
+          "maintenance": "Mod de întreținere",
+          "partial_arming": "Activare parțială",
+          "stop": "Dezactivat"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Activare totală"
+      },
+      "alarm_stop": {
+        "name": "Oprire"
+      },
+      "alarm_ack_events": {
+        "name": "Confirmă evenimentele"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarmă declanșată"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Alarmă întârziată"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Alarmă silențioasă"
+      },
+      "state_alarm_intrusion": {
+        "name": "Intrare prin efracție"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Stare baterie"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Suspiciune de demontare"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Produse inhibate"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Produse inaccesibile"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Deschideri"
+      },
+      "state_alarm_warn_power": {
+        "name": "Alimentare"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Auto-protecție"
+      },
+      "state_alarm_warn_sim": {
+        "name": "Card SIM"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Defecțiune tehnică"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telecomunicații"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Telemonitorizare"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Evenimente neconfirmate"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Legătură video"
+      }
+    }
+  }
+}

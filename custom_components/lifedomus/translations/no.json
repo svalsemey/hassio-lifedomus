@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Oppdag Lifedomus-gatewayer",
+        "description": "Velg en gateway eller skriv inn en vert manuelt.",
+        "data": {
+          "host": "Vert"
+        }
+      },
+      "gateway_manual": {
+        "title": "Manuell vertsinnskriving",
+        "description": "Angi verten (IP-adresse eller vertsnavn) for Lifedomus-gatewayen.",
+        "data": {
+          "host": "Vert"
+        }
+      },
+      "site_select": {
+        "title": "Velg et område",
+        "description": "Velg området som skal konfigureres på denne gatewayen.",
+        "data": {
+          "site_key": "Område"
+        }
+      },
+      "user_select": {
+        "title": "Velg en bruker",
+        "description": "Velg brukeren for dette området.",
+        "data": {
+          "user_key": "Bruker"
+        }
+      },
+      "password": {
+        "title": "Autentisering",
+        "description": "Skriv inn passordet for den valgte brukeren.",
+        "data": {
+          "password": "Passord"
+        }
+      },
+      "alarm_code": {
+        "title": "Alarmpanel oppdaget",
+        "description": "Et alarmpanel ble oppdaget på dette området. Skriv inn den 6-sifrede tilgangskoden nå, eller la feltet stå tomt for å hoppe over. Under rekonfigurering kan du også slette den lagrede koden.",
+        "data": {
+          "alarm_code": "Alarmkode",
+          "clear_alarm_code": "Slett lagret alarmkode"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Alarmkoden ble avvist av gatewayen.",
+      "cannot_connect": "Kunne ikke koble til gatewayen.",
+      "invalid_auth": "Ugyldig autentisering.",
+      "invalid_alarm_code": "Ugyldig alarmkode (6 sifre kreves).",
+      "unknown": "Ukjent feil."
+    },
+    "abort": {
+      "invalid_uuid": "Kunne ikke hente gateway-UUID.",
+      "invalid_version": "Kunne ikke hente gateway-versjonen.",
+      "no_site_configured": "Ingen område konfigurert på denne gatewayen.",
+      "no_user_configured": "Ingen bruker konfigurert for dette området.",
+      "reconfigure_successful": "Rekonfigurering fullført. Oppføringen ble oppdatert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus-alternativer",
+        "description": "Globale innstillinger for Lifedomus-integrasjonen.",
+        "data": {
+          "update_interval": "Oppdateringsintervall (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Driftsmodus",
+        "state": {
+          "full_arming": "Alle soner aktivert",
+          "maintenance": "Vedlikeholdsmodus",
+          "partial_arming": "Delvis aktivert",
+          "stop": "Deaktivert"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Full aktivering"
+      },
+      "alarm_stop": {
+        "name": "Stopp"
+      },
+      "alarm_ack_events": {
+        "name": "Kvitter hendelser"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarm utløst"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Forsinket alarm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Stille alarm"
+      },
+      "state_alarm_intrusion": {
+        "name": "Innbrudd"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Batteristatus"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Mistanke om fjerning"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Deaktiverte produkter"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Utilgjengelige produkter"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Åpne innganger"
+      },
+      "state_alarm_warn_power": {
+        "name": "Strømforsyning"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Egenbeskyttelse"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM-kort"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Teknisk feil"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekommunikasjon"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Fjernovervåking"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Ubekreftede hendelser"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Videolenke"
+      }
+    }
+  }
+}

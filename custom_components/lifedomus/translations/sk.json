@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Zistiť brány Lifedomus",
+        "description": "Vyberte bránu alebo zadajte hostiteľa manuálne.",
+        "data": {
+          "host": "Hostiteľ"
+        }
+      },
+      "gateway_manual": {
+        "title": "Manuálne zadanie hostiteľa",
+        "description": "Zadajte hostiteľa (IP adresu alebo názov) vašej brány Lifedomus.",
+        "data": {
+          "host": "Hostiteľ"
+        }
+      },
+      "site_select": {
+        "title": "Vybrať lokalitu",
+        "description": "Vyberte lokalitu, ktorú chcete nakonfigurovať na tejto bráne.",
+        "data": {
+          "site_key": "Lokalita"
+        }
+      },
+      "user_select": {
+        "title": "Vybrať používateľa",
+        "description": "Vyberte používateľa pre túto lokalitu.",
+        "data": {
+          "user_key": "Používateľ"
+        }
+      },
+      "password": {
+        "title": "Overenie",
+        "description": "Zadajte heslo vybraného používateľa.",
+        "data": {
+          "password": "Heslo"
+        }
+      },
+      "alarm_code": {
+        "title": "Zistený poplachový panel",
+        "description": "Na tejto lokalite bol zistený poplachový panel. Zadajte teraz 6-miestny prístupový kód alebo nechajte pole prázdne pre preskočenie. Počas rekonfigurácie môžete tiež vymazať uložený kód.",
+        "data": {
+          "alarm_code": "Kód alarmu",
+          "clear_alarm_code": "Vymazať uložený kód alarmu"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Kód alarmu bol bránou odmietnutý.",
+      "cannot_connect": "Nepodarilo sa pripojiť k bráne.",
+      "invalid_auth": "Neplatné overenie.",
+      "invalid_alarm_code": "Neplatný kód alarmu (vyžaduje sa 6 číslic).",
+      "unknown": "Neznáma chyba."
+    },
+    "abort": {
+      "invalid_uuid": "Nepodarilo sa získať UUID brány.",
+      "invalid_version": "Nepodarilo sa získať verziu brány.",
+      "no_site_configured": "Na tejto bráne nie je nakonfigurovaná žiadna lokalita.",
+      "no_user_configured": "Pre túto lokalitu nie je nakonfigurovaný používateľ.",
+      "reconfigure_successful": "Rekonfigurácia dokončená. Položka bola aktualizovaná."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti Lifedomus",
+        "description": "Globálne nastavenia integrácie Lifedomus.",
+        "data": {
+          "update_interval": "Interval aktualizácie (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Prevádzkový režim",
+        "state": {
+          "full_arming": "Všetky zóny aktivované",
+          "maintenance": "Servisný režim",
+          "partial_arming": "Čiastočne aktivované",
+          "stop": "Deaktivované"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Plná aktivácia"
+      },
+      "alarm_stop": {
+        "name": "Zastaviť"
+      },
+      "alarm_ack_events": {
+        "name": "Potvrdiť udalosti"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarm spustený"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Oneskorený alarm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Tichý alarm"
+      },
+      "state_alarm_intrusion": {
+        "name": "Vniknutie"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Stav batérie"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Podozrenie na odstránenie"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Deaktivované produkty"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Nedostupné produkty"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Otvorené vstupy"
+      },
+      "state_alarm_warn_power": {
+        "name": "Napájanie"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Sebaobrana"
+      },
+      "state_alarm_warn_sim": {
+        "name": "Karta SIM"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Technická porucha"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekomunikácie"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Diaľkový dohľad"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Nepotvrdené udalosti"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Video odkaz"
+      }
+    }
+  }
+}

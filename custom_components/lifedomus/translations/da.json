@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Find Lifedomus-gateways",
+        "description": "Vælg en gateway eller indtast en vært manuelt.",
+        "data": {
+          "host": "Vært"
+        }
+      },
+      "gateway_manual": {
+        "title": "Manuel værtsindtastning",
+        "description": "Angiv værten (IP-adresse eller værtsnavn) for din Lifedomus-gateway.",
+        "data": {
+          "host": "Vært"
+        }
+      },
+      "site_select": {
+        "title": "Vælg et site",
+        "description": "Vælg det site, der skal konfigureres på denne gateway.",
+        "data": {
+          "site_key": "Site"
+        }
+      },
+      "user_select": {
+        "title": "Vælg en bruger",
+        "description": "Vælg brugeren til dette site.",
+        "data": {
+          "user_key": "Bruger"
+        }
+      },
+      "password": {
+        "title": "Godkendelse",
+        "description": "Indtast adgangskoden for den valgte bruger.",
+        "data": {
+          "password": "Adgangskode"
+        }
+      },
+      "alarm_code": {
+        "title": "Alarmpanel registreret",
+        "description": "Et alarmpanel blev registreret på dette site. Indtast den 6-cifrede adgangskode nu, eller lad feltet være tomt for at springe over. Under rekonfiguration kan du også rydde den gemte kode.",
+        "data": {
+          "alarm_code": "Alarmkode",
+          "clear_alarm_code": "Ryd gemt alarmkode"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Alarmkoden blev afvist af gatewayen.",
+      "cannot_connect": "Kunne ikke oprette forbindelse til gatewayen.",
+      "invalid_auth": "Ugyldig godkendelse.",
+      "invalid_alarm_code": "Ugyldig alarmkode (6 cifre krævet).",
+      "unknown": "Ukendt fejl."
+    },
+    "abort": {
+      "invalid_uuid": "Gateway-UUID kunne ikke hentes.",
+      "invalid_version": "Gateway-versionen kunne ikke hentes.",
+      "no_site_configured": "Intet site konfigureret på denne gateway.",
+      "no_user_configured": "Ingen bruger konfigureret til dette site.",
+      "reconfigure_successful": "Rekonfiguration fuldført. Posten blev opdateret."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus-indstillinger",
+        "description": "Globale indstillinger for Lifedomus-integrationen.",
+        "data": {
+          "update_interval": "Opdateringsinterval (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Driftstilstand",
+        "state": {
+          "full_arming": "Alle zoner aktiveret",
+          "maintenance": "Vedligeholdelsestilstand",
+          "partial_arming": "Delvist aktiveret",
+          "stop": "Deaktiveret"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Fuldt aktiveret"
+      },
+      "alarm_stop": {
+        "name": "Stop"
+      },
+      "alarm_ack_events": {
+        "name": "Kvitter hændelser"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarm udløst"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Forsinket alarm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Stille alarm"
+      },
+      "state_alarm_intrusion": {
+        "name": "Indtrængen"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Batteristatus"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Mistanke om afmontering"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Hæmmede produkter"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Utilgængelige produkter"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Åbne indgange"
+      },
+      "state_alarm_warn_power": {
+        "name": "Strøm"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Selvbeskyttelse"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM-kort"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Teknisk fejl"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekommunikation"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Fjernovervågning"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Ikke-kvitterede hændelser"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Videolink"
+      }
+    }
+  }
+}

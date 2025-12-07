@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Etsi Lifedomus-yhdyskäytäviä",
+        "description": "Valitse yhdyskäytävä tai syötä isäntä manuaalisesti.",
+        "data": {
+          "host": "Isäntä"
+        }
+      },
+      "gateway_manual": {
+        "title": "Isännän manuaalinen syöttö",
+        "description": "Anna Lifedomus-yhdyskäytävän isäntä (IP-osoite tai isäntänimi).",
+        "data": {
+          "host": "Isäntä"
+        }
+      },
+      "site_select": {
+        "title": "Valitse sivusto",
+        "description": "Valitse sivusto, joka halutaan määrittää tässä yhdyskäytävässä.",
+        "data": {
+          "site_key": "Sivusto"
+        }
+      },
+      "user_select": {
+        "title": "Valitse käyttäjä",
+        "description": "Valitse tämän sivuston käyttäjä.",
+        "data": {
+          "user_key": "Käyttäjä"
+        }
+      },
+      "password": {
+        "title": "Todennus",
+        "description": "Anna valitun käyttäjän salasana.",
+        "data": {
+          "password": "Salasana"
+        }
+      },
+      "alarm_code": {
+        "title": "Hälytypaneeli havaittu",
+        "description": "Tällä sivustolla havaittiin hälytypaneeli. Anna 6-numeroinen pääsykoodi nyt tai jätä kenttä tyhjäksi ohittaaksesi. Uudelleenkonfiguroinnin aikana voit myös tyhjentää tallennetun koodin.",
+        "data": {
+          "alarm_code": "Hälytyskoodi",
+          "clear_alarm_code": "Tyhjennä tallennettu hälytyskoodi"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Hälytyskoodi hylättiin yhdyskäytävän toimesta.",
+      "cannot_connect": "Yhteyden muodostaminen yhdyskäytävään epäonnistui.",
+      "invalid_auth": "Virheellinen todennus.",
+      "invalid_alarm_code": "Virheellinen hälytyskoodi (6 numeroa vaaditaan).",
+      "unknown": "Tuntematon virhe."
+    },
+    "abort": {
+      "invalid_uuid": "Yhdyskäytävän UUID:ta ei voitu hakea.",
+      "invalid_version": "Yhdyskäytävän versiota ei voitu hakea.",
+      "no_site_configured": "Tässä yhdyskäytävässä ei ole määritetty sivustoa.",
+      "no_user_configured": "Tälle sivustolle ei ole määritetty käyttäjää.",
+      "reconfigure_successful": "Uudelleenkonfigurointi valmis. Tietue päivitettiin."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lifedomus-asetukset",
+        "description": "Lifedomus-integraation yleisasetukset.",
+        "data": {
+          "update_interval": "Päivitysväli (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Käyttötila",
+        "state": {
+          "full_arming": "Kaikki vyöhykkeet käytössä",
+          "maintenance": "Huoltotila",
+          "partial_arming": "Osittain käytössä",
+          "stop": "Poissa käytöstä"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Täysi aktivointi"
+      },
+      "alarm_stop": {
+        "name": "Pysäytä"
+      },
+      "alarm_ack_events": {
+        "name": "Kuittaa tapahtumat"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Hälytys laukaistu"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Viivästetty hälytys"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Hiljainen hälytys"
+      },
+      "state_alarm_intrusion": {
+        "name": "Tunkeutuminen"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Akun tila"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Irrotusepäily"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Estetyt tuotteet"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Tuotteet tavoittamattomissa"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Avoimet sisäänkäynnit"
+      },
+      "state_alarm_warn_power": {
+        "name": "Virtalähde"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Itsesuojaus"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM-kortti"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Tekninen vika"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekommunikaatio"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Etävalvonta"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Kuittaamattomat tapahtumat"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Videolinkki"
+      }
+    }
+  }
+}

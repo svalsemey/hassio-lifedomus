@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Vyhledat brány Lifedomus",
+        "description": "Vyberte bránu nebo zadejte hostitele ručně.",
+        "data": {
+          "host": "Hostitel"
+        }
+      },
+      "gateway_manual": {
+        "title": "Ruční zadání hostitele",
+        "description": "Zadejte hostitele (IP adresu nebo název) vaší brány Lifedomus.",
+        "data": {
+          "host": "Hostitel"
+        }
+      },
+      "site_select": {
+        "title": "Vybrat lokalitu",
+        "description": "Zvolte lokalitu, kterou chcete na této bráně nakonfigurovat.",
+        "data": {
+          "site_key": "Lokalita"
+        }
+      },
+      "user_select": {
+        "title": "Vybrat uživatele",
+        "description": "Zvolte uživatele pro tuto lokalitu.",
+        "data": {
+          "user_key": "Uživatel"
+        }
+      },
+      "password": {
+        "title": "Ověření",
+        "description": "Zadejte heslo vybraného uživatele.",
+        "data": {
+          "password": "Heslo"
+        }
+      },
+      "alarm_code": {
+        "title": "Detekován zabezpečovací panel",
+        "description": "Na této lokalitě byl detekován zabezpečovací panel. Zadejte nyní 6místný přístupový kód, nebo ponechte pole prázdné pro přeskočení. Při opětovné konfiguraci můžete také vymazat uložený kód.",
+        "data": {
+          "alarm_code": "Kód alarmu",
+          "clear_alarm_code": "Vymazat uložený kód alarmu"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Kód alarmu byl bránou odmítnut.",
+      "cannot_connect": "Nepodařilo se připojit k bráně.",
+      "invalid_auth": "Neplatné ověření.",
+      "invalid_alarm_code": "Neplatný kód alarmu (vyžadováno 6 číslic).",
+      "unknown": "Neznámá chyba."
+    },
+    "abort": {
+      "invalid_uuid": "Nepodařilo se získat UUID brány.",
+      "invalid_version": "Nepodařilo se získat verzi brány.",
+      "no_site_configured": "Na této bráně není nakonfigurována žádná lokalita.",
+      "no_user_configured": "Na této lokalitě není nakonfigurován žádný uživatel.",
+      "reconfigure_successful": "Přeconfigurování dokončeno. Položka byla aktualizována."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti Lifedomus",
+        "description": "Globální nastavení integrace Lifedomus.",
+        "data": {
+          "update_interval": "Interval aktualizace (s)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Provozní režim",
+        "state": {
+          "full_arming": "Všechny zóny zabezpečeny",
+          "maintenance": "Režim údržby",
+          "partial_arming": "Částečné zajištění",
+          "stop": "Odjištěno"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Plné zajištění"
+      },
+      "alarm_stop": {
+        "name": "Zastavit"
+      },
+      "alarm_ack_events": {
+        "name": "Potvrdit události"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Alarm spuštěn"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Zpožděný alarm"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Tichý alarm"
+      },
+      "state_alarm_intrusion": {
+        "name": "Vniknutí"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Stav baterie"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Podezření na vytržení"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Inhibované produkty"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Nedostupné produkty"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Otevřené vstupy"
+      },
+      "state_alarm_warn_power": {
+        "name": "Napájení"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Sebeochrana"
+      },
+      "state_alarm_warn_sim": {
+        "name": "Karta SIM"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Technická závada"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Telekomunikace"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Dálkový dohled"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Nepotvrzené události"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Video odkaz"
+      }
+    }
+  }
+}

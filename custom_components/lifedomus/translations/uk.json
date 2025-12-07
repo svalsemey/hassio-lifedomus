@@ -1,0 +1,152 @@
+{
+  "title": "Lifedomus",
+  "config": {
+    "step": {
+      "discover": {
+        "title": "Виявити шлюзи Lifedomus",
+        "description": "Виберіть шлюз або введіть хост вручну.",
+        "data": {
+          "host": "Хост"
+        }
+      },
+      "gateway_manual": {
+        "title": "Ручне введення хоста",
+        "description": "Введіть хост (IP-адресу або ім’я хоста) вашого шлюзу Lifedomus.",
+        "data": {
+          "host": "Хост"
+        }
+      },
+      "site_select": {
+        "title": "Виберіть сайт",
+        "description": "Виберіть сайт для налаштування на цьому шлюзі.",
+        "data": {
+          "site_key": "Сайт"
+        }
+      },
+      "user_select": {
+        "title": "Виберіть користувача",
+        "description": "Виберіть користувача для цього сайту.",
+        "data": {
+          "user_key": "Користувач"
+        }
+      },
+      "password": {
+        "title": "Автентифікація",
+        "description": "Введіть пароль вибраного користувача.",
+        "data": {
+          "password": "Пароль"
+        }
+      },
+      "alarm_code": {
+        "title": "Виявлено панель сигналізації",
+        "description": "На цьому сайті виявлено панель сигналізації. Введіть 6-значний код доступу зараз або залиште поле порожнім, щоб пропустити. Під час переналаштування ви також можете очистити збережений код.",
+        "data": {
+          "alarm_code": "Код сигналізації",
+          "clear_alarm_code": "Очистити збережений код сигналізації"
+        }
+      }
+    },
+    "error": {
+      "alarm_code_denied": "Код сигналізації відхилено шлюзом.",
+      "cannot_connect": "Не вдалося під’єднатися до шлюзу.",
+      "invalid_auth": "Недійсна автентифікація.",
+      "invalid_alarm_code": "Недійсний код сигналізації (потрібно 6 цифр).",
+      "unknown": "Невідома помилка."
+    },
+    "abort": {
+      "invalid_uuid": "Не вдалося отримати UUID шлюзу.",
+      "invalid_version": "Не вдалося отримати версію шлюзу.",
+      "no_site_configured": "На цьому шлюзі не налаштовано жодного сайту.",
+      "no_user_configured": "Для цього сайту не налаштовано користувача.",
+      "reconfigure_successful": "Переналаштування завершено. Запис оновлено."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Параметри Lifedomus",
+        "description": "Глобальні налаштування інтеграції Lifedomus.",
+        "data": {
+          "update_interval": "Інтервал оновлення (с)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "operating_mode": {
+        "name": "Режим роботи",
+        "state": {
+          "full_arming": "Усі зони активовано",
+          "maintenance": "Режим обслуговування",
+          "partial_arming": "Частково активовано",
+          "stop": "Вимкнено"
+        }
+      }
+    },
+    "button": {
+      "alarm_full_arming": {
+        "name": "Повна активація"
+      },
+      "alarm_stop": {
+        "name": "Зупинити"
+      },
+      "alarm_ack_events": {
+        "name": "Підтвердити події"
+      }
+    },
+    "binary_sensor": {
+      "state_triggered": {
+        "name": "Сигналізацію спрацьовано"
+      },
+      "state_alarm_alert_delayed": {
+        "name": "Затриманий сигнал"
+      },
+      "state_alarm_alert_silent": {
+        "name": "Безшумний сигнал"
+      },
+      "state_alarm_intrusion": {
+        "name": "Проникнення"
+      },
+      "state_alarm_warn_battery": {
+        "name": "Стан батареї"
+      },
+      "state_alarm_warn_removal_doubt": {
+        "name": "Підозра на зняття"
+      },
+      "state_alarm_warn_products_inhibited": {
+        "name": "Вимкнені продукти"
+      },
+      "state_alarm_warn_monitoring": {
+        "name": "Недоступні продукти"
+      },
+      "state_alarm_warn_entrances_open": {
+        "name": "Відкриті входи"
+      },
+      "state_alarm_warn_power": {
+        "name": "Живлення"
+      },
+      "state_alarm_warn_self_protection": {
+        "name": "Самозахист"
+      },
+      "state_alarm_warn_sim": {
+        "name": "SIM-картка"
+      },
+      "state_alarm_warn_fault_technical": {
+        "name": "Технічна несправність"
+      },
+      "state_alarm_warn_telecommunication": {
+        "name": "Телекомунікації"
+      },
+      "state_alarm_warn_telemonitoring": {
+        "name": "Дистанційний моніторинг"
+      },
+      "state_alarm_warn_event_unacknowledged": {
+        "name": "Непідтверджені події"
+      },
+      "state_alarm_warn_link_video": {
+        "name": "Відеопосилання"
+      }
+    }
+  }
+}
