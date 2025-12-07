@@ -174,4 +174,3 @@ MIT — see [LICENSE](./LICENSE).
 Please use GitHub Issues and fill in the provided templates for bug reports and feature requests.
 
 [![Hassfest](https://github.com/svalsemey/hassio-lifedomus/actions/workflows/hassfest.yml/badge.svg)](../../actions/workflows/hassfest.yml)
-[![CI](https://github.com/svalsemey/hassio-lifedomus/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
