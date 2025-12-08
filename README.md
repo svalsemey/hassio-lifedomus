@@ -24,7 +24,7 @@ It offers zero-configuration discovery, secure local communication, efficient co
 
 - Home Assistant 2023.11+ (recommended)
 - Python 3.11+
-- Lifedomus gateway reachable on your LAN
+- Lifedomus gateway (reachable on your LAN for discovery)
 - asyncssh >= 2.14.2,<3.0.0 (installed automatically by Home Assistant)
 
 ## Installation
