@@ -137,19 +137,6 @@ logger:
     custom_components.lifedomus: debug
 ```
 
-## Development
-
-- Fully typed codebase, no generic exceptions, exhaustive docstrings.
-- Linting and static checks:
-  - Ruff, mypy, Pylance/Pyright
-- Home Assistant validation:
-  - hassfest
-- Run checks locally:
-  - ruff: `ruff check .`
-  - mypy: `mypy custom_components/lifedomus`
-  - hassfest: `python3 -m script.hassfest` (from HA devcontainer)
-- Contribution guidelines and CI are provided in this repository.
-
 ## Translations
 
 Includes English, French, and many additional locales. Key UI strings cover:
