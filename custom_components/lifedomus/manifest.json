@@ -1,14 +1,14 @@
 {
   "domain": "lifedomus",
   "name": "Lifedomus",
-  "version": "0.0.1",
   "codeowners": ["@svalsemey"],
   "config_flow": true,
   "documentation": "https://github.com/svalsemey/hassio-lifedomus#readme",
-  "issue_tracker": "https://github.com/svalsemey/hassio-lifedomus/issues",
   "integration_type": "hub",
   "iot_class": "local_push",
+  "issue_tracker": "https://github.com/svalsemey/hassio-lifedomus/issues",
   "requirements": [
     "asyncssh>=2.14.2,<3.0.0"
-  ]
+  ],
+  "version": "0.0.1"
 }
