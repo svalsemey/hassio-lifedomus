@@ -82,6 +82,54 @@
           "partial_arming": "Activare parțială",
           "stop": "Dezactivat"
         }
+      },
+      "system_var_date": {
+        "name": "Data"
+      },
+      "system_var_day_of_month": {
+        "name": "Ziua lunii"
+      },
+      "system_var_day_of_week": {
+        "name": "Ziua săptămânii",
+        "state": {
+          "sunday": "Duminică",
+          "monday": "Luni",
+          "tuesday": "Marți",
+          "wednesday": "Miercuri",
+          "thursday": "Joi",
+          "friday": "Vineri",
+          "saturday": "Sâmbătă"
+        }
+      },
+      "system_var_month": {
+        "name": "Luna"
+      },
+      "system_var_solar_elevation": {
+        "name": "Elevația solară"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Azimut solar"
+      },
+      "system_var_time": {
+        "name": "Ora"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Amiază solară"
+      },
+      "system_var_time_sunlight": {
+        "name": "Durata luminii solare"
+      },
+      "system_var_time_sunrise": {
+        "name": "Răsărit"
+      },
+      "system_var_time_sunset": {
+        "name": "Apus"
+      },
+      "system_var_uptime": {
+        "name": "Timp de funcționare"
+      },
+      "system_var_year": {
+        "name": "Anul"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Legătură video"
+      },
+      "system_var_web_status": {
+        "name": "Acces la Internet"
       }
     }
   }

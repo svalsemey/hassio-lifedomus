@@ -82,6 +82,54 @@
           "partial_arming": "Gedeeltelijk ingeschakeld",
           "stop": "Uitgeschakeld"
         }
+      },
+      "system_var_date": {
+        "name": "Datum"
+      },
+      "system_var_day_of_month": {
+        "name": "Dag van de maand"
+      },
+      "system_var_day_of_week": {
+        "name": "Dag van de week",
+        "state": {
+          "sunday": "Zondag",
+          "monday": "Maandag",
+          "tuesday": "Dinsdag",
+          "wednesday": "Woensdag",
+          "thursday": "Donderdag",
+          "friday": "Vrijdag",
+          "saturday": "Zaterdag"
+        }
+      },
+      "system_var_month": {
+        "name": "Maand"
+      },
+      "system_var_solar_elevation": {
+        "name": "Zonshoogte"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Zonsazimut"
+      },
+      "system_var_time": {
+        "name": "Tijd"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Zonsmiddag"
+      },
+      "system_var_time_sunlight": {
+        "name": "Zonlichtduur"
+      },
+      "system_var_time_sunrise": {
+        "name": "Zonsopgang"
+      },
+      "system_var_time_sunset": {
+        "name": "Zonsondergang"
+      },
+      "system_var_uptime": {
+        "name": "Bedrijfstijd"
+      },
+      "system_var_year": {
+        "name": "Jaar"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Videokoppeling"
+      },
+      "state_system_var_web_status": {
+        "name": "Internettoegang"
       }
     }
   }

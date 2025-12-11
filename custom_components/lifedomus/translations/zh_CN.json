@@ -82,6 +82,54 @@
           "partial_arming": "部分启用",
           "stop": "已禁用"
         }
+      },
+      "system_var_date": {
+        "name": "日期"
+      },
+      "system_var_day_of_month": {
+        "name": "月中日"
+      },
+      "system_var_day_of_week": {
+        "name": "星期",
+        "state": {
+          "sunday": "星期日",
+          "monday": "星期一",
+          "tuesday": "星期二",
+          "wednesday": "星期三",
+          "thursday": "星期四",
+          "friday": "星期五",
+          "saturday": "星期六"
+        }
+      },
+      "system_var_month": {
+        "name": "月份"
+      },
+      "system_var_solar_elevation": {
+        "name": "太阳高度角"
+      },
+      "system_var_solar_azimuth": {
+        "name": "太阳方位角"
+      },
+      "system_var_time": {
+        "name": "时间"
+      },
+      "system_var_time_solarnoon": {
+        "name": "太阳正午"
+      },
+      "system_var_time_sunlight": {
+        "name": "日照时长"
+      },
+      "system_var_time_sunrise": {
+        "name": "日出"
+      },
+      "system_var_time_sunset": {
+        "name": "日落"
+      },
+      "system_var_uptime": {
+        "name": "运行时间"
+      },
+      "system_var_year": {
+        "name": "年份"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "视频链接"
+      },
+      "system_var_web_status": {
+        "name": "互联网访问"
       }
     }
   }

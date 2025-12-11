@@ -82,6 +82,54 @@
           "partial_arming": "Kısmen etkin",
           "stop": "Devre dışı"
         }
+      },
+      "system_var_date": {
+        "name": "Tarih"
+      },
+      "system_var_day_of_month": {
+        "name": "Ayın günü"
+      },
+      "system_var_day_of_week": {
+        "name": "Haftanın günü",
+        "state": {
+          "sunday": "Pazar",
+          "monday": "Pazartesi",
+          "tuesday": "Salı",
+          "wednesday": "Çarşamba",
+          "thursday": "Perşembe",
+          "friday": "Cuma",
+          "saturday": "Cumartesi"
+        }
+      },
+      "system_var_month": {
+        "name": "Ay"
+      },
+      "system_var_solar_elevation": {
+        "name": "Güneş yüksekliği"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Güneş azimutu"
+      },
+      "system_var_time": {
+        "name": "Saat"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Güneş öğlesi"
+      },
+      "system_var_time_sunlight": {
+        "name": "Güneş ışığı süresi"
+      },
+      "system_var_time_sunrise": {
+        "name": "Gün doğumu"
+      },
+      "system_var_time_sunset": {
+        "name": "Gün batımı"
+      },
+      "system_var_uptime": {
+        "name": "Çalışma süresi"
+      },
+      "system_var_year": {
+        "name": "Yıl"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Video bağlantısı"
+      },
+      "system_var_web_status": {
+        "name": "İnternet erişimi"
       }
     }
   }

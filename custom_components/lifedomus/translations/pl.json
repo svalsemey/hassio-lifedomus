@@ -82,6 +82,54 @@
           "partial_arming": "Częściowo uzbrojony",
           "stop": "Rozbrojony"
         }
+      },
+      "system_var_date": {
+        "name": "Data"
+      },
+      "system_var_day_of_month": {
+        "name": "Dzień miesiąca"
+      },
+      "system_var_day_of_week": {
+        "name": "Dzień tygodnia",
+        "state": {
+          "sunday": "Niedziela",
+          "monday": "Poniedziałek",
+          "tuesday": "Wtorek",
+          "wednesday": "Środa",
+          "thursday": "Czwartek",
+          "friday": "Piątek",
+          "saturday": "Sobota"
+        }
+      },
+      "system_var_month": {
+        "name": "Miesiąc"
+      },
+      "system_var_solar_elevation": {
+        "name": "Wzniesienie słońca"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Azymut słońca"
+      },
+      "system_var_time": {
+        "name": "Czas"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Południe słoneczne"
+      },
+      "system_var_time_sunlight": {
+        "name": "Czas trwania światła słonecznego"
+      },
+      "system_var_time_sunrise": {
+        "name": "Wschód słońca"
+      },
+      "system_var_time_sunset": {
+        "name": "Zachód słońca"
+      },
+      "system_var_uptime": {
+        "name": "Czas pracy"
+      },
+      "system_var_year": {
+        "name": "Rok"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Łącze wideo"
+      },
+      "state_system_var_web_status": {
+        "name": "Dostęp do Internetu"
       }
     }
   }

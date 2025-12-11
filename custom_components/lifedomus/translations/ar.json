@@ -82,6 +82,54 @@
           "partial_arming": "تفعيل جزئي",
           "stop": "غير مُسلّح"
         }
+      },
+      "system_var_date": {
+        "name": "التاريخ"
+      },
+      "system_var_day_of_month": {
+        "name": "يوم الشهر"
+      },
+      "system_var_day_of_week": {
+        "name": "يوم الأسبوع",
+        "state": {
+          "sunday": "الأحد",
+          "monday": "الإثنين",
+          "tuesday": "الثلاثاء",
+          "wednesday": "الأربعاء",
+          "thursday": "الخميس",
+          "friday": "الجمعة",
+          "saturday": "السبت"
+        }
+      },
+      "system_var_month": {
+        "name": "الشهر"
+      },
+      "system_var_solar_elevation": {
+        "name": "ارتفاع الشمس"
+      },
+      "system_var_solar_azimuth": {
+        "name": "سمت الشمس"
+      },
+      "system_var_time": {
+        "name": "الوقت"
+      },
+      "system_var_time_solarnoon": {
+        "name": "منتصف النهار الشمسي"
+      },
+      "system_var_time_sunlight": {
+        "name": "مدة ضوء الشمس"
+      },
+      "system_var_time_sunrise": {
+        "name": "شروق الشمس"
+      },
+      "system_var_time_sunset": {
+        "name": "غروب الشمس"
+      },
+      "system_var_uptime": {
+        "name": "مدة التشغيل"
+      },
+      "system_var_year": {
+        "name": "السنة"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "اتصال فيديو"
+      },
+      "state_system_var_web_status": {
+        "name": "الوصول إلى الإنترنت"
       }
     }
   }

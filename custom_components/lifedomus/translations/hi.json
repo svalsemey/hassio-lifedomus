@@ -82,6 +82,54 @@
           "partial_arming": "आंशिक सक्रिय",
           "stop": "निष्क्रिय"
         }
+      },
+      "system_var_date": {
+        "name": "तारीख"
+      },
+      "system_var_day_of_month": {
+        "name": "महीने का दिन"
+      },
+      "system_var_day_of_week": {
+        "name": "सप्ताह का दिन",
+        "state": {
+          "sunday": "रविवार",
+          "monday": "सोमवार",
+          "tuesday": "मंगलवार",
+          "wednesday": "बुधवार",
+          "thursday": "गुरुवार",
+          "friday": "शुक्रवार",
+          "saturday": "शनिवार"
+        }
+      },
+      "system_var_month": {
+        "name": "महीना"
+      },
+      "system_var_solar_elevation": {
+        "name": "सौर ऊंचाई"
+      },
+      "system_var_solar_azimuth": {
+        "name": "सौर अज़ीमुथ"
+      },
+      "system_var_time": {
+        "name": "समय"
+      },
+      "system_var_time_solarnoon": {
+        "name": "सौर दोपहर"
+      },
+      "system_var_time_sunlight": {
+        "name": "धूप की अवधि"
+      },
+      "system_var_time_sunrise": {
+        "name": "सूर्योदय"
+      },
+      "system_var_time_sunset": {
+        "name": "सूर्यास्त"
+      },
+      "system_var_uptime": {
+        "name": "चालू समय"
+      },
+      "system_var_year": {
+        "name": "वर्ष"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "वीडियो लिंक"
+      },
+      "state_system_var_web_status": {
+        "name": "इंटरनेट पहुंच"
       }
     }
   }

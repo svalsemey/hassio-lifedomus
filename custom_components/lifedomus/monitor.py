@@ -16,15 +16,18 @@ import asyncio
 from contextlib import suppress
 import logging
 from typing import Any, Final, Protocol, cast, runtime_checkable
+from xml.etree.ElementTree import Element
 
 import asyncssh
 from defusedxml import ElementTree as ET
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 
 from .api import LifedomusApi, LifedomusApiError
 from .const import (
     DOMAIN,
+    LD_CLSID_SYSTEM_VARIABLES,
     LD_MONITOR_SSH_PORT,
     LD_MONITOR_SSH_USER,
     LD_MONITOR_TUNNEL_PORT,
@@ -36,6 +39,7 @@ from .const import (
     LD_STATE_SOCKET,
     LD_STATE_THERMOSTAT,
     LD_STATE_TRIGGERED,
+    LD_STATE_VALUE,
     PATTERN_DEVICE_KEY,
 )
 
@@ -50,6 +54,7 @@ ACCEPTED_STATE_CLSIDS: Final[frozenset[str]] = frozenset(
         LD_STATE_SOCKET,
         LD_STATE_THERMOSTAT,
         LD_STATE_TRIGGERED,
+        LD_STATE_VALUE,
     }
 )
 
@@ -512,11 +517,13 @@ class LifedomusMonitor:
 
         Expected shape:
             <State clsid="CLSID-STATE-..." device_key="DEVC_..."/>
+            or
+            <State clsid="CLSID-STATE-VALUE" system_variable_key="CLSID-SYSTEM-..."/>
 
         Rules:
         - Only the root element <State .../> is accepted.
         - 'clsid' must be in ACCEPTED_STATE_CLSIDS.
-        - 'device_key' must match PATTERN_DEVICE_KEY.
+        - 'device_key' must match PATTERN_DEVICE_KEY, or 'system_variable_key' must be valid.
         - On success, refresh only this device if it already exists in a coordinator.
         """
         try:
@@ -525,16 +532,23 @@ class LifedomusMonitor:
             _LOGGER.debug("Skipping malformed XML frame: %s", err)
             return
 
-        # Only accept a single <State .../> message per call
         if root.tag != "State":
             _LOGGER.debug("XML frame ignored (root element is not <State/>)")
             return
 
         clsid = root.attrib.get("clsid", "")
         device_key = root.attrib.get("device_key", "")
+        system_variable_key = root.attrib.get("system_variable_key", "")
 
         if clsid not in ACCEPTED_STATE_CLSIDS:
             _LOGGER.debug("State ignored (clsid %s not accepted)", clsid)
+            return
+
+        if system_variable_key and system_variable_key in LD_CLSID_SYSTEM_VARIABLES:
+            _LOGGER.debug("System variable notification: %s", system_variable_key)
+            self._hass.async_create_task(
+                self._refresh_system_variable(system_variable_key, root)
+            )
             return
 
         if not device_key or not PATTERN_DEVICE_KEY.fullmatch(device_key):
@@ -595,3 +609,44 @@ class LifedomusMonitor:
             new_data = dict(coord.data)
             new_data[device_key] = updated
             coord.async_set_updated_data(new_data)
+
+    async def _refresh_system_variable(self, variable_key: str, root: Element) -> None:
+        """Refresh a system variable sensor from a push notification.
+
+        Push notifications for system variables contain only the clsid and system_variable_key.
+        The actual value must be fetched via the API using async_get_system_variable.
+
+        Args:
+            variable_key: The system variable key (e.g., CLSID-SYSTEM-WEB).
+            root: The XML <State/> element (used for potential future enhancements).
+        """
+        shared = self._hass.data.get(DOMAIN, {})
+        config = LD_CLSID_SYSTEM_VARIABLES.get(variable_key)
+
+        if not config:
+            return
+
+        registry = er.async_get(self._hass)
+
+        if config.value_type is bool:
+            system_binary_sensors = shared.get("system_binary_sensors", {})
+            binary_sensor = system_binary_sensors.get(variable_key)
+            if binary_sensor is not None:
+                entity_id = binary_sensor.entity_id
+                if entity_id:
+                    entry = registry.async_get(entity_id)
+                    if entry and entry.disabled:
+                        return
+                await binary_sensor.async_update()
+                binary_sensor.async_write_ha_state()
+        else:
+            system_sensors = shared.get("system_sensors", {})
+            sensor = system_sensors.get(variable_key)
+            if sensor is not None:
+                entity_id = sensor.entity_id
+                if entity_id:
+                    entry = registry.async_get(entity_id)
+                    if entry and entry.disabled:
+                        return
+                await sensor.async_update()
+                sensor.async_write_ha_state()

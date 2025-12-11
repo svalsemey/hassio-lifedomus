@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date, datetime
 import logging
 from typing import cast
 from xml.etree.ElementTree import Element
@@ -40,15 +41,18 @@ from .alarm import (
     LdAlarmDevice,
     get_or_create_alarm_coordinator,
 )
-from .api import LifedomusApi, parse_number
+from .api import LifedomusApi, LifedomusApiError, parse_number
 from .const import (
+    CONF_SITE_KEY,
     DOMAIN,
     LD_CLSID_DEVICE_TYPE_SENSOR_ENVIRONMENT,
+    LD_CLSID_SYSTEM_VARIABLES,
     LD_STATE_VALUE,
     LD_VALUE_ALARM_MODE_ARMED_FULL,
     LD_VALUE_ALARM_MODE_ARMED_PARTIAL,
     LD_VALUE_ALARM_MODE_MAINTENANCE,
     LD_VALUE_ALARM_MODE_STOP,
+    MODEL,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .energy import LdEnergyMeter, get_or_create_energy_coordinator
@@ -340,6 +344,102 @@ class LifedomusEnergyMeterSensor(SensorEntity):
         self.async_write_ha_state()
 
 
+class LifedomusSystemVariableSensor(SensorEntity):
+    """System variable sensor exposed by the Lifedomus hub."""
+
+    _attr_should_poll = False
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        api: LifedomusApi,
+        site_key: str,
+        uuid: str,
+        variable_key: str,
+    ) -> None:
+        """Initialize the system variable sensor."""
+        super().__init__()
+        self._hass = hass
+        self._api = api
+        self._site_key = site_key
+        self.variable_key = variable_key
+
+        config = LD_CLSID_SYSTEM_VARIABLES[variable_key]
+
+        self._attr_unique_id = f"{uuid}::system::{variable_key}"
+        self._attr_translation_key = config.translation_key
+        self._attr_icon = config.icon
+        self._attr_entity_registry_enabled_default = config.enabled
+
+        if config.value_type in (date, datetime):
+            if isinstance(config.sensor_class, SensorDeviceClass):
+                self._attr_device_class = config.sensor_class
+            elif config.value_type is datetime:
+                self._attr_device_class = SensorDeviceClass.TIMESTAMP
+            elif config.value_type is date:
+                self._attr_device_class = SensorDeviceClass.DATE
+
+        if config.unit:
+            self._attr_native_unit_of_measurement = config.unit
+
+        if isinstance(config.sensor_class, SensorStateClass):
+            self._attr_state_class = config.sensor_class
+
+        self._attr_device_info = build_device_info(
+            device_key=uuid,
+            device_clsid=MODEL,
+            label=MODEL,
+            room_label="",
+            uuid=uuid,
+        )
+
+        self._attr_native_value = None
+
+    def _apply_value(self, value: bool | date | datetime | float | str | None) -> None:
+        """Apply and validate a system variable value based on its declared type."""
+        config = LD_CLSID_SYSTEM_VARIABLES[self.variable_key]
+
+        if config.value_type is int and isinstance(value, (int, float)):
+            self._attr_native_value = int(value)
+        elif config.value_type is float and isinstance(value, (int, float)):
+            self._attr_native_value = float(value)
+        elif (
+            (config.value_type is str and isinstance(value, str))
+            or (config.value_type is date and isinstance(value, date))
+            or (config.value_type is datetime and isinstance(value, datetime))
+        ):
+            self._attr_native_value = value
+
+    async def async_added_to_hass(self) -> None:
+        """Fetch initial value when entity is added to Home Assistant."""
+        await super().async_added_to_hass()
+        if self.enabled:
+            await self.async_update()
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Fetch the current system variable value."""
+        try:
+            value = await self._api.async_get_system_variable(
+                site_key=self._site_key, variable_key=self.variable_key
+            )
+        except LifedomusApiError as err:
+            _LOGGER.warning(
+                "Failed to fetch system variable %s: %s", self.variable_key, err
+            )
+            return
+
+        self._apply_value(value)
+
+    def handle_push_update(
+        self, value: bool | date | datetime | float | str | None
+    ) -> None:
+        """Handle a push notification update for this system variable."""
+        self._apply_value(value)
+        self.async_write_ha_state()
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -347,6 +447,8 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Lifedomus raw sensors platform from a config entry."""
     api: LifedomusApi = entry.runtime_data
+    site_key = str(entry.data.get(CONF_SITE_KEY, ""))
+    uuid = str(hass.data[DOMAIN].get("uuid", ""))
 
     cfg = LdCoordinatorConfig[_LdRawSensor](
         name="Lifedomus sensor coordinator",
@@ -357,10 +459,8 @@ async def async_setup_entry(
     coordinator = LdCoordinator(hass, api, cfg)
     await coordinator.async_config_entry_first_refresh()
 
-    # Share the coordinator for potential reuse if needed.
     hass.data.setdefault(DOMAIN, {})["sensor_coordinator"] = coordinator
 
-    # Create or reuse shared alarm coordinator
     alarm_coordinator = await get_or_create_alarm_coordinator(hass, api, entry)
     shared = hass.data.setdefault(DOMAIN, {})
     shared["alarm_coordinator"] = alarm_coordinator
@@ -371,6 +471,13 @@ async def async_setup_entry(
     dependencies = EntityDependencies(
         api=api, entry=entry, uuid=str(hass.data[DOMAIN].get("uuid", ""))
     )
+
+    system_sensors = [
+        LifedomusSystemVariableSensor(hass, api, site_key, uuid, var_key)
+        for var_key, config in LD_CLSID_SYSTEM_VARIABLES.items()
+        if config.value_type is not bool
+    ]
+    shared["system_sensors"] = {s.variable_key: s for s in system_sensors}
 
     entities = cast(
         list[SensorEntity],
@@ -386,7 +493,8 @@ async def async_setup_entry(
             LifedomusEnergyMeterSensor(energy_coordinator, device, dependencies)
             for device in energy_coordinator.data.values()
             if device.device_clsid == "CLSID-DEVC-M-CP13"
-        ],
+        ]
+        + system_sensors,
     )
 
     async_add_entities(entities)

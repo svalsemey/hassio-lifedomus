@@ -82,6 +82,54 @@
           "partial_arming": "부분 활성화",
           "stop": "비활성화"
         }
+      },
+      "system_var_date": {
+        "name": "날짜"
+      },
+      "system_var_day_of_month": {
+        "name": "월의 날짜"
+      },
+      "system_var_day_of_week": {
+        "name": "요일",
+        "state": {
+          "sunday": "일요일",
+          "monday": "월요일",
+          "tuesday": "화요일",
+          "wednesday": "수요일",
+          "thursday": "목요일",
+          "friday": "금요일",
+          "saturday": "토요일"
+        }
+      },
+      "system_var_month": {
+        "name": "월"
+      },
+      "system_var_solar_elevation": {
+        "name": "태양 고도"
+      },
+      "system_var_solar_azimuth": {
+        "name": "태양 방위각"
+      },
+      "system_var_time": {
+        "name": "시간"
+      },
+      "system_var_time_solarnoon": {
+        "name": "태양 정오"
+      },
+      "system_var_time_sunlight": {
+        "name": "일조 시간"
+      },
+      "system_var_time_sunrise": {
+        "name": "일출"
+      },
+      "system_var_time_sunset": {
+        "name": "일몰"
+      },
+      "system_var_uptime": {
+        "name": "가동 시간"
+      },
+      "system_var_year": {
+        "name": "년"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "비디오 링크"
+      },
+      "state_system_var_web_status": {
+        "name": "인터넷 액세스"
       }
     }
   }

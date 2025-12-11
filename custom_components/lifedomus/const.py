@@ -7,8 +7,13 @@ devices, actions, properties, and states.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from datetime import date, datetime
 import re
 from typing import Final
+
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 
 MANUFACTURER: Final = "Delta Dore"
 DOMAIN: Final = "lifedomus"
@@ -59,6 +64,33 @@ PATTERN_DEVICE_KEY: Final[re.Pattern[str]] = re.compile(r"^DEVC_[0-9]{35}$")
 PATTERN_SESSION_KEY: Final[re.Pattern[str]] = re.compile(r"^[a-z0-9]{40}$")
 PATTERN_SITE_KEY: Final[re.Pattern[str]] = re.compile(r"^SITE_[0-9]{35}$")
 PATTERN_USER_KEY: Final[re.Pattern[str]] = re.compile(r"^USER_[0-9]{35}$")
+
+# Day of week mapping for Lifedomus XML responses (1=Sunday, 7=Saturday)
+LD_DAY_OF_WEEK_MAPPING: Final[dict[int, str]] = {
+    1: "sunday",
+    2: "monday",
+    3: "tuesday",
+    4: "wednesday",
+    5: "thursday",
+    6: "friday",
+    7: "saturday",
+}
+
+# Month name mapping for date parsing from Lifedomus XML responses
+LD_MONTH_MAPPING: Final[dict[str, int]] = {
+    "JANUARY": 1,
+    "FEBRUARY": 2,
+    "MARCH": 3,
+    "APRIL": 4,
+    "MAY": 5,
+    "JUNE": 6,
+    "JULY": 7,
+    "AUGUST": 8,
+    "SEPTEMBER": 9,
+    "OCTOBER": 10,
+    "NOVEMBER": 11,
+    "DECEMBER": 12,
+}
 
 # --- Actions CLSIDs ---
 LD_ACTION_ALARM_FULL_ARMING: Final[str] = "CLSID-ACTION-ALARM-FULL-ARMING"
@@ -328,6 +360,158 @@ LD_STATE_VALUE: Final[str] = (
     # Generic numeric value state
     "CLSID-STATE-VALUE"
 )
+
+
+@dataclass(frozen=True, slots=True)
+class SystemVariableConfig:
+    """Configuration for a Lifedomus system variable."""
+
+    clsid: str
+    value_type: type[bool | date | datetime | int | float | str]
+    translation_key: str
+    icon: str
+    unit: str | None = None
+    sensor_class: (
+        SensorDeviceClass | SensorStateClass | BinarySensorDeviceClass | None
+    ) = None
+    enabled: bool = True
+
+
+# --- System variables CLSIDs ---
+LD_SYSTEM_VAR_DATE: Final[str] = "CLSID-SYSTEM-DATE"
+LD_SYSTEM_VAR_DAY_OF_MONTH: Final[str] = "CLSID-SYSTEM-DAY-OF-MONTH"
+LD_SYSTEM_VAR_DAY_OF_WEEK: Final[str] = "CLSID-SYSTEM-DAY-OF-WEEK"
+LD_SYSTEM_VAR_MONTH: Final[str] = "CLSID-SYSTEM-MONTH"
+LD_SYSTEM_VAR_SOLAR_ELEVATION: Final[str] = "CLSID-SYSTEM-SOLAR-ELEVATION"
+LD_SYSTEM_VAR_SOLAR_AZIMUTH: Final[str] = "CLSID-SYSTEM-SOLAR-AZIMUTH"
+LD_SYSTEM_VAR_TIME: Final[str] = "CLSID-SYSTEM-TIME"
+LD_SYSTEM_VAR_TIME_SOLARNOON: Final[str] = "CLSID-SYSTEM-TIME-SOLARNOON"
+LD_SYSTEM_VAR_TIME_SUNLIGHT: Final[str] = "CLSID-SYSTEM-TIME-SUNLIGHT"
+LD_SYSTEM_VAR_TIME_SUNRISE: Final[str] = "CLSID-SYSTEM-TIME-SUNRISE"
+LD_SYSTEM_VAR_TIME_SUNSET: Final[str] = "CLSID-SYSTEM-TIME-SUNSET"
+LD_SYSTEM_VAR_UPTIME: Final[str] = "CLSID-SYSTEM-NB-OF-MIN-SINCE-START-UP"
+LD_SYSTEM_VAR_WEB_STATUS: Final[str] = "CLSID-SYSTEM-WEB"
+LD_SYSTEM_VAR_YEAR: Final[str] = "CLSID-SYSTEM-YEAR"
+
+# System variables configuration mapping
+LD_CLSID_SYSTEM_VARIABLES: Final[dict[str, SystemVariableConfig]] = {
+    LD_SYSTEM_VAR_DATE: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_DATE,
+        value_type=date,
+        translation_key="system_var_date",
+        icon="mdi:calendar-today",
+        unit=None,
+        sensor_class=SensorDeviceClass.DATE,
+        enabled=False,  # Disabled by default as it's not very useful as a sensor
+    ),
+    LD_SYSTEM_VAR_DAY_OF_MONTH: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_DAY_OF_MONTH,
+        value_type=int,
+        translation_key="system_var_day_of_month",
+        icon="mdi:calendar-today",
+        sensor_class=None,
+        enabled=False,  # Disabled by default as it's not very useful as a sensor
+    ),
+    LD_SYSTEM_VAR_DAY_OF_WEEK: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_DAY_OF_WEEK,
+        value_type=str,
+        translation_key="system_var_day_of_week",
+        icon="mdi:calendar-today",
+        sensor_class=None,
+        enabled=False,  # Disabled by default as it's not very useful as a sensor
+    ),
+    LD_SYSTEM_VAR_MONTH: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_MONTH,
+        value_type=int,
+        translation_key="system_var_month",
+        icon="mdi:calendar-month",
+        sensor_class=None,
+        enabled=False,  # Disabled by default as it's not very useful as a sensor
+    ),
+    LD_SYSTEM_VAR_SOLAR_ELEVATION: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_SOLAR_ELEVATION,
+        value_type=float,
+        translation_key="system_var_solar_elevation",
+        icon="mdi:sun-angle",
+        unit="°",
+        sensor_class=SensorStateClass.MEASUREMENT,
+        enabled=False,  # Disabled by default as Home Assistant sun integration is already providing this
+    ),
+    LD_SYSTEM_VAR_SOLAR_AZIMUTH: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_SOLAR_AZIMUTH,
+        value_type=float,
+        translation_key="system_var_solar_azimuth",
+        icon="mdi:sun-compass",
+        unit="°",
+        sensor_class=SensorStateClass.MEASUREMENT,
+        enabled=False,  # Disabled by default as Home Assistant sun integration is already providing this
+    ),
+    LD_SYSTEM_VAR_TIME: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_TIME,
+        value_type=str,
+        translation_key="system_var_time",
+        icon="mdi:clock-outline",
+        sensor_class=None,
+        enabled=False,  # Disabled by default as it's not very useful as a sensor
+    ),
+    LD_SYSTEM_VAR_TIME_SOLARNOON: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_TIME_SOLARNOON,
+        value_type=datetime,
+        translation_key="system_var_time_solarnoon",
+        icon="mdi:sun-clock",
+        sensor_class=None,
+        enabled=False,  # Disabled by default as Home Assistant sun integration is already providing this
+    ),
+    LD_SYSTEM_VAR_TIME_SUNLIGHT: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_TIME_SUNLIGHT,
+        value_type=str,  # HH:MM string format
+        translation_key="system_var_time_sunlight",
+        icon="mdi:sun-clock",
+        sensor_class=SensorDeviceClass.DURATION,
+        enabled=False,  # Disabled by default as Home Assistant sun integration is already providing this
+    ),
+    LD_SYSTEM_VAR_TIME_SUNRISE: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_TIME_SUNRISE,
+        value_type=datetime,
+        translation_key="system_var_time_sunrise",
+        icon="mdi:weather-sunset-up",
+        sensor_class=None,
+        enabled=False,  # Disabled by default as Home Assistant sun integration is already providing this
+    ),
+    LD_SYSTEM_VAR_TIME_SUNSET: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_TIME_SUNSET,
+        value_type=datetime,
+        translation_key="system_var_time_sunset",
+        icon="mdi:weather-sunset-down",
+        sensor_class=None,
+        enabled=False,  # Disabled by default as Home Assistant sun integration is already providing this
+    ),
+    LD_SYSTEM_VAR_UPTIME: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_UPTIME,
+        value_type=int,
+        translation_key="system_var_uptime",
+        icon="mdi:timer-outline",
+        unit="min",
+        sensor_class=SensorStateClass.TOTAL_INCREASING,
+        enabled=True,
+    ),
+    LD_SYSTEM_VAR_WEB_STATUS: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_WEB_STATUS,
+        value_type=bool,
+        translation_key="system_var_web_status",
+        icon="mdi:web",
+        sensor_class=BinarySensorDeviceClass.CONNECTIVITY,
+        enabled=True,
+    ),
+    LD_SYSTEM_VAR_YEAR: SystemVariableConfig(
+        clsid=LD_SYSTEM_VAR_YEAR,
+        value_type=int,
+        translation_key="system_var_year",
+        icon="mdi:calendar",
+        sensor_class=None,
+        enabled=False,  # Disabled by default as it's not very useful as a sensor
+    ),
+}
 
 # --- Known values for properties/states ---
 # Values for alarm operating modes.

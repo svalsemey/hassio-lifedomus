@@ -82,6 +82,54 @@
           "partial_arming": "Partially armed",
           "stop": "Disarmed"
         }
+      },
+      "system_var_date": {
+        "name": "Date"
+      },
+      "system_var_day_of_month": {
+        "name": "Day of month"
+      },
+      "system_var_day_of_week": {
+        "name": "Day of week",
+        "state": {
+          "sunday": "Sunday",
+          "monday": "Monday",
+          "tuesday": "Tuesday",
+          "wednesday": "Wednesday",
+          "thursday": "Thursday",
+          "friday": "Friday",
+          "saturday": "Saturday"
+        }
+      },
+      "system_var_month": {
+        "name": "Month"
+      },
+      "system_var_solar_elevation": {
+        "name": "Solar elevation"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Solar azimuth"
+      },
+      "system_var_time": {
+        "name": "Time"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Solar noon"
+      },
+      "system_var_time_sunlight": {
+        "name": "Sunlight duration"
+      },
+      "system_var_time_sunrise": {
+        "name": "Sunrise"
+      },
+      "system_var_time_sunset": {
+        "name": "Sunset"
+      },
+      "system_var_uptime": {
+        "name": "Uptime"
+      },
+      "system_var_year": {
+        "name": "Year"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Video link"
+      },
+      "state_system_var_web_status": {
+        "name": "Internet access"
       }
     }
   }

@@ -82,6 +82,54 @@
           "partial_arming": "Čiastočne aktivované",
           "stop": "Deaktivované"
         }
+      },
+      "system_var_date": {
+        "name": "Dátum"
+      },
+      "system_var_day_of_month": {
+        "name": "Deň v mesiaci"
+      },
+      "system_var_day_of_week": {
+        "name": "Deň v týždni",
+        "state": {
+          "sunday": "Nedeľa",
+          "monday": "Pondelok",
+          "tuesday": "Utorok",
+          "wednesday": "Streda",
+          "thursday": "Štvrtok",
+          "friday": "Piatok",
+          "saturday": "Sobota"
+        }
+      },
+      "system_var_month": {
+        "name": "Mesiac"
+      },
+      "system_var_solar_elevation": {
+        "name": "Výška slnka"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Azimut slnka"
+      },
+      "system_var_time": {
+        "name": "Čas"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Slnečné poludnie"
+      },
+      "system_var_time_sunlight": {
+        "name": "Trvanie slnečného svetla"
+      },
+      "system_var_time_sunrise": {
+        "name": "Východ slnka"
+      },
+      "system_var_time_sunset": {
+        "name": "Západ slnka"
+      },
+      "system_var_uptime": {
+        "name": "Čas prevádzky"
+      },
+      "system_var_year": {
+        "name": "Rok"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Video odkaz"
+      },
+      "system_var_web_status": {
+        "name": "Prístup na internet"
       }
     }
   }

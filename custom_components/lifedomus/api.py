@@ -8,7 +8,7 @@ It exposes minimal helpers to validate connectivity and retrieve basic info
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Final
 from xml.etree.ElementTree import Element
 from xml.sax.saxutils import escape
@@ -16,12 +16,17 @@ from xml.sax.saxutils import escape
 from aiohttp import ClientError, ClientSession, ClientTimeout
 from defusedxml import ElementTree as ET
 
+from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
+    LD_CLSID_SYSTEM_VARIABLES,
+    LD_DAY_OF_WEEK_MAPPING,
     LD_HTTP_HEADERS,
+    LD_MONTH_MAPPING,
     LD_PORT,
+    LD_STATE_VALUE,
     OPTION_UPDATE_INTERVAL_DEFAULT,
     PATTERN_DEVICE_KEY,
     PATTERN_SESSION_KEY,
@@ -299,9 +304,6 @@ class LifedomusApi:
     ) -> list[Element]:
         """Perform the HTTP request and return the response text."""
 
-        # CoreServices uses a different domain.
-        domain_hint = "domobox" if namespace == "CoreServices" else "domoboxbusiness"
-
         def build_payload_and_method() -> tuple[str, str]:
             """Return (method, payload) for the SOAP request."""
             # Account/GetUUID and CoreServices/GetVersion are GET; everything else is POST.
@@ -320,12 +322,20 @@ class LifedomusApi:
             ):
                 post_params["session_key"] = self._session_key
 
-            # Validate device/target keys when present (not persisted in auth context).
-            for key_name in ("device_key", "target_key"):
-                if key_name in post_params:
-                    post_params[key_name] = self._ensure_valid_device_key(
-                        str(post_params[key_name])
-                    )
+            # Validate device/target keys ONLY if not a system variable
+            target_type = post_params.get("target_type", "")
+            if target_type != "SYSTEM_VARIABLE":
+                for key_name in ("device_key", "target_key"):
+                    if key_name in post_params:
+                        post_params[key_name] = self._ensure_valid_device_key(
+                            str(post_params[key_name])
+                        )
+
+            # Determine the correct domain for the namespace
+            if namespace in ("CoreServices", "State"):
+                domain_hint = "domobox"
+            else:
+                domain_hint = "domoboxbusiness"
 
             params_xml = "".join(
                 f"<{escape(str(k))}>{escape(str(v))}</{escape(str(k))}>"
@@ -580,24 +590,9 @@ class LifedomusApi:
             if not day_txt or not month_txt or not year_txt:
                 return None
 
-            month_mapping = {
-                "JANUARY": 1,
-                "FEBRUARY": 2,
-                "MARCH": 3,
-                "APRIL": 4,
-                "MAY": 5,
-                "JUNE": 6,
-                "JULY": 7,
-                "AUGUST": 8,
-                "SEPTEMBER": 9,
-                "OCTOBER": 10,
-                "NOVEMBER": 11,
-                "DECEMBER": 12,
-            }
-
             try:
                 day = int(day_txt.strip())
-                month = month_mapping.get(month_txt.strip().upper())
+                month = LD_MONTH_MAPPING.get(month_txt.strip().upper())
                 year = int(year_txt.strip())
 
                 if month is None:
@@ -614,3 +609,138 @@ class LifedomusApi:
             "date": parse_date_element(ret.find("date")),
             "date_reset": parse_date_element(ret.find("date_reset")),
         }
+
+    async def async_get_system_variable(
+        self, *, site_key: str, variable_key: str
+    ) -> bool | date | datetime | int | float | str | None:
+        """Fetch a system variable value from State/GetNewValue.
+
+        Args:
+            site_key: Site key for the request.
+            variable_key: System variable key (e.g., CLSID-SYSTEM-WEB, CLSID-SYSTEM-TIME).
+
+        Returns:
+            The parsed value as int, float, bool, str (ISO 8601 for string TIME, HH:MM for DURATION), datetime (for datetime TIME) or None if unavailable.
+        """
+        returns = await self.async_request(
+            namespace="State",
+            action="GetNewValue",
+            params={
+                "site_key": site_key,
+                "target_key": variable_key,
+                "target_type": "SYSTEM_VARIABLE",
+                "state_clsid": LD_STATE_VALUE,
+                "prop_numr": 0,
+            },
+        )
+
+        if not returns:
+            return None
+
+        ret = returns[0]
+        value_type = self.txt_path(ret, "type")
+        config = LD_CLSID_SYSTEM_VARIABLES.get(variable_key)
+
+        if not config:
+            return None
+
+        if value_type == "BOOLEAN" and config.value_type is bool:
+            value_txt = self.txt_path(ret, "value")
+            return parse_bool(value_txt) if value_txt else None
+
+        if value_type in ("DAY_OF_MONTH", "NUMERIC") and config.value_type in (
+            int,
+            float,
+        ):
+            value_txt = self.txt_path(ret, "value")
+            return (
+                parse_number(value_txt, prefer_int=(config.value_type is int))
+                if value_txt
+                else None
+            )
+
+        if value_type == "TIME":
+            value_el = ret.find("value")
+            if value_el is None:
+                return None
+
+            hour_txt = self.txt_path(value_el, "hour")
+            minute_txt = self.txt_path(value_el, "minute")
+            offset_txt = self.txt_path(value_el, "GMTOffsetInMinute")
+
+            if hour_txt is None or minute_txt is None:
+                return None
+
+            try:
+                hour = int(hour_txt)
+                minute = int(minute_txt)
+
+                # Handle DURATION: return HH:MM string format
+                if config.sensor_class == SensorDeviceClass.DURATION:
+                    return f"{hour:02d}:{minute:02d}"
+
+                # Handle full datetime for timestamp variables
+                if config.value_type is datetime:
+                    if offset_txt is None:
+                        return None
+                    gmt_offset_min = int(offset_txt)
+                    tz_offset = timezone(timedelta(minutes=gmt_offset_min))
+                    return datetime.now(tz=tz_offset).replace(
+                        hour=hour, minute=minute, second=0, microsecond=0
+                    )
+
+                # Handle string TIME format: HH:MM±HH:MM
+                if config.value_type is str:
+                    if offset_txt is None:
+                        return None
+                    gmt_offset_min = int(offset_txt)
+
+                    # Build timezone offset string
+                    offset_hours = abs(gmt_offset_min) // 60
+                    offset_minutes = abs(gmt_offset_min) % 60
+                    offset_sign = "+" if gmt_offset_min >= 0 else "-"
+
+                    return f"{hour:02d}:{minute:02d}{offset_sign}{offset_hours:02d}:{offset_minutes:02d}"
+
+            except (ValueError, OverflowError):
+                return None
+
+        if value_type == "DATE":
+            value_el = ret.find("value")
+            if value_el is None:
+                return None
+
+            day_txt = self.txt_path(value_el, "dayInMonth")
+            month_txt = self.txt_path(value_el, "month")
+            year_txt = self.txt_path(value_el, "year")
+
+            if not day_txt or not month_txt or not year_txt:
+                return None
+
+            try:
+                day = int(day_txt.strip())
+                month = LD_MONTH_MAPPING.get(month_txt.strip().upper())
+                year = int(year_txt.strip())
+
+                if month is None:
+                    return None
+
+                if config.value_type is date:
+                    return date(year, month, day)
+
+            except (ValueError, KeyError):
+                return None
+
+        if value_type == "DAY_OF_WEEK":
+            value_txt = self.txt_path(ret, "value")
+            if not value_txt:
+                return None
+
+            try:
+                day_num = int(value_txt.strip())
+                if config.value_type is str:
+                    return LD_DAY_OF_WEEK_MAPPING.get(day_num)
+            except ValueError:
+                return None
+
+        return None

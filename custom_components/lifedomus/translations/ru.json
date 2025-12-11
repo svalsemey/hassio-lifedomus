@@ -82,6 +82,54 @@
           "partial_arming": "Частично активировано",
           "stop": "Отключено"
         }
+      },
+      "system_var_date": {
+        "name": "Дата"
+      },
+      "system_var_day_of_month": {
+        "name": "День месяца"
+      },
+      "system_var_day_of_week": {
+        "name": "День недели",
+        "state": {
+          "sunday": "Воскресенье",
+          "monday": "Понедельник",
+          "tuesday": "Вторник",
+          "wednesday": "Среда",
+          "thursday": "Четверг",
+          "friday": "Пятница",
+          "saturday": "Суббота"
+        }
+      },
+      "system_var_month": {
+        "name": "Месяц"
+      },
+      "system_var_solar_elevation": {
+        "name": "Высота солнца"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Азимут солнца"
+      },
+      "system_var_time": {
+        "name": "Время"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Солнечный полдень"
+      },
+      "system_var_time_sunlight": {
+        "name": "Продолжительность светового дня"
+      },
+      "system_var_time_sunrise": {
+        "name": "Восход солнца"
+      },
+      "system_var_time_sunset": {
+        "name": "Закат солнца"
+      },
+      "system_var_uptime": {
+        "name": "Время работы"
+      },
+      "system_var_year": {
+        "name": "Год"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Видео-ссылка"
+      },
+      "system_var_web_status": {
+        "name": "Доступ в Интернет"
       }
     }
   }

@@ -82,6 +82,54 @@
           "partial_arming": "一部有効",
           "stop": "無効"
         }
+      },
+      "system_var_date": {
+        "name": "日付"
+      },
+      "system_var_day_of_month": {
+        "name": "月の日"
+      },
+      "system_var_day_of_week": {
+        "name": "曜日",
+        "state": {
+          "sunday": "日曜日",
+          "monday": "月曜日",
+          "tuesday": "火曜日",
+          "wednesday": "水曜日",
+          "thursday": "木曜日",
+          "friday": "金曜日",
+          "saturday": "土曜日"
+        }
+      },
+      "system_var_month": {
+        "name": "月"
+      },
+      "system_var_solar_elevation": {
+        "name": "太陽高度"
+      },
+      "system_var_solar_azimuth": {
+        "name": "太陽方位角"
+      },
+      "system_var_time": {
+        "name": "時刻"
+      },
+      "system_var_time_solarnoon": {
+        "name": "太陽正午"
+      },
+      "system_var_time_sunlight": {
+        "name": "日照時間"
+      },
+      "system_var_time_sunrise": {
+        "name": "日の出"
+      },
+      "system_var_time_sunset": {
+        "name": "日の入り"
+      },
+      "system_var_uptime": {
+        "name": "稼働時間"
+      },
+      "system_var_year": {
+        "name": "年"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "ビデオリンク"
+      },
+      "state_system_var_web_status": {
+        "name": "インターネットアクセス"
       }
     }
   }

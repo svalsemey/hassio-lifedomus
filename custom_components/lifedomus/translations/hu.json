@@ -82,6 +82,54 @@
           "partial_arming": "Részleges élesítés",
           "stop": "Hatástalanítva"
         }
+      },
+      "system_var_date": {
+        "name": "Dátum"
+      },
+      "system_var_day_of_month": {
+        "name": "A hónap napja"
+      },
+      "system_var_day_of_week": {
+        "name": "A hét napja",
+        "state": {
+          "sunday": "Vasárnap",
+          "monday": "Hétfő",
+          "tuesday": "Kedd",
+          "wednesday": "Szerda",
+          "thursday": "Csütörtök",
+          "friday": "Péntek",
+          "saturday": "Szombat"
+        }
+      },
+      "system_var_month": {
+        "name": "Hónap"
+      },
+      "system_var_solar_elevation": {
+        "name": "Napmagasság"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Napazimut"
+      },
+      "system_var_time": {
+        "name": "Idő"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Nap délben"
+      },
+      "system_var_time_sunlight": {
+        "name": "Napfény időtartama"
+      },
+      "system_var_time_sunrise": {
+        "name": "Napkelte"
+      },
+      "system_var_time_sunset": {
+        "name": "Napnyugta"
+      },
+      "system_var_uptime": {
+        "name": "Üzemidő"
+      },
+      "system_var_year": {
+        "name": "Év"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Videó hivatkozás"
+      },
+      "state_system_var_web_status": {
+        "name": "Internetelérés"
       }
     }
   }

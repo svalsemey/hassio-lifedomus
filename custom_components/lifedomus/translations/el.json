@@ -82,6 +82,54 @@
           "partial_arming": "Μερικώς οπλισμένο",
           "stop": "Αφοπλισμένο"
         }
+      },
+      "system_var_date": {
+        "name": "Ημερομηνία"
+      },
+      "system_var_day_of_month": {
+        "name": "Ημέρα του μήνα"
+      },
+      "system_var_day_of_week": {
+        "name": "Ημέρα της εβδομάδας",
+        "state": {
+          "sunday": "Κυριακή",
+          "monday": "Δευτέρα",
+          "tuesday": "Τρίτη",
+          "wednesday": "Τετάρτη",
+          "thursday": "Πέμπτη",
+          "friday": "Παρασκευή",
+          "saturday": "Σάββατο"
+        }
+      },
+      "system_var_month": {
+        "name": "Μήνας"
+      },
+      "system_var_solar_elevation": {
+        "name": "Ηλιακό ύψος"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Ηλιακό αζιμούθιο"
+      },
+      "system_var_time": {
+        "name": "Ώρα"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Ηλιακό μεσημέρι"
+      },
+      "system_var_time_sunlight": {
+        "name": "Διάρκεια ημέρας"
+      },
+      "system_var_time_sunrise": {
+        "name": "Ανατολή"
+      },
+      "system_var_time_sunset": {
+        "name": "Δύση"
+      },
+      "system_var_uptime": {
+        "name": "Χρόνος λειτουργίας"
+      },
+      "system_var_year": {
+        "name": "Έτος"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Σύνδεσμος βίντεο"
+      },
+      "state_system_var_web_status": {
+        "name": "Πρόσβαση στο Διαδίκτυο"
       }
     }
   }

@@ -82,6 +82,54 @@
           "partial_arming": "Certaines zones activées",
           "stop": "Désactivée"
         }
+      },
+      "system_var_date": {
+        "name": "Date"
+      },
+      "system_var_day_of_month": {
+        "name": "Jour du mois"
+      },
+      "system_var_day_of_week": {
+        "name": "Jour de la semaine",
+        "state": {
+          "sunday": "Dimanche",
+          "monday": "Lundi",
+          "tuesday": "Mardi",
+          "wednesday": "Mercredi",
+          "thursday": "Jeudi",
+          "friday": "Vendredi",
+          "saturday": "Samedi"
+        }
+      },
+      "system_var_month": {
+        "name": "Mois"
+      },
+      "system_var_solar_elevation": {
+        "name": "Élévation solaire"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Azimut solaire"
+      },
+      "system_var_time": {
+        "name": "Heure"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Midi solaire"
+      },
+      "system_var_time_sunlight": {
+        "name": "Durée d’ensoleillement"
+      },
+      "system_var_time_sunrise": {
+        "name": "Lever du soleil"
+      },
+      "system_var_time_sunset": {
+        "name": "Coucher du soleil"
+      },
+      "system_var_uptime": {
+        "name": "Temps depuis le démarrage"
+      },
+      "system_var_year": {
+        "name": "Année"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Lien vidéo"
+      },
+      "system_var_web_status": {
+        "name": "Accès à Internet"
       }
     }
   }

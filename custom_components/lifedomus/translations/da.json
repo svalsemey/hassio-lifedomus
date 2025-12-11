@@ -82,6 +82,54 @@
           "partial_arming": "Delvist aktiveret",
           "stop": "Deaktiveret"
         }
+      },
+      "system_var_date": {
+        "name": "Dato"
+      },
+      "system_var_day_of_month": {
+        "name": "Dag i måneden"
+      },
+      "system_var_day_of_week": {
+        "name": "Ugedag",
+        "state": {
+          "sunday": "Søndag",
+          "monday": "Mandag",
+          "tuesday": "Tirsdag",
+          "wednesday": "Onsdag",
+          "thursday": "Torsdag",
+          "friday": "Fredag",
+          "saturday": "Lørdag"
+        }
+      },
+      "system_var_month": {
+        "name": "Måned"
+      },
+      "system_var_solar_elevation": {
+        "name": "Solhøjde"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Solazimut"
+      },
+      "system_var_time": {
+        "name": "Tid"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Solmiddag"
+      },
+      "system_var_time_sunlight": {
+        "name": "Sollysvarighed"
+      },
+      "system_var_time_sunrise": {
+        "name": "Solopgang"
+      },
+      "system_var_time_sunset": {
+        "name": "Solnedgang"
+      },
+      "system_var_uptime": {
+        "name": "Oppetid"
+      },
+      "system_var_year": {
+        "name": "År"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Videolink"
+      },
+      "state_system_var_web_status": {
+        "name": "Internetadgang"
       }
     }
   }

@@ -82,6 +82,54 @@
           "partial_arming": "Частково активовано",
           "stop": "Вимкнено"
         }
+      },
+      "system_var_date": {
+        "name": "Дата"
+      },
+      "system_var_day_of_month": {
+        "name": "День місяця"
+      },
+      "system_var_day_of_week": {
+        "name": "День тижня",
+        "state": {
+          "sunday": "Неділя",
+          "monday": "Понеділок",
+          "tuesday": "Вівторок",
+          "wednesday": "Середа",
+          "thursday": "Четвер",
+          "friday": "П'ятниця",
+          "saturday": "Субота"
+        }
+      },
+      "system_var_month": {
+        "name": "Місяць"
+      },
+      "system_var_solar_elevation": {
+        "name": "Висота сонця"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Азимут сонця"
+      },
+      "system_var_time": {
+        "name": "Час"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Сонячний полудень"
+      },
+      "system_var_time_sunlight": {
+        "name": "Тривалість світлового дня"
+      },
+      "system_var_time_sunrise": {
+        "name": "Схід сонця"
+      },
+      "system_var_time_sunset": {
+        "name": "Захід сонця"
+      },
+      "system_var_uptime": {
+        "name": "Час роботи"
+      },
+      "system_var_year": {
+        "name": "Рік"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Відеопосилання"
+      },
+      "system_var_web_status": {
+        "name": "Доступ до Інтернету"
       }
     }
   }

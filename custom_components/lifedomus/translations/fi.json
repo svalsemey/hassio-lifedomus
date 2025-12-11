@@ -82,6 +82,54 @@
           "partial_arming": "Osittain käytössä",
           "stop": "Poissa käytöstä"
         }
+      },
+      "system_var_date": {
+        "name": "Päivämäärä"
+      },
+      "system_var_day_of_month": {
+        "name": "Kuukauden päivä"
+      },
+      "system_var_day_of_week": {
+        "name": "Viikonpäivä",
+        "state": {
+          "sunday": "Sunnuntai",
+          "monday": "Maanantai",
+          "tuesday": "Tiistai",
+          "wednesday": "Keskiviikko",
+          "thursday": "Torstai",
+          "friday": "Perjantai",
+          "saturday": "Lauantai"
+        }
+      },
+      "system_var_month": {
+        "name": "Kuukausi"
+      },
+      "system_var_solar_elevation": {
+        "name": "Auringon korkeus"
+      },
+      "system_var_solar_azimuth": {
+        "name": "Auringon atsimuutti"
+      },
+      "system_var_time": {
+        "name": "Aika"
+      },
+      "system_var_time_solarnoon": {
+        "name": "Aurinkoaika keskipäivä"
+      },
+      "system_var_time_sunlight": {
+        "name": "Päivänvalon kesto"
+      },
+      "system_var_time_sunrise": {
+        "name": "Auringonnousu"
+      },
+      "system_var_time_sunset": {
+        "name": "Auringonlasku"
+      },
+      "system_var_uptime": {
+        "name": "Käyttöaika"
+      },
+      "system_var_year": {
+        "name": "Vuosi"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "Videolinkki"
+      },
+      "state_system_var_web_status": {
+        "name": "Internet-yhteys"
       }
     }
   }

@@ -22,6 +22,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date, datetime
 import logging
 from typing import Final
 from xml.etree.ElementTree import Element
@@ -46,7 +47,10 @@ from .const import (
     CONF_SITE_KEY,
     DOMAIN,
     LD_CLSID_DEVICE_TYPE_SENSOR,
+    LD_CLSID_SYSTEM_VARIABLES,
     LD_STATE_TRIGGERED,
+    LD_SYSTEM_VAR_WEB_STATUS,
+    MODEL,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .helpers import EntityDependencies, build_device_info, get_update_interval
@@ -457,6 +461,84 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
         self.async_write_ha_state()
 
 
+class LifedomusSystemVariableBinarySensor(BinarySensorEntity):
+    """System variable binary sensor for connectivity status."""
+
+    _attr_should_poll = False
+    _attr_has_entity_name = True
+    _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
+    _attr_translation_key = "state_system_var_web_status"
+    _attr_icon = "mdi:web"
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        api: LifedomusApi,
+        site_key: str,
+        uuid: str,
+        variable_key: str,
+    ) -> None:
+        """Initialize the system variable binary sensor."""
+        super().__init__()
+        self._hass = hass
+        self._api = api
+        self._site_key = site_key
+        self.variable_key = variable_key
+
+        config = LD_CLSID_SYSTEM_VARIABLES[variable_key]
+
+        self._attr_unique_id = f"{uuid}::system::{variable_key}"
+        self._attr_translation_key = config.translation_key
+        self._attr_icon = config.icon
+        self._attr_entity_registry_enabled_default = config.enabled
+
+        if isinstance(config.sensor_class, BinarySensorDeviceClass):
+            self._attr_device_class = config.sensor_class
+
+        self._attr_device_info = build_device_info(
+            device_key=uuid,
+            device_clsid=MODEL,
+            label=MODEL,
+            room_label="",
+            uuid=uuid,
+        )
+
+        self._attr_is_on = None
+
+    def _apply_value(self, value: bool | date | datetime | float | str | None) -> None:
+        """Apply and validate a boolean system variable value."""
+        if isinstance(value, bool):
+            self._attr_is_on = value
+        else:
+            self._attr_is_on = None
+
+    async def async_added_to_hass(self) -> None:
+        """Fetch initial value when entity is added to Home Assistant."""
+        await super().async_added_to_hass()
+        if self.enabled:
+            await self.async_update()
+        self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        """Fetch the current system variable value."""
+        try:
+            value = await self._api.async_get_system_variable(
+                site_key=self._site_key, variable_key=self.variable_key
+            )
+        except LifedomusApiError as err:
+            _LOGGER.warning(
+                "Failed to fetch system variable %s: %s", self.variable_key, err
+            )
+            return
+
+        self._apply_value(value)
+
+    def handle_push_update(self, value: bool | float | str | datetime | None) -> None:
+        """Handle a push notification update for this system variable."""
+        self._apply_value(value)
+        self.async_write_ha_state()
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -503,9 +585,24 @@ async def async_setup_entry(
         if stid in dev.bool_states
     ]
 
+    # Build system variable binary sensor (web status)
+    web_status_sensor = LifedomusSystemVariableBinarySensor(
+        hass,
+        api,
+        str(entry.data.get(CONF_SITE_KEY, "")),
+        str(hass.data[DOMAIN].get("uuid", "")),
+        LD_SYSTEM_VAR_WEB_STATUS,
+    )
+
+    # Store reference for push updates
+    shared = hass.data.setdefault(DOMAIN, {})
+    system_binary_sensors = shared.setdefault("system_binary_sensors", {})
+    system_binary_sensors[LD_SYSTEM_VAR_WEB_STATUS] = web_status_sensor
+
     # Merge into a single list while preserving BinarySensorEntity typing.
     entities: list[BinarySensorEntity] = []
     entities.extend(detector_entities)
     entities.extend(alarm_entities)
+    entities.append(web_status_sensor)
 
     async_add_entities(entities)

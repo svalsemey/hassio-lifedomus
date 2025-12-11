@@ -82,6 +82,54 @@
           "partial_arming": "הפעלה חלקית",
           "stop": "מנוטרל"
         }
+      },
+      "system_var_date": {
+        "name": "תאריך"
+      },
+      "system_var_day_of_month": {
+        "name": "יום בחודש"
+      },
+      "system_var_day_of_week": {
+        "name": "יום בשבוע",
+        "state": {
+          "sunday": "ראשון",
+          "monday": "שני",
+          "tuesday": "שלישי",
+          "wednesday": "רביעי",
+          "thursday": "חמישי",
+          "friday": "שישי",
+          "saturday": "שבת"
+        }
+      },
+      "system_var_month": {
+        "name": "חודש"
+      },
+      "system_var_solar_elevation": {
+        "name": "גובה השמש"
+      },
+      "system_var_solar_azimuth": {
+        "name": "אזימוט שמש"
+      },
+      "system_var_time": {
+        "name": "שעה"
+      },
+      "system_var_time_solarnoon": {
+        "name": "חצות שמש"
+      },
+      "system_var_time_sunlight": {
+        "name": "משך אור יום"
+      },
+      "system_var_time_sunrise": {
+        "name": "זריחה"
+      },
+      "system_var_time_sunset": {
+        "name": "שקיעה"
+      },
+      "system_var_uptime": {
+        "name": "זמן פעילות"
+      },
+      "system_var_year": {
+        "name": "שנה"
       }
     },
     "button": {
@@ -146,6 +194,9 @@
       },
       "state_alarm_warn_link_video": {
         "name": "קישור וידאו"
+      },
+      "state_system_var_web_status": {
+        "name": "גישה לאינטרנט"
       }
     }
   }
