@@ -468,8 +468,6 @@ class LifedomusClimate(ClimateEntity):
 
         try:
             await self.coordinator.api.async_execute_one_action(
-                site_key=self._site_key,
-                user_key=self._user_key,
                 target_key=self._attr_unique_id,
                 prop_clsid=LD_PROP_THERMOSTAT_SETPOINT,
                 action_clsid=LD_ACTION_VALUE,
@@ -523,8 +521,6 @@ class LifedomusClimate(ClimateEntity):
 
         try:
             await self.coordinator.api.async_execute_one_action(
-                site_key=self._site_key,
-                user_key=self._user_key,
                 target_key=self._attr_unique_id,
                 prop_clsid=LD_PROP_THERMOSTAT_SETPOINT_6POS,
                 action_clsid=action,
@@ -544,17 +540,13 @@ class LifedomusClimate(ClimateEntity):
             try:
                 if self._supports_6pos:
                     await self.coordinator.api.async_execute_one_action(
-                        site_key=self._site_key,
-                        user_key=self._user_key,
                         target_key=self._attr_unique_id,
                         prop_clsid=LD_PROP_THERMOSTAT_SETPOINT_6POS,
                         action_clsid=LD_ACTION_SETPOINT_6POS_STOP,
                     )
                 else:
                     await self.coordinator.api.async_execute_one_action(
-                        site_key=self._site_key,
-                        user_key=self._user_key,
-                        target_key=str(self._attr_unique_id),
+                        target_key=self._attr_unique_id,
                         prop_clsid=LD_PROP_THERMOSTAT_STOP,
                         prop_numr=0,
                         action_clsid=LD_ACTION_OFF,

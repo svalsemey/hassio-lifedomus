@@ -216,8 +216,6 @@ class LifedomusCover(CoverEntity):
 
         try:
             await self.coordinator.api.async_execute_one_action(
-                site_key=self._site_key,
-                user_key=self._user_key,
                 target_key=self._attr_unique_id,
                 prop_clsid=LD_PROP_MOTOR_UD,
                 action_clsid=LD_ACTION_UP,
@@ -240,8 +238,6 @@ class LifedomusCover(CoverEntity):
 
         try:
             await self.coordinator.api.async_execute_one_action(
-                site_key=self._site_key,
-                user_key=self._user_key,
                 target_key=self._attr_unique_id,
                 prop_clsid=LD_PROP_MOTOR_UD,
                 action_clsid=LD_ACTION_DOWN,
@@ -260,8 +256,6 @@ class LifedomusCover(CoverEntity):
 
         try:
             await self.coordinator.api.async_execute_one_action(
-                site_key=self._site_key,
-                user_key=self._user_key,
                 target_key=self._attr_unique_id,
                 prop_clsid=LD_PROP_MOTOR_SW_STOP,
                 action_clsid=LD_ACTION_STOP,
@@ -290,8 +284,6 @@ class LifedomusCover(CoverEntity):
 
         try:
             await self.coordinator.api.async_execute_one_action(
-                site_key=self._site_key,
-                user_key=self._user_key,
                 target_key=self._attr_unique_id,
                 prop_clsid=LD_PROP_MOTOR_VA_POS,
                 action_clsid=LD_ACTION_VALUE,

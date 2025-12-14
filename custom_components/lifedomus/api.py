@@ -478,8 +478,6 @@ class LifedomusApi:
     async def async_execute_one_action(
         self,
         *,
-        site_key: str,
-        user_key: str,
         target_key: str,
         prop_clsid: str,
         action_clsid: str,
@@ -491,8 +489,8 @@ class LifedomusApi:
         This helper centralizes the standard payload used across platforms.
         """
         params: dict[str, Any] = {
-            "site_key": site_key,
-            "user_key": user_key,
+            "site_key": self._site_key,
+            "user_key": self._user_key,
             "target_key": self._ensure_valid_device_key(target_key),
             "prop_clsid": prop_clsid,
             "prop_numr": int(prop_numr),

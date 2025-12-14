@@ -155,8 +155,6 @@ class LifedomusPushButton(ButtonEntity):
 
         try:
             await self.coordinator.api.async_execute_one_action(
-                site_key=self._site_key,
-                user_key=self._user_key,
                 target_key=self._attr_unique_id,
                 prop_clsid=self._push_prop_clsid,
                 prop_numr=self._push_prop_numr,
@@ -220,8 +218,6 @@ class LifedomusAlarmActionButton(ButtonEntity):
 
         try:
             await self.coordinator.api.async_execute_one_action(
-                site_key=self._site_key,
-                user_key=self._user_key,
                 target_key=self._device_key,
                 prop_clsid=self._prop_clsid,
                 action_clsid=self._action_clsid,

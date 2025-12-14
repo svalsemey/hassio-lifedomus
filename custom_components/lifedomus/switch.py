@@ -124,8 +124,6 @@ class LifedomusAlarmZoneSwitch(SwitchEntity):
 
         try:
             await self.coordinator.api.async_execute_one_action(
-                site_key=self._site_key,
-                user_key=self._user_key,
                 target_key=self._device_key,
                 prop_clsid=self._prop_zone_sw,
                 action_clsid=action,
