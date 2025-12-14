@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 
 from .api import LifedomusApi
@@ -51,11 +49,6 @@ def build_device_info(
         suggested_area=room_label or None,
         via_device=(DOMAIN, uuid),
     )
-
-
-def get_shared(hass: HomeAssistant) -> dict[str, Any]:
-    """Return the shared integration storage under hass.data[DOMAIN]."""
-    return hass.data.setdefault(DOMAIN, {})
 
 
 def get_update_interval(entry: ConfigEntry) -> timedelta:

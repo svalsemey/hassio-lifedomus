@@ -14,6 +14,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.typing import ConfigType
 
+from .alarm import get_or_create_alarm_coordinator
 from .api import LifedomusApi, LifedomusApiError, LifedomusAuthError
 from .const import (
     CONF_HOST,
@@ -66,7 +67,6 @@ async def async_setup_entry(
     """Set up Lifedomus from a config entry."""
 
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN].setdefault(entry.entry_id, {})
 
     host = entry.data.get(CONF_HOST)
     if not host:
@@ -129,16 +129,20 @@ async def async_setup_entry(
     )
 
     # Store gateway UUID for use by platforms
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN]["uuid"] = uuid
+    shared = hass.data.setdefault(DOMAIN, {})
+    shared["uuid"] = uuid
 
     # Reload the entry whenever options are updated to apply global changes.
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
+    # Ensure the alarm coordinator exists before starting the push monitor.
+    # Push notifications may arrive immediately and must be routed to the right coordinator.
+    await get_or_create_alarm_coordinator(hass, api, entry)
+
     # Start SSH monitoring tunnel (local_push) alongside regular polling.
     monitor = LifedomusMonitor(hass, api, host=str(host))
     await monitor.async_start()
-    hass.data.setdefault(DOMAIN, {})["monitor"] = monitor
+    shared["monitor"] = monitor
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
     return True
@@ -150,7 +154,7 @@ async def async_unload_entry(
     """Unload a config entry."""
 
     # Stop the monitoring tunnel first.
-    shared = hass.data.get(DOMAIN, {})
+    shared = hass.data.setdefault(DOMAIN, {})
     monitor: LifedomusMonitor | None = None
     if isinstance(shared, dict):
         monitor = shared.pop("monitor", None)

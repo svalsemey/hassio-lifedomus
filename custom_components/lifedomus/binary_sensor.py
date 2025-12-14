@@ -566,7 +566,7 @@ async def async_setup_entry(
     shared["alarm_coordinator"] = alarm_coordinator
 
     dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data[DOMAIN].get("uuid", ""))
+        api=api, entry=entry, uuid=str(hass.data.setdefault(DOMAIN, {}).get("uuid", ""))
     )
 
     # Build detector entities via list comprehension.
@@ -590,7 +590,7 @@ async def async_setup_entry(
         hass,
         api,
         str(entry.data.get(CONF_SITE_KEY, "")),
-        str(hass.data[DOMAIN].get("uuid", "")),
+        str(hass.data.setdefault(DOMAIN, {}).get("uuid", "")),
         LD_SYSTEM_VAR_WEB_STATUS,
     )
 

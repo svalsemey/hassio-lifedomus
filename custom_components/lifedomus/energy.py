@@ -14,9 +14,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .api import LifedomusApi, LifedomusApiError
-from .const import CONF_SITE_KEY, LD_CLSID_DEVICE_TYPE_SENSOR_ENERGY
+from .const import CONF_SITE_KEY, DOMAIN, LD_CLSID_DEVICE_TYPE_SENSOR_ENERGY
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import get_shared, get_update_interval
+from .helpers import get_update_interval
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -139,7 +139,7 @@ async def get_or_create_energy_coordinator(
     hass: HomeAssistant, api: LifedomusApi, entry: ConfigEntry
 ) -> LifedomusEnergyCoordinator:
     """Return the shared energy coordinator, creating and refreshing it if missing."""
-    shared = get_shared(hass)
+    shared = hass.data.setdefault(DOMAIN, {})
     coord = shared.get("energy_coordinator")
     if isinstance(coord, LifedomusEnergyCoordinator):
         return coord
@@ -152,7 +152,7 @@ async def get_or_create_energy_coordinator(
         category_clsid=LD_CLSID_DEVICE_TYPE_SENSOR_ENERGY,
         parse_device=_parse_energy_device_element,
     )
-    new_coord = LifedomusEnergyCoordinator(hass, api, cfg, site_key)
-    await new_coord.async_config_entry_first_refresh()
-    shared["energy_coordinator"] = new_coord
-    return new_coord
+    coord = LifedomusEnergyCoordinator(hass, api, cfg, site_key)
+    await coord.async_config_entry_first_refresh()
+    shared["energy_coordinator"] = coord
+    return coord

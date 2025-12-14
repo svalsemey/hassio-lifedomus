@@ -326,7 +326,7 @@ async def async_setup_entry(
     hass.data.setdefault(DOMAIN, {})["cover_coordinator"] = coordinator
 
     dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data[DOMAIN].get("uuid", ""))
+        api=api, entry=entry, uuid=str(hass.data.setdefault(DOMAIN, {}).get("uuid", ""))
     )
 
     entities: list[CoverEntity] = [

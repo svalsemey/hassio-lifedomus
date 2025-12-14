@@ -165,12 +165,10 @@ async def async_setup_entry(
     """Set up Lifedomus alarm zone switches from a config entry."""
     api: LifedomusApi = entry.runtime_data
 
-    shared = hass.data.setdefault(DOMAIN, {})
     coord = await get_or_create_alarm_coordinator(hass, api, entry)
-    shared["alarm_coordinator"] = coord
 
     dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data[DOMAIN].get("uuid", ""))
+        api=api, entry=entry, uuid=str(hass.data.setdefault(DOMAIN, {}).get("uuid", ""))
     )
 
     entities = cast(

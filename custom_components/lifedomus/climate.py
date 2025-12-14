@@ -614,7 +614,7 @@ async def async_setup_entry(
     hass.data.setdefault(DOMAIN, {})["climate_coordinator"] = coordinator
 
     dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data[DOMAIN].get("uuid", ""))
+        api=api, entry=entry, uuid=str(hass.data.setdefault(DOMAIN, {}).get("uuid", ""))
     )
 
     entities: list[ClimateEntity] = [

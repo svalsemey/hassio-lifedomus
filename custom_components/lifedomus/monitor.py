@@ -114,7 +114,7 @@ class LifedomusMonitor:
          - it exposes a dict-like 'data',
          - it implements an async 'async_fetch_device_snapshot(device_key)' coroutine.
         """
-        shared = self._hass.data.get(DOMAIN, {})
+        shared = self._hass.data.setdefault(DOMAIN, {})
         coords: list[_SnapshotCoordinator] = []
         if not isinstance(shared, dict):
             return coords
@@ -136,7 +136,7 @@ class LifedomusMonitor:
 
     def _get_alarm_coordinator(self) -> _SnapshotCoordinator | None:
         """Return the alarm coordinator if available and eligible."""
-        shared = self._hass.data.get(DOMAIN, {})
+        shared = self._hass.data.setdefault(DOMAIN, {})
         if not isinstance(shared, dict):
             return None
         cand = shared.get("alarm_coordinator")
@@ -620,7 +620,7 @@ class LifedomusMonitor:
             variable_key: The system variable key (e.g., CLSID-SYSTEM-WEB).
             root: The XML <State/> element (used for potential future enhancements).
         """
-        shared = self._hass.data.get(DOMAIN, {})
+        shared = self._hass.data.setdefault(DOMAIN, {})
         config = LD_CLSID_SYSTEM_VARIABLES.get(variable_key)
 
         if not config:

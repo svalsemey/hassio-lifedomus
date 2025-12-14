@@ -131,6 +131,32 @@ def _parse_raw_sensor_device_element(
     )
 
 
+async def get_or_create_sensor_coordinator(
+    hass: HomeAssistant, api: LifedomusApi, entry: ConfigEntry
+) -> LdCoordinator[_LdRawSensor]:
+    """Return the shared raw sensor coordinator, creating and refreshing it if missing.
+
+    The raw sensor coordinator manages devices from the "environment measurement"
+    category and is shared across platforms to support targeted refreshes triggered
+    by the SSH monitor.
+    """
+    shared = hass.data.setdefault(DOMAIN, {})
+    coord = shared.get("sensor_coordinator")
+    if isinstance(coord, LdCoordinator):
+        return coord
+
+    cfg = LdCoordinatorConfig[_LdRawSensor](
+        name="Lifedomus sensor coordinator",
+        update_interval=get_update_interval(entry),
+        category_clsid=LD_CLSID_DEVICE_TYPE_SENSOR_ENVIRONMENT,
+        parse_device=_parse_raw_sensor_device_element,
+    )
+    coord: LdCoordinator[_LdRawSensor] = LdCoordinator(hass, api, cfg)
+    await coord.async_config_entry_first_refresh()
+    shared["sensor_coordinator"] = coord
+    return coord
+
+
 class LifedomusRawSensor(SensorEntity):
     """Lifedomus raw sensor entity."""
 
@@ -448,29 +474,19 @@ async def async_setup_entry(
     """Set up the Lifedomus raw sensors platform from a config entry."""
     api: LifedomusApi = entry.runtime_data
     site_key = str(entry.data.get(CONF_SITE_KEY, ""))
-    uuid = str(hass.data[DOMAIN].get("uuid", ""))
+    shared = hass.data.setdefault(DOMAIN, {})
+    uuid = str(shared.get("uuid", ""))
 
-    cfg = LdCoordinatorConfig[_LdRawSensor](
-        name="Lifedomus sensor coordinator",
-        update_interval=get_update_interval(entry),
-        category_clsid=LD_CLSID_DEVICE_TYPE_SENSOR_ENVIRONMENT,
-        parse_device=_parse_raw_sensor_device_element,
-    )
-    coordinator = LdCoordinator(hass, api, cfg)
-    await coordinator.async_config_entry_first_refresh()
-
-    hass.data.setdefault(DOMAIN, {})["sensor_coordinator"] = coordinator
+    sensor_coordinator = await get_or_create_sensor_coordinator(hass, api, entry)
+    shared["sensor_coordinator"] = sensor_coordinator
 
     alarm_coordinator = await get_or_create_alarm_coordinator(hass, api, entry)
-    shared = hass.data.setdefault(DOMAIN, {})
     shared["alarm_coordinator"] = alarm_coordinator
 
     energy_coordinator = await get_or_create_energy_coordinator(hass, api, entry)
     shared["energy_coordinator"] = energy_coordinator
 
-    dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data[DOMAIN].get("uuid", ""))
-    )
+    dependencies = EntityDependencies(api=api, entry=entry, uuid=uuid)
 
     system_sensors = [
         LifedomusSystemVariableSensor(hass, api, site_key, uuid, var_key)
@@ -482,8 +498,8 @@ async def async_setup_entry(
     entities = cast(
         list[SensorEntity],
         [
-            LifedomusRawSensor(coordinator, device, dependencies)
-            for device in coordinator.data.values()
+            LifedomusRawSensor(sensor_coordinator, device, dependencies)
+            for device in sensor_coordinator.data.values()
         ]
         + [
             LifedomusAlarmOperatingModeSensor(alarm_coordinator, device, dependencies)
