@@ -48,6 +48,8 @@ from .const import (
     DOMAIN,
     LD_CLSID_DEVICE_TYPE_SENSOR,
     LD_CLSID_SYSTEM_VARIABLES,
+    LD_DEFAULT_ITEMS_LIMIT,
+    LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED,
     LD_STATE_TRIGGERED,
     LD_SYSTEM_VAR_WEB_STATUS,
     MODEL,
@@ -144,6 +146,42 @@ def _parse_alarm_fault_objects(
         )
 
     return parsed, unknown
+
+
+def _parse_alarm_history_objects(returns: list[Element]) -> list[dict[str, str]]:
+    """Parse alarm history items into attribute-ready dictionaries.
+
+    This helper converts the <return> elements produced by the alarm history request
+    into a list of dictionaries suitable for exposure through entity attributes.
+
+    The 'index' field is intentionally ignored as it is redundant when the result is
+    exposed as a list. Empty or missing values are skipped.
+
+    Args:
+        returns: List of <return> XML elements from the response body.
+
+    Returns:
+        A list of dictionaries where each dictionary contains the non-empty child
+        tags of a single <return> element, excluding 'index'.
+    """
+    parsed: list[dict[str, str]] = []
+
+    for ret in returns:
+        event: dict[str, str] = {}
+        for child in list(ret):
+            tag = child.tag
+            if tag == "index":
+                continue
+            if child.text is None:
+                continue
+            value = child.text.strip()
+            if value:
+                event[tag] = value
+
+        if event:
+            parsed.append(event)
+
+    return parsed
 
 
 def _device_class_from_string(name: str | None) -> BinarySensorDeviceClass | None:
@@ -322,6 +360,9 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
         self._fault_objects: list[dict[str, str | int | None]] = []
         self._fault_lock = asyncio.Lock()
 
+        self._history_events: list[dict[str, str]] = []
+        self._history_lock = asyncio.Lock()
+
         self._attr_unique_id = f"{device.device_key}::{state_clsid}"
         self._attr_translation_key = definition.translation_key
 
@@ -354,30 +395,52 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, object]:
-        """Expose fault attributes parsed from GetAlarmFaultObjectList for supported states.
+        """Expose alarm extra attributes for supported warning states.
 
-        When this sensor is associated with a FAULT label, the following attributes are exposed:
-         - fault_count: number of matching fault objects
-         - fault_objects: list of objects with keys: product_id, product_name, product_type, zone
-        Otherwise, no extra attributes are returned.
+        For alarm warning binary sensors, detailed data is exposed through a single
+        normalized attribute named 'items'. The content depends on the sensor type:
+
+        - Fault-oriented sensors expose parsed objects associated with the current fault.
+        - The unacknowledged events sensor exposes parsed alarm history entries.
+
+        When the binary sensor is not active (state is not True), this property returns
+        an empty list for 'items' without triggering any network operation.
+
+        Returns:
+            A mapping of extra state attributes. For supported sensors, it includes:
+            - items: list of parsed dictionaries representing the detailed objects/events.
         """
-        if not self._fault_label:
-            return {}
-        return {
-            "fault_count": len(self._fault_objects),
-            "fault_objects": list(self._fault_objects),
-        }
+        if self._attr_is_on is True:
+            if self._fault_label:
+                return {"items": list(self._fault_objects)}
+
+            if self._state_clsid == LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED:
+                return {"items": list(self._history_events)}
+
+        return {}
 
     async def _async_refresh_fault_objects(self) -> None:
-        """Fetch and parse fault objects for the associated category and update attributes.
+        """Refresh fault-related objects for the current alarm warning state.
 
-        This method is called on each coordinator update (poll) and whenever the entity state updates.
-        It requires:
-         - a known mapping label for this state,
-         - a resolvable category,
-         - valid site key and alarm access code to authorize the request.
+        When this entity is associated with a fault label and a resolvable fault category,
+        this method queries the gateway for the corresponding fault objects and updates
+        the local cache used for attribute exposure.
+
+        Network access is performed only when the entity state is active (True). If the
+        entity is inactive or required context is missing, the cached objects are cleared
+        to prevent exposing stale data.
+
+        This method schedules a state write after updating the cache.
+
+        Returns:
+            None.
         """
         if not self._fault_label or not self._fault_category:
+            return
+
+        if self._attr_is_on is not True:
+            async with self._fault_lock:
+                self._fault_objects.clear()
             return
 
         # Missing auth context: clear attributes to avoid stale exposure
@@ -397,7 +460,7 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
                         "access_code": self._alarm_code,
                         "category": self._fault_category,
                         "rowIndex": 0,
-                        "count": 7,
+                        "count": LD_DEFAULT_ITEMS_LIMIT,
                     },
                 )
             except LifedomusApiError as err:
@@ -434,9 +497,74 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
             self._fault_objects = parsed
             self.async_write_ha_state()
 
+    async def _async_refresh_unacknowledged_events(self) -> None:
+        """Refresh unacknowledged alarm history events for the alarm device.
+
+        This method fetches the list of unacknowledged alarm history entries and updates
+        the local cache used to populate the 'items' attribute.
+
+        Network access is performed only when the entity state is active (True). If the
+        entity is inactive or required context is missing, the cached events are cleared
+        to prevent exposing stale data.
+
+        The request is performed using the 'UNACKNOWLEDGED' category and a bounded count
+        to limit payload size.
+
+        Returns:
+            None.
+        """
+        if self._state_clsid != LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED:
+            return
+
+        if self._attr_is_on is not True:
+            async with self._history_lock:
+                self._history_events.clear()
+            return
+
+        if not self._site_key or not self._alarm_code or not self._device_key:
+            async with self._history_lock:
+                self._history_events.clear()
+            return
+
+        async with self._history_lock:
+            try:
+                returns = await self._api.async_request(
+                    namespace="Mobile",
+                    action="GetAlarmHistoryObjectList",
+                    params={
+                        "site_key": self._site_key,
+                        "device_key": self._device_key,
+                        "access_code": self._alarm_code,
+                        "category": "UNACKNOWLEDGED",
+                        "rowIndex": 0,
+                        "count": LD_DEFAULT_ITEMS_LIMIT,
+                    },
+                )
+            except LifedomusApiError as err:
+                _LOGGER.debug(
+                    "Failed to fetch unacknowledged alarm history for %s: %s",
+                    self._device_key,
+                    err,
+                )
+                return
+
+            self._history_events = _parse_alarm_history_objects(returns)
+            self.async_write_ha_state()
+
     @callback
     def _handle_coordinator_update(self) -> None:
-        """Handle state update from the coordinator and refresh fault attributes."""
+        """Handle coordinator updates and schedule attribute refresh when needed.
+
+        This callback updates the entity state and icon from the latest coordinator
+        snapshot. For supported warning sensors, it also schedules a background refresh
+        task responsible for fetching additional details (fault objects or alarm history
+        events) only when the entity is active.
+
+        The entity state is written after applying the snapshot update.
+
+        Returns:
+            None.
+        """
         device = self._dev
         if device is not None:
             val = device.bool_states.get(self._state_clsid)
@@ -447,10 +575,24 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
         if self._fault_label and self._fault_category:
             self.hass.async_create_task(self._async_refresh_fault_objects())
 
+        if self._state_clsid == LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED:
+            self.hass.async_create_task(self._async_refresh_unacknowledged_events())
+
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
-        """Register coordinator update listener, publish initial state and refresh faults."""
+        """Register update listeners and trigger initial refresh for supported attributes.
+
+        This method registers the entity as a listener of the shared coordinator and
+        publishes the initial Home Assistant state.
+
+        For supported warning sensors, an initial background refresh is scheduled to
+        populate the cached attribute data. Network access is still conditioned by the
+        current entity state to avoid unnecessary requests.
+
+        Returns:
+            None.
+        """
         await super().async_added_to_hass()
         self.async_on_remove(
             self.coordinator.async_add_listener(self._handle_coordinator_update)
@@ -458,6 +600,9 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
         # Initial fault fetch when supported.
         if self._fault_label and self._fault_category:
             self.hass.async_create_task(self._async_refresh_fault_objects())
+        if self._state_clsid == LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED:
+            self.hass.async_create_task(self._async_refresh_unacknowledged_events())
+
         self.async_write_ha_state()
 
 

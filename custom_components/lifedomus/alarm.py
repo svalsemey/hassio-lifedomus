@@ -25,6 +25,7 @@ from .const import (
     LD_LABEL_FAULT_MONITORING,
     LD_LABEL_FAULT_POWER,
     LD_LABEL_FAULT_SELFPROTECTION,
+    LD_LABEL_FAULT_TECHNICAL,
     LD_PROP_ALARM_EVENTS_ACKNOWLEDGE,
     LD_PROP_ALARM_OPERATINGMODE,
     LD_PROP_ALARM_ZONE_SW,
@@ -64,6 +65,7 @@ ALARM_FAULT_LABEL_TO_CATEGORY: Final[dict[str, str]] = {
     LD_LABEL_FAULT_MONITORING: "OTHERS",
     LD_LABEL_FAULT_POWER: "OTHERS",
     LD_LABEL_FAULT_SELFPROTECTION: "SELF_PROTECTIONS",
+    LD_LABEL_FAULT_TECHNICAL: "OTHERS",
 }
 
 # Icon mapping for alarm operating modes.
@@ -202,7 +204,7 @@ ALARM_BOOL_STATES: Final[dict[str, AlarmBoolDef]] = {
         device_class="problem",
         icon_on="mdi:alert-circle",
         icon_off="mdi:check-circle-outline",
-        fault_label=None,
+        fault_label=LD_LABEL_FAULT_TECHNICAL,
     ),
     LD_STATE_ALARM_WARN_VIDEO_LINK: AlarmBoolDef(
         translation_key="state_alarm_warn_link_video",
