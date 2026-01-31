@@ -296,6 +296,22 @@ class LifedomusApi:
         self._user_key = user_key
         self._password = password
 
+    def _set_session_key(self, session_key: str) -> None:
+        """Validate and store the current session key.
+
+        Args:
+            session_key: The raw session key returned by the gateway.
+
+        Raises:
+            LifedomusApiError: If the provided key does not match the expected format.
+        """
+        cleaned_key = session_key.strip()
+        if not PATTERN_SESSION_KEY.fullmatch(cleaned_key):
+            raise LifedomusApiError(
+                "Invalid session_key format; expected '^[a-z0-9]{40}$'"
+            )
+        self._session_key = cleaned_key
+
     async def async_request(
         self,
         namespace: str,
@@ -319,6 +335,7 @@ class LifedomusApi:
             if (
                 action not in {"Login", "GetNameList"}
                 and "session_key" not in post_params
+                and self._session_key is not None
             ):
                 post_params["session_key"] = self._session_key
 
@@ -400,80 +417,47 @@ class LifedomusApi:
                 ) from err
 
     async def async_refresh_session(self) -> None:
-        """Refresh the session by performing a User/Login call."""
-        # Validate required auth context before performing any network call.
-        missing: list[str] = []
-        if not self._site_key or self._site_key == "None":
-            missing.append("site_key")
-        if not self._user_key or self._user_key == "None":
-            missing.append("user_key")
-        if not self._password or self._password == "None":
-            missing.append("password")
+        """Refresh the session by performing a User/Login call.
 
-        if missing:
-            if len(missing) == 1:
-                missing_str = missing[0]
+        This method validates the authentication context and performs a login request
+        to obtain a new session key. The SOAP request is delegated to async_request()
+        to keep request handling consistent across the client.
+
+        Raises:
+            LifedomusAuthError: If authentication context is missing or if the login fails.
+            LifedomusApiError: If the response does not contain a valid session key.
+        """
+        params: list[str] = []
+        if not self._site_key or self._site_key == "None":
+            params.append("site_key")
+        if not self._user_key or self._user_key == "None":
+            params.append("user_key")
+        if not self._password or self._password == "None":
+            params.append("password")
+
+        if params:
+            if len(params) == 1:
+                missing_str = params[0]
             else:
-                missing_str = ", ".join(missing[:-1]) + f" and {missing[-1]}"
+                missing_str = ", ".join(params[:-1]) + f" and {params[-1]}"
             raise LifedomusAuthError(f"Cannot refresh session: missing {missing_str}")
 
-        namespace = "User"
-        action = "Login"
-
-        params_xml = "".join(
-            f"<{escape(str(k))}>{escape(str(v))}</{escape(str(k))}>"
-            for k, v in {
+        returns = await self.async_request(
+            namespace="User",
+            action="Login",
+            params={
                 "site_key": self._site_key,
                 "user_key": self._user_key,
                 "password": self._password,
-            }.items()
+            },
         )
-
-        resp = await self._session.request(
-            "POST",
-            f"https://{self._host}:{LD_PORT}/DomoBox/{namespace}/{action}",
-            headers=LD_HTTP_HEADERS,
-            data=(
-                f'<soap:Envelope xmlns:soap="{SOAP_NAMESPACE}">'
-                "<soap:Body>"
-                f'<ns2:{escape(action)} xmlns:ns2="http://{namespace}.ws.domoboxbusiness.com/">'
-                f"{params_xml}"
-                f"</ns2:{escape(action)}>"
-                "</soap:Body>"
-                "</soap:Envelope>"
-            ),
-            timeout=self._timeout,
-        )
-        if resp.status != HTTP_RESPONSE_OK:
-            raise LifedomusAuthError(
-                f"Auth failed calling {namespace}/{action} on {self._host} (status {resp.status})"
-            )
-
-        try:
-            root = ET.fromstring(await resp.text())
-            body_el = root.find(f"{{{SOAP_NAMESPACE}}}Body")
-            if body_el is None:
-                raise LifedomusApiError(
-                    f"SOAP Body not found in XML from {namespace}/{action} on {self._host}"
-                )
-            returns = body_el.findall(".//return")
-        except ET.ParseError as err:
-            raise LifedomusApiError(
-                f"Invalid XML from {namespace}/{action} on {self._host}: {err}"
-            ) from err
 
         if not returns or returns[0].text is None:
             raise LifedomusApiError(
-                f"No session_key returned by {namespace}/{action} on {self._host}"
+                f"No session_key returned by User/Login on {self._host}"
             )
 
-        new_key = returns[0].text.strip()
-        if not PATTERN_SESSION_KEY.fullmatch(new_key):
-            raise LifedomusApiError(
-                "Invalid session_key format received from Login; expected '^[a-z0-9]{40}$'"
-            )
-
-        self._session_key = new_key
+        self._set_session_key(returns[0].text)
 
     async def async_execute_one_action(
         self,
