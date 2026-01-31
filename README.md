@@ -29,11 +29,10 @@ It offers zero-configuration discovery, secure local communication, efficient co
 
 ## Installation
 
-### HACS (custom repository)
-1. In HACS, go to Integrations > Three dots (⋮) > Custom repositories.
-2. Add this repository URL: `https://github.com/svalsemey/hassio-lifedomus`
-3. Category: Integration.
-4. Install and restart Home Assistant.
+### HACS
+1. In HACS, go to Integrations.
+2. Search for **Lifedomus**.
+3. Install the integration and restart Home Assistant.
 
 ### Manual
 1. Copy the `custom_components/lifedomus` directory into your Home Assistant `config/custom_components` folder.
