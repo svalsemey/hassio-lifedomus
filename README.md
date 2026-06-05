@@ -1,3 +1,8 @@
+[![HACS Default](https://img.shields.io/badge/HACS-Default-blue?style=flat&logo=homeassistantcommunitystore&logoSize=auto)](https://my.home-assistant.io/redirect/hacs_repository/?owner=svalsemey&repository=hassio-lifedomus&category=plugin)
+[![HACS Passing](https://github.com/svalsemey/hassio-lifedomus/actions/workflows/validate.yml/badge.svg)](https://github.com/svalsemey/hassio-lifedomus/actions/workflows/validate.yml)
+[![Total Downloads](https://img.shields.io/github/downloads/svalsemey/hassio-lifedomus/total.svg)](https://github.com/svalsemey/hassio-lifedomus/releases)
+[![Latest Release Downloads](https://img.shields.io/github/downloads/svalsemey/hassio-lifedomus/latest/total.svg)](https://github.com/svalsemey/hassio-lifedomus/releases/latest)
+
 # Lifedomus for Home Assistant
 
 Integration for the Delta Dore Lifedomus gateway.
@@ -30,6 +35,13 @@ It offers zero-configuration discovery, secure local communication, efficient co
 ## Installation
 
 ### HACS
+
+Use this link to directly go to the repository in HACS
+
+[![Add this integration to Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=svalsemey&repository=hassio-lifedomus&category=integration)
+
+or
+
 1. In HACS, go to Integrations.
 2. Search for **Lifedomus**.
 3. Install the integration and restart Home Assistant.
