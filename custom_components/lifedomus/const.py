@@ -134,36 +134,198 @@ LD_CLSID_DEVICE_TYPE_SENSOR_ENERGY: Final[str] = (
     "CLSID-DEVC-M-CP"
 )
 LD_CLSID_DEVICE_TYPE_SENSOR_ENVIRONMENT: Final[str] = (
-    # "Météo / Capteur Système" in French
+    # "Météo / Capteur Sonde" in French
     "CLSID-DEVC-M-CS"
 )
 LD_CLSID_DEVICE_TYPE_SENSOR: Final[str] = (
-    # "Surveillance / Détecteur" in French
+    # "Sécurité / Détecteur" in French
     "CLSID-DEVC-S-DT"
 )
 LD_CLSID_DEVICE_TYPE_SENSOR_ALARM: Final[str] = (
-    # "Surveillance / Protection" in French
+    # "Sécurité / Protection" in French
     "CLSID-DEVC-S-PR"
 )
 
 
-# --- Known models with device types families ---
+# --- Models with device types families recognized by the gateway ---
+# Note that CLSIDs definitions returned by the gateway are mostly derived from French
+# (e.g. "ÉClairage" for lighting, "MOteur" for motor, "DéTecteur" for detector, etc.)
+# Some of them are not known for now, as I never had the opportunity to check with a
+# gateway that has them configured.
 LD_CLSID_DEVICE_TYPES: Final[dict[str, str]] = {
-    "CLSID-DEVC-A-CC03": "Calybox 1020 WT/2020 WT / RF 6600 FP",  # Thermostat
-    "CLSID-DEVC-A-EC01": "Tyxia 5610/5612/6610",  # On/off light
-    "CLSID-DEVC-A-EC02": "Tyxia 4801/4811/6610",  # On/off light with timer
-    "CLSID-DEVC-A-EC03": "Tyxia 4840/4850/5640/5650",  # Dimmable light
-    "CLSID-DEVC-A-MO09": "Tymoov / Tyxia 5630/5730",  # Motor
-    "CLSID-DEVC-A-PC07": "Tyxia 4620",  # Push button
-    "CLSID-DEVC-M-CP13": "Calybox 2020 WT",  # Energy meter
-    "CLSID-DEVC-M-CS15": "Tysense thermo",  # Temperature probe
-    "CLSID-DEVC-M-CS22": "Tysense sun",  # Solar irradiance
-    "CLSID-DEVC-S-DT01": "Tyxal+ DU",  # Universal detector
-    "CLSID-DEVC-S-DT05": "Tyxal+ DF",  # Flood detector
-    "CLSID-DEVC-S-DT08": "Tyxal+ DFR",  # Smoke detector
-    "CLSID-DEVC-S-DT09": "Tyxal+ DMB / DMBD / DMBE / DMBV / DMDR / DME",  # Motion detector
-    "CLSID-DEVC-S-DT10": "Tyxal+ DO / DOI / DOS / MDO",  # Opening detector
-    "CLSID-DEVC-S-PR08": "Tyxal+ CS 8000",  # Alarm central unit
+    "CLSID-DEVC-A-AV04": "Unknown actuator (type AV04)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV05": "Unknown actuator (type AV05)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV07": "Unknown actuator (type AV07)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV08": "Unknown actuator (type AV08)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV09": "Unknown actuator (type AV09)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV10": "Unknown actuator (type AV10)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV11": "Unknown actuator (type AV11)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV12": "Unknown actuator (type AV12)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV13": "Unknown actuator (type AV13)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV14": "Unknown actuator (type AV14)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV15": "Unknown actuator (type AV15)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV16": "Unknown actuator (type AV16)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV20": "Unknown actuator (type AV20)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV21": "Unknown actuator (type AV21)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV22": "Unknown actuator (type AV22)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV23": "Unknown actuator (type AV23)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV24": "Unknown actuator (type AV24)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-AV25": "Unknown actuator (type AV25)",                    # Actuator ("Audio/Video"?)
+    "CLSID-DEVC-A-CC03": "Calybox 1020 WT/2020 WT / RF 6600 FP",            # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC05": "Unknown climate control device (type 05)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC06": "Unknown climate control device (type 06)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC07": "Unknown climate control device (type 07)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC08": "Unknown climate control device (type 08)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC09": "Unknown climate control device (type 09)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC10": "Unknown climate control device (type 10)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC11": "Siemens thermostat",                              # Actuator ("Climate Control"): thermostat
+    "CLSID-DEVC-A-CC12": "Unknown climate control device (type 12)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC13": "Unknown climate control device (type 13)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC14": "Unknown climate control device (type 14)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC15": "Unknown climate control device (type 15)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-CC16": "Unknown climate control device (type 16)",        # Actuator ("Climate Control")
+    "CLSID-DEVC-A-EC01": "Tyxia 5610/5612/6610",                            # Actuator ("ÉClairage"): On/off light
+    "CLSID-DEVC-A-EC02": "Tyxia 4801/4811/6610",                            # Actuator ("ÉClairage"): On/off light with timer
+    "CLSID-DEVC-A-EC03": "Tyxia 4840/4850/5640/5650",                       # Actuator ("ÉClairage"): Dimmable light
+    "CLSID-DEVC-A-EC04": "Unknown light device (type 04)",                  # Actuator ("ÉClairage"): Unknown light device
+    "CLSID-DEVC-A-EC05": "Unknown light device (type 05)",                  # Actuator ("ÉClairage"): Unknown light device
+    "CLSID-DEVC-A-EC06": "Unknown light device (type 06)",                  # Actuator ("ÉClairage"): Unknown light device
+    "CLSID-DEVC-A-EC07": "Unknown light device (type 07)",                  # Actuator ("ÉClairage"): Unknown light device
+    "CLSID-DEVC-A-EC08": "Unknown light device (type 08)",                  # Actuator ("ÉClairage"): Unknown light device
+    "CLSID-DEVC-A-EC09": "Unknown light device (type 09)",                  # Actuator ("ÉClairage"): Unknown light device
+    "CLSID-DEVC-A-EC10": "Unknown light device (type 10)",                  # Actuator ("ÉClairage"): Unknown light device
+    "CLSID-DEVC-A-MO01": "Unknown motor (type 01)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO04": "Unknown motor (type 04)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO05": "Unknown motor (type 05)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO06": "Unknown motor (type 06)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO07": "Unknown motor (type 07)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO08": "Unknown motor (type 08)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO09": "Tymoov / Tyxia 5630/5730",                        # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO10": "Unknown motor (type 10)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO11": "Unknown motor (type 11)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO12": "Unknown motor (type 12)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO13": "Unknown motor (type 13)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO14": "Unknown motor (type 14)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO15": "Unknown motor (type 15)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO16": "Unknown motor (type 16)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO17": "Unknown motor (type 17)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO18": "Unknown motor (type 18)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-MO19": "Unknown motor (type 19)",                         # Actuator ("MOtor")
+    "CLSID-DEVC-A-PC01": "Unknown command device",                          # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-PC06": "Unknown command device",                          # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-PC07": "Tyxia 4620",                                      # Actuator ("Push Circuit") (on/off)
+    "CLSID-DEVC-A-PC08": "Unknown command device (type 08)",                # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-PC09": "Unknown command device (type 09)",                # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-PC10": "Unknown command device (type 10)",                # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-PC11": "Unknown command device (type 11)",                # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-PC12": "IRTRANS Remote receiver",                         # Actuator ("Push Circuit"): Infrared remote receiver
+    "CLSID-DEVC-A-PC13": "Unknown command device (type 13)",                # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-PC14": "Unknown command device (type 14)",                # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-PC15": "Unknown command device (type 15)",                # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-PC16": "Unknown command device (type 16)",                # Actuator ("Push Circuit")
+    "CLSID-DEVC-A-TE01": "Unknown actuator (type TE01)",                    # Actuator: Unknown device type
+    "CLSID-DEVC-A-TE02": "Unknown actuator (type TE02)",                    # Actuator: Unknown device type
+    "CLSID-DEVC-A-TE03": "Unknown actuator (type TE03)",                    # Actuator: Unknown device type
+    "CLSID-DEVC-A-TE04": "Unknown actuator (type TE04)",                    # Actuator: Unknown device type
+    "CLSID-DEVC-A-UN01": "Unknown actuator (type UN01)",                    # Actuator: Unknown device type
+    "CLSID-DEVC-A-UN02": "Unknown actuator (type UN02)",                    # Actuator: Unknown device type
+    "CLSID-DEVC-A-UN03": "Unknown actuator (type UN03)",                    # Actuator: Unknown device type
+    "CLSID-DEVC-A-UN04": "Unknown actuator (type UN04)",                    # Actuator: Unknown device type
+    "CLSID-DEVC-A-VE03": "Unknown actuator (type VE03)",                    # Actuator ("VEntilation" ?)
+    "CLSID-DEVC-A-VE04": "Unknown actuator (type VE04)",                    # Actuator ("VEntilation" ?)
+    "CLSID-DEVC-A-VE05": "Unknown actuator (type VE05)",                    # Actuator ("VEntilation" ?)
+    "CLSID-DEVC-A-VE06": "Unknown actuator (type VE06)",                    # Actuator ("VEntilation" ?)
+    "CLSID-DEVC-A-VE07": "Unknown actuator (type VE07)",                    # Actuator ("VEntilation" ?)
+    "CLSID-DEVC-E-IO-AI": "Unknown I/O device (analog input)",              # I/O ("Entrée") device
+    "CLSID-DEVC-E-IO-ALM": "Unknown I/O device (alarm)",                    # I/O ("Entrée") device
+    "CLSID-DEVC-E-IO-AO": "Unknown I/O device (analog output)",             # I/O ("Entrée") device
+    "CLSID-DEVC-E-IO-CPT": "Unknown I/O device (counter pulse)",            # I/O ("Entrée") device
+    "CLSID-DEVC-E-IO-DI": "Unknown I/O device (digital input)",             # I/O ("Entrée") device
+    "CLSID-DEVC-E-IO-DO": "Unknown I/O device (digital output)",            # I/O ("Entrée") device
+    "CLSID-DEVC-E-SC01": "Unknown sensor (type SC01)",                      # Input ("Entrée")
+    "CLSID-DEVC-E-SC03": "Unknown sensor (type SC03)",                      # Input ("Entrée")
+    "CLSID-DEVC-E-SC04": "Unknown sensor (type SC04)",                      # Input ("Entrée")
+    "CLSID-DEVC-M-CC01": "Unknown meter (type CC01)",                       # Meter: Unknown device type
+    "CLSID-DEVC-M-CC02": "Unknown meter (type CC02)",                       # Meter: Unknown device type
+    "CLSID-DEVC-M-CC03": "Unknown meter (type CC03)",                       # Meter: Unknown device type
+    "CLSID-DEVC-M-CP04": "Unknown energy meter (type CP04)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP05": "Unknown energy meter (type CP05)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP06": "Unknown energy meter (type CP06)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP07": "Unknown energy meter (type CP07)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP08": "Unknown energy meter (type CP08)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP09": "Unknown energy meter (type CP09)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP10": "Unknown energy meter (type CP10)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP11": "Unknown energy meter (type CP11)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP12": "Unknown energy meter (type CP12)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP13": "Calybox 2020 WT",                                 # Meter: Energy meter
+    "CLSID-DEVC-M-CP14": "Unknown energy meter (type CP14)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CP15": "Unknown energy meter (type CP15)",                # Meter: Unknown energy meter
+    "CLSID-DEVC-M-CS01": "Unknown sensor (type CS01)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS02": "Unknown sensor (type CS02)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS03": "Unknown sensor (type CS03)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS04": "Unknown sensor (type CS04)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS05": "Unknown sensor (type CS05)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS06": "Unknown sensor (type CS06)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS07": "Unknown sensor (type CS07)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS08": "Unknown sensor (type CS08)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS09": "Unknown sensor (type CS09)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS10": "Unknown sensor (type CS10)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS11": "Unknown sensor (type CS11)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS12": "Unknown sensor (type CS12)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS13": "Unknown sensor (type CS13)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS14": "Unknown sensor (type CS14)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS15": "Tysense thermo (type CS15)",                      # Meter: Temperature probe
+    "CLSID-DEVC-M-CS16": "Unknown sensor (type CS16)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS17": "Unknown sensor (type CS17)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS18": "Unknown sensor (type CS18)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS19": "Unknown sensor (type CS19)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS20": "Unknown sensor (type CS20)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS21": "Unknown sensor (type CS21)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS22": "Tysense sun",                                     # Meter: Solar irradiance
+    "CLSID-DEVC-M-CS23": "Unknown sensor (type CS23)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS24": "Unknown sensor (type CS24)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS25": "Unknown sensor (type CS25)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS26": "Unknown sensor (type CS26)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-M-CS27": "Unknown sensor (type CS27)",                      # Meter: Unknown sensor
+    "CLSID-DEVC-S-DT01": "Tyxal+ DU",                                       # Security ("DéTecteur"): Universal detector
+    "CLSID-DEVC-S-DT02": "Unknown detector (type DT02)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT03": "Unknown detector (type DT03)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT04": "Unknown detector (type DT04)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT05": "Tyxal+ DF",                                       # Security ("DéTecteur"): Flood detector
+    "CLSID-DEVC-S-DT06": "Unknown detector (type DT06)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT07": "Unknown detector (type DT07)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT08": "Tyxal+ DFR",                                      # Security ("DéTecteur"): Smoke detector
+    "CLSID-DEVC-S-DT09": "Tyxal+ DMB / DMBD / DMBE / DMBV / DMDR / DME",    # Security ("DéTecteur"): Motion detector
+    "CLSID-DEVC-S-DT10": "Tyxal+ DO / DOI / DOS / MDO",                     # Security ("DéTecteur"): Opening detector
+    "CLSID-DEVC-S-DT11": "Unknown detector (type DT11)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT12": "Unknown detector (type DT12)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT13": "Unknown detector (type DT13)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT14": "Unknown detector (type DT14)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT15": "Unknown detector (type DT15)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT16": "Unknown detector (type DT16)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT17": "Unknown detector (type DT17)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT18": "Unknown detector (type DT18)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT19": "Unknown detector (type DT19)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-DT20": "Unknown detector (type DT20)",                    # Security ("DéTecteur")
+    "CLSID-DEVC-S-LC02": "Unknown security device (type LC02)",             # Security (LC?)
+    "CLSID-DEVC-S-LC03": "Unknown security device (type LC03)",             # Security: Unknown device type
+    "CLSID-DEVC-S-LC04": "Unknown security device (type LC04)",             # Security: Unknown device type
+    "CLSID-DEVC-S-LC05": "Unknown security device (type LC05)",             # Security: Unknown device type
+    "CLSID-DEVC-S-LC06": "Unknown security device (type LC06)",             # Security: Unknown device type
+    "CLSID-DEVC-S-LC07": "Unknown security device (type LC07)",             # Security: Unknown device type
+    "CLSID-DEVC-S-LC08": "Unknown security device (type LC08)",             # Security: Unknown device type
+    "CLSID-DEVC-S-PR02": "Unknown protection device (type PR02)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR04": "Unknown protection device (type PR04)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR05": "Unknown protection device (type PR05)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR06": "Unknown protection device (type PR06)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR07": "Unknown protection device (type PR07)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR09": "Unknown protection device (type PR09)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR10": "Unknown protection device (type PR10)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR11": "Unknown protection device (type PR11)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR08": "Tyxal+ CS 8000",                                  # Security: Alarm central unit
+    "CLSID-DEVC-S-PR09": "Unknown protection device (type PR09)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR10": "Unknown protection device (type PR10)",           # Security ("PRotection")
+    "CLSID-DEVC-S-PR11": "Unknown protection device (type PR11)",           # Security ("PRotection")
 }
 
 # Labels for various alarm faults. Some are probably missing (not found in tested devices).
