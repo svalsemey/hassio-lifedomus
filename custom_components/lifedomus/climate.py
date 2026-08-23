@@ -90,7 +90,7 @@ from .const import (
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, get_update_interval
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies, get_update_interval
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -348,7 +348,7 @@ class LifedomusClimate(ClimateEntity):
             device_clsid=device.device_clsid,
             label=self._attr_name,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         self._supports_generalconst = False
@@ -605,9 +605,7 @@ async def async_setup_entry(
     # Share the coordinator for potential reuse if needed.
     hass.data.setdefault(DOMAIN, {})["climate_coordinator"] = coordinator
 
-    dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data.setdefault(DOMAIN, {}).get("uuid", ""))
-    )
+    dependencies = build_entity_dependencies(hass, api, entry)
 
     entities: list[ClimateEntity] = [
         LifedomusClimate(coordinator, dev, dependencies)

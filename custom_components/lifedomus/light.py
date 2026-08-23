@@ -40,7 +40,7 @@ from .const import (
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, get_update_interval
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies, get_update_interval
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -176,7 +176,7 @@ class _LdBaseLight(LightEntity):
             device_clsid=device.device_clsid,
             label=self._attr_name,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         self._apply_device_snapshot(device)
@@ -392,9 +392,7 @@ async def async_setup_entry(
     # Share the coordinator so the button platform can reuse it.
     hass.data.setdefault(DOMAIN, {})["light_coordinator"] = coordinator
 
-    dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data.setdefault(DOMAIN, {}).get("uuid", ""))
-    )
+    dependencies = build_entity_dependencies(hass, api, entry)
 
     entities: list[LightEntity] = [
         (LifedomusDimmerLight if device.is_dimmer else LifedomusTorLight)(

@@ -35,7 +35,7 @@ from .const import (
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, get_update_interval
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies, get_update_interval
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -122,7 +122,7 @@ class LifedomusPushButton(ButtonEntity):
             device_clsid=device.device_clsid,
             label=self._attr_name,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         # Available only when a PUSH action is known for this device.
@@ -206,7 +206,7 @@ class LifedomusAlarmActionButton(ButtonEntity):
             device_clsid=device.device_clsid,
             label=device.label,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         self._attr_available = self._prop_clsid is not None
@@ -255,9 +255,7 @@ async def async_setup_entry(
     shared["alarm_coordinator"] = alarm_coordinator
     shared["button_coordinator"] = button_coordinator
 
-    dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data.setdefault(DOMAIN, {}).get("uuid", ""))
-    )
+    dependencies = build_entity_dependencies(hass, api, entry)
 
     # Native PUSH buttons
     push_entities: list[ButtonEntity] = [

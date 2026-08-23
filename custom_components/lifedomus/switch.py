@@ -28,11 +28,10 @@ from .const import (
     CONF_ALARM_CODE,
     CONF_SITE_KEY,
     CONF_USER_KEY,
-    DOMAIN,
     LD_ACTION_ALARM_ZONE_DISABLE,
     LD_ACTION_ALARM_ZONE_ENABLE,
 )
-from .helpers import EntityDependencies, build_device_info
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -70,7 +69,7 @@ class LifedomusAlarmZoneSwitch(SwitchEntity):
             device_clsid=device.device_clsid,
             label=device.label,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         # Initial state from coordinator snapshot
@@ -165,9 +164,7 @@ async def async_setup_entry(
 
     coord = await get_or_create_alarm_coordinator(hass, api, entry)
 
-    dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data.setdefault(DOMAIN, {}).get("uuid", ""))
-    )
+    dependencies = build_entity_dependencies(hass, api, entry)
 
     entities = cast(
         list[SwitchEntity],

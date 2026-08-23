@@ -116,8 +116,9 @@ async def async_setup_entry(
     if discovered_name and entry.title != discovered_name:
         hass.config_entries.async_update_entry(entry, title=discovered_name)
 
-    # Register the gateway as a hub device in the device registry
-    dr.async_get(hass).async_get_or_create(
+    # Register the gateway as a hub device and keep its registry id so that
+    # child devices can reference it through via_device_id.
+    hub_device = dr.async_get(hass).async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, uuid)},
         manufacturer=MANUFACTURER,
@@ -128,9 +129,10 @@ async def async_setup_entry(
         configuration_url=f"https://{host}:{LD_PORT}/",
     )
 
-    # Store gateway UUID for use by platforms
+    # Store gateway UUID and hub device registry id for use by platforms
     shared = hass.data.setdefault(DOMAIN, {})
     shared["uuid"] = uuid
+    shared["hub_device_id"] = hub_device.id
 
     # Reload the entry whenever options are updated to apply global changes.
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))

@@ -56,7 +56,7 @@ from .const import (
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .energy import LdEnergyMeter, get_or_create_energy_coordinator
-from .helpers import EntityDependencies, build_device_info, get_update_interval
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies, get_update_interval
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -182,7 +182,7 @@ class LifedomusRawSensor(SensorEntity):
             device_clsid=device.device_clsid,
             label=self._attr_name,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         self._apply_device_snapshot(device)
@@ -253,7 +253,7 @@ class LifedomusAlarmOperatingModeSensor(SensorEntity):
             device_clsid=device.device_clsid,
             label=device.label,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         current_mode: str | None = device.operating_mode
@@ -327,7 +327,7 @@ class LifedomusEnergyMeterSensor(SensorEntity):
             device_clsid=device.device_clsid,
             label=device.label,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         self._apply_device_snapshot(device)
@@ -417,7 +417,6 @@ class LifedomusSystemVariableSensor(SensorEntity):
             device_clsid=MODEL,
             label=MODEL,
             room_label="",
-            uuid=uuid,
         )
 
         self._attr_native_value = None
@@ -486,7 +485,7 @@ async def async_setup_entry(
     energy_coordinator = await get_or_create_energy_coordinator(hass, api, entry)
     shared["energy_coordinator"] = energy_coordinator
 
-    dependencies = EntityDependencies(api=api, entry=entry, uuid=uuid)
+    dependencies = build_entity_dependencies(hass, api, entry)
 
     system_sensors = [
         LifedomusSystemVariableSensor(hass, api, site_key, uuid, var_key)

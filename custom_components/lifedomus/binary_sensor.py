@@ -55,7 +55,7 @@ from .const import (
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, get_update_interval
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies, get_update_interval
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -285,7 +285,7 @@ class LifedomusBinarySensor(BinarySensorEntity):
             device_clsid=device.device_clsid,
             label=self._attr_name,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         self._apply_device_snapshot(device)
@@ -374,7 +374,7 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
             device_clsid=device.device_clsid,
             label=device.label,
             room_label=device.room_label,
-            uuid=dependencies.uuid,
+            via_device_id=dependencies.hub_device_id,
         )
 
         val = device.bool_states.get(state_clsid)
@@ -645,7 +645,6 @@ class LifedomusSystemVariableBinarySensor(BinarySensorEntity):
             device_clsid=MODEL,
             label=MODEL,
             room_label="",
-            uuid=uuid,
         )
 
         self._attr_is_on = None
@@ -710,9 +709,7 @@ async def async_setup_entry(
     alarm_coordinator = await get_or_create_alarm_coordinator(hass, api, entry)
     shared["alarm_coordinator"] = alarm_coordinator
 
-    dependencies = EntityDependencies(
-        api=api, entry=entry, uuid=str(hass.data.setdefault(DOMAIN, {}).get("uuid", ""))
-    )
+    dependencies = build_entity_dependencies(hass, api, entry)
 
     # Build detector entities via list comprehension.
     detector_entities = [
