@@ -31,13 +31,13 @@ from .const import (
     LD_ACTION_OFF,
     LD_ACTION_ON,
     LD_ACTION_VALUE,
-    LD_CLSID_DEVICE_TYPE_ACTUATOR_LIGHT,
     LD_PROP_DIMMER_SW,
     LD_PROP_DIMMER_VA_POS,
     LD_PROP_TOR_SW,
     LD_STATE_LIGHT,
     LD_STATE_POSITION_PERCENTAGE,
     LD_STATE_SOCKET,
+    LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .helpers import EntityDependencies, build_device_info, get_update_interval
@@ -383,7 +383,7 @@ async def async_setup_entry(
     cfg = LdCoordinatorConfig[_LdLightDevice](
         name="Lifedomus light coordinator",
         update_interval=get_update_interval(entry),
-        category_clsid=LD_CLSID_DEVICE_TYPE_ACTUATOR_LIGHT,
+        category_clsid=LdDeviceCategory.ACTUATOR_LIGHT,
         parse_device=_parse_light_device_element,
     )
     coordinator = LdCoordinator(hass, api, cfg)

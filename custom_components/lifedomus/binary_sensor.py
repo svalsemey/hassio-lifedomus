@@ -46,13 +46,13 @@ from .const import (
     CONF_ALARM_CODE,
     CONF_SITE_KEY,
     DOMAIN,
-    LD_CLSID_DEVICE_TYPE_SENSOR,
     LD_CLSID_SYSTEM_VARIABLES,
     LD_DEFAULT_ITEMS_LIMIT,
     LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED,
     LD_STATE_TRIGGERED,
     LD_SYSTEM_VAR_WEB_STATUS,
     MODEL,
+    LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .helpers import EntityDependencies, build_device_info, get_update_interval
@@ -696,7 +696,7 @@ async def async_setup_entry(
     cfg = LdCoordinatorConfig[_LdBinarySensor](
         name="Lifedomus binary sensor coordinator",
         update_interval=get_update_interval(entry),
-        category_clsid=LD_CLSID_DEVICE_TYPE_SENSOR,
+        category_clsid=LdDeviceCategory.SURVEILLANCE_DETECTOR,
         parse_device=_parse_binary_sensor_device_element,
     )
     binary_sensor_coordinator = LdCoordinator(hass, api, cfg)

@@ -43,11 +43,11 @@ from .const import (
     CONF_VERSION,
     DISCOVERY_TIMEOUT_S,
     DOMAIN,
-    LD_CLSID_DEVICE_TYPE_SENSOR_ALARM,
     MANUAL_SELECT_LABEL,
     MANUAL_SELECT_VALUE,
     OPTION_UPDATE_INTERVAL,
     OPTION_UPDATE_INTERVAL_DEFAULT,
+    LdDeviceCategory,
 )
 from .discovery import async_discover_lifedomus
 
@@ -385,7 +385,7 @@ class LifedomusConfigFlow(ConfigFlow, domain=DOMAIN):
                 namespace="Mobile",
                 action="GetDevicesFromCatg",
                 params={
-                    "category_clsid": LD_CLSID_DEVICE_TYPE_SENSOR_ALARM,
+                    "category_clsid": LdDeviceCategory.SURVEILLANCE_PROTECTION,
                 },
             )
         except LifedomusApiError as err:

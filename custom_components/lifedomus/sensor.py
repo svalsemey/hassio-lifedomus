@@ -45,7 +45,6 @@ from .api import LifedomusApi, LifedomusApiError, parse_number
 from .const import (
     CONF_SITE_KEY,
     DOMAIN,
-    LD_CLSID_DEVICE_TYPE_SENSOR_ENVIRONMENT,
     LD_CLSID_SYSTEM_VARIABLES,
     LD_STATE_VALUE,
     LD_VALUE_ALARM_MODE_ARMED_FULL,
@@ -53,6 +52,7 @@ from .const import (
     LD_VALUE_ALARM_MODE_MAINTENANCE,
     LD_VALUE_ALARM_MODE_STOP,
     MODEL,
+    LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .energy import LdEnergyMeter, get_or_create_energy_coordinator
@@ -148,7 +148,7 @@ async def get_or_create_sensor_coordinator(
     cfg = LdCoordinatorConfig[_LdRawSensor](
         name="Lifedomus sensor coordinator",
         update_interval=get_update_interval(entry),
-        category_clsid=LD_CLSID_DEVICE_TYPE_SENSOR_ENVIRONMENT,
+        category_clsid=LdDeviceCategory.MEASURE_SENSOR,
         parse_device=_parse_raw_sensor_device_element,
     )
     coord: LdCoordinator[_LdRawSensor] = LdCoordinator(hass, api, cfg)

@@ -14,7 +14,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .api import LifedomusApi, LifedomusApiError
-from .const import CONF_SITE_KEY, DOMAIN, LD_CLSID_DEVICE_TYPE_SENSOR_ENERGY
+from .const import CONF_SITE_KEY, DOMAIN, LdDeviceCategory
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .helpers import get_update_interval
 
@@ -149,7 +149,7 @@ async def get_or_create_energy_coordinator(
     cfg = LdCoordinatorConfig[LdEnergyMeter](
         name="Lifedomus energy coordinator",
         update_interval=get_update_interval(entry),
-        category_clsid=LD_CLSID_DEVICE_TYPE_SENSOR_ENERGY,
+        category_clsid=LdDeviceCategory.MEASURE_CONSUMPTION,
         parse_device=_parse_energy_device_element,
     )
     coord = LifedomusEnergyCoordinator(hass, api, cfg, site_key)

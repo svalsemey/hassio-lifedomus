@@ -17,7 +17,6 @@ from homeassistant.core import HomeAssistant
 from .api import LifedomusApi, parse_bool
 from .const import (
     DOMAIN,
-    LD_CLSID_DEVICE_TYPE_SENSOR_ALARM,
     LD_LABEL_FAULT_BATTERY,
     LD_LABEL_FAULT_INHIBITION,
     LD_LABEL_FAULT_INTRUSION,
@@ -52,6 +51,7 @@ from .const import (
     LD_VALUE_ALARM_MODE_ARMED_PARTIAL,
     LD_VALUE_ALARM_MODE_MAINTENANCE,
     LD_VALUE_ALARM_MODE_STOP,
+    LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .helpers import get_update_interval
@@ -389,7 +389,7 @@ async def get_or_create_alarm_coordinator(
     cfg = LdCoordinatorConfig[LdAlarmDevice](
         name="Lifedomus alarm coordinator",
         update_interval=get_update_interval(entry),
-        category_clsid=LD_CLSID_DEVICE_TYPE_SENSOR_ALARM,
+        category_clsid=LdDeviceCategory.SURVEILLANCE_PROTECTION,
         parse_device=_parse_alarm_device_element,
     )
     coord = LifedomusAlarmCoordinator(hass, api, cfg)

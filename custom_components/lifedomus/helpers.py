@@ -11,7 +11,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from .api import LifedomusApi
 from .const import (
     DOMAIN,
-    LD_CLSID_DEVICE_TYPES,
+    LD_CLSID_DEVICE_CATEGORIES,
     MANUFACTURER,
     OPTION_UPDATE_INTERVAL,
     OPTION_UPDATE_INTERVAL_DEFAULT,
@@ -31,6 +31,17 @@ class EntityDependencies:
     entry: ConfigEntry
     uuid: str
 
+def _resolve_device_model(device_clsid: str) -> str:
+    """Return the model name for a device type CLSID.
+
+    Device type CLSIDs embed their category CLSID as a prefix, allowing a direct
+    lookup in the nested category mapping. Unknown CLSIDs are returned unchanged
+    so the raw identifier remains visible in the device registry.
+    """
+    for category, types in LD_CLSID_DEVICE_CATEGORIES.items():
+        if device_clsid.startswith(category):
+            return types.get(device_clsid, device_clsid)
+    return device_clsid
 
 def build_device_info(
     *,
@@ -44,7 +55,7 @@ def build_device_info(
     return DeviceInfo(
         identifiers={(DOMAIN, device_key)},
         manufacturer=MANUFACTURER,
-        model=LD_CLSID_DEVICE_TYPES.get(device_clsid, device_clsid),
+        model=_resolve_device_model(device_clsid),
         name=label,
         suggested_area=room_label or None,
         via_device=(DOMAIN, uuid),

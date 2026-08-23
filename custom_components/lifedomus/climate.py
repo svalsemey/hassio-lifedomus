@@ -62,7 +62,6 @@ from .const import (
     LD_ACTION_SETPOINT_6POS_ECO,
     LD_ACTION_SETPOINT_6POS_STOP,
     LD_ACTION_VALUE,
-    LD_CLSID_DEVICE_TYPE_ACTUATOR_CLIMATECONTROL,
     LD_PROP_THERMOSTAT_SETPOINT,
     LD_PROP_THERMOSTAT_SETPOINT_6POS,
     LD_PROP_THERMOSTAT_STOP,
@@ -88,6 +87,7 @@ from .const import (
     LD_VALUE_THERMOSTAT_MAX,
     LD_VALUE_THERMOSTAT_MIN,
     LD_VALUE_THERMOSTAT_STEP,
+    LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .helpers import EntityDependencies, build_device_info, get_update_interval
@@ -596,7 +596,7 @@ async def async_setup_entry(
     cfg = LdCoordinatorConfig[_LdClimateDevice](
         name="Lifedomus climate coordinator",
         update_interval=get_update_interval(entry),
-        category_clsid=LD_CLSID_DEVICE_TYPE_ACTUATOR_CLIMATECONTROL,
+        category_clsid=LdDeviceCategory.ACTUATOR_CLIMATECONTROL,
         parse_device=_parse_climate_device_element,
     )
     coordinator = LdCoordinator(hass, api, cfg)

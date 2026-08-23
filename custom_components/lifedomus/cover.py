@@ -39,11 +39,11 @@ from .const import (
     LD_ACTION_STOP,
     LD_ACTION_UP,
     LD_ACTION_VALUE,
-    LD_CLSID_DEVICE_TYPE_ACTUATOR_MOTOR,
     LD_PROP_MOTOR_SW_STOP,
     LD_PROP_MOTOR_UD,
     LD_PROP_MOTOR_VA_POS,
     LD_STATE_POSITION_PERCENTAGE,
+    LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .helpers import EntityDependencies, build_device_info, get_update_interval
@@ -308,7 +308,7 @@ async def async_setup_entry(
     cfg = LdCoordinatorConfig[_LdCoverDevice](
         name="Lifedomus cover coordinator",
         update_interval=get_update_interval(entry),
-        category_clsid=LD_CLSID_DEVICE_TYPE_ACTUATOR_MOTOR,
+        category_clsid=LdDeviceCategory.ACTUATOR_MOTOR,
         parse_device=_parse_cover_device_element,
     )
     coordinator = LdCoordinator(hass, api, cfg)

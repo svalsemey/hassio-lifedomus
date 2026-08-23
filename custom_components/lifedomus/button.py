@@ -32,7 +32,7 @@ from .const import (
     LD_ACTION_ALARM_FULL_ARMING,
     LD_ACTION_ALARM_STOP,
     LD_ACTION_PUSH,
-    LD_CLSID_DEVICE_TYPE_ACTUATOR_BUTTON,
+    LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .helpers import EntityDependencies, build_device_info, get_update_interval
@@ -243,7 +243,7 @@ async def async_setup_entry(
     cfg = LdCoordinatorConfig[_LdPushButtonDevice](
         name="Lifedomus push button coordinator",
         update_interval=get_update_interval(entry),
-        category_clsid=LD_CLSID_DEVICE_TYPE_ACTUATOR_BUTTON,
+        category_clsid=LdDeviceCategory.ACTUATOR_REMOTE_CONTROL,
         parse_device=_parse_push_button_device_element,
     )
     button_coordinator = LdCoordinator(hass, api, cfg)
