@@ -6,8 +6,10 @@ climate entities.
 
 Two operating modes:
  - Direct setpoint thermostat:
-    - states: CLSID-STATE-AMBIANT-TEMPERATURE (current temperature),
-      CLSID-STATE-SETPOINT-TEMPERATURE (target temperature).
+    - states: current temperature is read from CLSID-STATE-AMBIANT-TEMPERATURE
+      or CLSID-STATE-TEMPERATURE, target temperature from
+      CLSID-STATE-SETPOINT-TEMPERATURE or CLSID-STATE-COMFORT-TEMPERATURE;
+      the reported CLSIDs vary across gateway versions and device types.
     - min/max allowed target range is derived from the action descriptor of
       prop_clsid CLSID-DEVC-PROP-ENVIRONMENTTHERMOSTAT-VA-GENERALCONST.
     - step is 0.5°C.
@@ -16,6 +18,13 @@ Two operating modes:
     - actions on prop_clsid CLSID-DEVC-PROP-ENVIRONMENTTHERMOSTAT-VA-SETPOINT-6POS:
       ANTI-FROST, COMFORT, REDUCED, STOP.
     - STOP maps to HVAC OFF; others map to HVAC HEAT and HW presets.
+Device specifics:
+ - Floor heating devices (CLSID-DEVC-A-CC15) only report the boolean state
+   CLSID-STATE-DEVC-FLOOR-HEATING, which drives the HVAC mode.
+ - Virtual thermostats (CLSID-DEVC-A-CC16) additionally report
+   CLSID-STATE-REGULATION-ON (drives the HVAC mode), CLSID-STATE-THERMOSTAT
+   (drives the HVAC action) and CLSID-STATE-THERMOSTAT-THERM-MODE (exposed as
+   an entity attribute).
 State handling:
  - If a value is missing in states, the entity remains available with unknown
    value (None), consistent with other platforms.
@@ -24,7 +33,7 @@ State handling:
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import html
 import logging
 import re
@@ -39,6 +48,7 @@ from homeassistant.components.climate import (
     PRESET_ECO,
     ClimateEntity,
     ClimateEntityFeature,
+    HVACAction,
     HVACMode,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -76,10 +86,15 @@ from .const import (
     LD_STATE_FLAG_LOAD_SHEDDING,
     LD_STATE_FLAG_PRESENCE,
     LD_STATE_FLAG_TEMPORARY,
+    LD_STATE_FLOOR_HEATING,
+    LD_STATE_REGULATION_ON,
     LD_STATE_SETPOINT_6POS,
+    LD_STATE_TEMPERATURE,
     LD_STATE_TEMPERATURE_AMBIANT,
+    LD_STATE_TEMPERATURE_COMFORT,
     LD_STATE_TEMPERATURE_SETPOINT,
     LD_STATE_THERMOSTAT,
+    LD_STATE_THERMOSTAT_THERM_MODE,
     LD_VALUE_THERMOSTAT_6POS_ANTIFROST,
     LD_VALUE_THERMOSTAT_6POS_COMFORT,
     LD_VALUE_THERMOSTAT_6POS_ECO,
@@ -106,6 +121,17 @@ _6POS_TO_HA_PRESET: Final[dict[str, str]] = {
     LD_VALUE_THERMOSTAT_6POS_ECO: PRESET_ECO,
     LD_VALUE_THERMOSTAT_6POS_STOP: "",  # STOP is handled as HVAC OFF
 }
+# State CLSID groups: the reported CLSIDs vary across device types,
+# so each logical value accepts several aliases.
+AMBIENT_TEMPERATURE_STATES: Final[frozenset[str]] = frozenset(
+    {LD_STATE_TEMPERATURE_AMBIANT, LD_STATE_TEMPERATURE}
+)
+SETPOINT_TEMPERATURE_STATES: Final[frozenset[str]] = frozenset(
+    {LD_STATE_TEMPERATURE_SETPOINT, LD_STATE_TEMPERATURE_COMFORT}
+)
+HEATING_STATES: Final[frozenset[str]] = frozenset(
+    {LD_STATE_THERMOSTAT, LD_STATE_FLOOR_HEATING}
+)
 THERMOSTAT_DIAGNOSTIC_STATES: Final[frozenset[str]] = frozenset(
     {
         LD_STATE_AUTH_HEAT,
@@ -143,8 +169,12 @@ class _LdClimateDevice:
     # Current preset, only for 6POS mode
     preset_raw: str | None
 
-    # Running state for direct setpoint devices
+    # Running state for direct setpoint and floor heating devices
     is_heating: bool | None
+
+    # Regulation flag and raw thermal mode for virtual thermostats
+    regulation_on: bool | None
+    therm_mode: str | None
 
     # Constraints derived from action descriptor
     min_temp: float | None
@@ -156,6 +186,18 @@ class _LdClimateDevice:
     # Availability flag
     available: bool
 
+
+@dataclass(slots=True)
+class _LdClimateStates:
+    """Mutable accumulator for state values parsed from a <device> element."""
+
+    current_temperature: float | None = None
+    target_temperature: float | None = None
+    preset_raw: str | None = None
+    is_heating: bool | None = None
+    regulation_on: bool | None = None
+    therm_mode: str | None = None
+    diagnostic_states: dict[str, bool | None] = field(default_factory=dict)
 
 def _parse_climate_descriptor_limits(
     descriptor_text: str | None,
@@ -218,25 +260,17 @@ def _parse_climate_actions_capabilities(
     return supports_generalconst, supports_6pos, min_temp, max_temp
 
 
-def _parse_climate_states(
-    api: LifedomusApi, dev_el: Element
-) -> tuple[float | None, float | None, str | None, bool | None, dict[str, bool | None]]:
-    """Extract numeric states, preset, heating flag and diagnostic boolean states."""
-    current_temperature: float | None = None
-    target_temperature: float | None = None
-    preset_raw: str | None = None
-    is_heating: bool | None = None
-    diagnostic_states: dict[str, bool | None] = {}
+def _parse_climate_states(api: LifedomusApi, dev_el: Element) -> _LdClimateStates:
+    """Extract temperatures, preset, running flags and diagnostic states.
+
+    Temperature and heating states accept several CLSID aliases; the first
+    non-empty value wins so canonical and variant CLSIDs can coexist safely.
+    """
+    states = _LdClimateStates()
 
     states_el = dev_el.find("./states")
     if states_el is None:
-        return (
-            current_temperature,
-            target_temperature,
-            preset_raw,
-            is_heating,
-            diagnostic_states,
-        )
+        return states
 
     for st_el in states_el.findall("./state"):
         state_clsid = api.txt("state_clsid", st_el)
@@ -245,76 +279,59 @@ def _parse_climate_states(
 
         val_txt = api.txt_path(st_el, "./values/value/value")
 
-        if state_clsid in (LD_STATE_TEMPERATURE_AMBIANT, LD_STATE_TEMPERATURE_SETPOINT):
-            if val_txt is None:
-                continue
-            val = parse_number(val_txt)
-            if state_clsid == LD_STATE_TEMPERATURE_AMBIANT:
-                current_temperature = val
-            else:
-                target_temperature = val
-            continue
-
-        if state_clsid == LD_STATE_SETPOINT_6POS:
+        if state_clsid in AMBIENT_TEMPERATURE_STATES:
+            if states.current_temperature is None:
+                states.current_temperature = parse_number(val_txt)
+        elif state_clsid in SETPOINT_TEMPERATURE_STATES:
+            if states.target_temperature is None:
+                states.target_temperature = parse_number(val_txt)
+        elif state_clsid == LD_STATE_SETPOINT_6POS:
             if val_txt is not None:
-                preset_raw = val_txt.strip().upper() or None
-            continue
-
-        if state_clsid == LD_STATE_THERMOSTAT:
+                states.preset_raw = val_txt.strip().upper() or None
+        elif state_clsid in HEATING_STATES:
             if val_txt is not None:
-                is_heating = parse_bool(val_txt)
-            continue
-
-        if state_clsid in THERMOSTAT_DIAGNOSTIC_STATES:
+                states.is_heating = parse_bool(val_txt)
+        elif state_clsid == LD_STATE_REGULATION_ON:
             if val_txt is not None:
-                diagnostic_states[state_clsid] = parse_bool(val_txt)
-            continue
+                states.regulation_on = parse_bool(val_txt)
+        elif state_clsid == LD_STATE_THERMOSTAT_THERM_MODE:
+            if val_txt is not None:
+                states.therm_mode = val_txt.strip() or None
+        elif state_clsid in THERMOSTAT_DIAGNOSTIC_STATES and val_txt is not None:
+            states.diagnostic_states[state_clsid] = parse_bool(val_txt)
 
-    return (
-        current_temperature,
-        target_temperature,
-        preset_raw,
-        is_heating,
-        diagnostic_states,
-    )
+    return states
 
 
 def _parse_climate_device_element(
     api: LifedomusApi, dev_el: Element
 ) -> _LdClimateDevice | None:
+    """Parse a <device> element returned by GetDevicesFromCatg into a snapshot."""
     device_key = api.txt("device_key", dev_el)
     if not device_key:
         return None
 
-    device_clsid = api.txt("device_clsid", dev_el)
-    label = api.txt("label", dev_el) or device_key
-    room_label = api.txt("room_label", dev_el)
-
     supports_generalconst, supports_6pos, min_temp, max_temp = (
         _parse_climate_actions_capabilities(api, dev_el)
     )
-    (
-        current_temperature,
-        target_temperature,
-        preset_raw,
-        is_heating,
-        diagnostic_states,
-    ) = _parse_climate_states(api, dev_el)
+    states = _parse_climate_states(api, dev_el)
 
     return _LdClimateDevice(
         device_key=device_key,
-        device_clsid=device_clsid,
-        label=label,
-        room_label=room_label,
+        device_clsid=api.txt("device_clsid", dev_el),
+        label=api.txt("label", dev_el) or device_key,
+        room_label=api.txt("room_label", dev_el),
         supports_generalconst=supports_generalconst,
         supports_6pos=supports_6pos,
-        current_temperature=current_temperature,
-        target_temperature=target_temperature,
-        preset_raw=preset_raw,
-        is_heating=is_heating,
+        current_temperature=states.current_temperature,
+        target_temperature=states.target_temperature,
+        preset_raw=states.preset_raw,
+        is_heating=states.is_heating,
+        regulation_on=states.regulation_on,
+        therm_mode=states.therm_mode,
         min_temp=min_temp,
         max_temp=max_temp,
-        diagnostic_states=diagnostic_states,
+        diagnostic_states=states.diagnostic_states,
         available=True,
     )
 
@@ -382,19 +399,34 @@ class LifedomusClimate(ClimateEntity):
 
         # HVAC mode inference:
         # - 6POS: STOP -> OFF, otherwise HEAT.
-        # - Direct setpoint: use boolean CLSID-STATE-THERMOSTAT when available.
+        # - Virtual thermostats: the regulation flag drives the mode.
+        # - Direct setpoint / floor heating: boolean running state.
         if self._supports_6pos:
-            if device.preset_raw == "STOP":
-                self._attr_hvac_mode = HVACMode.OFF
-            else:
-                self._attr_hvac_mode = HVACMode.HEAT
-        elif device.is_heating is True:
-            self._attr_hvac_mode = HVACMode.HEAT
-        elif device.is_heating is False:
-            self._attr_hvac_mode = HVACMode.OFF
+            self._attr_hvac_mode = (
+                HVACMode.OFF
+                if device.preset_raw == LD_VALUE_THERMOSTAT_6POS_STOP
+                else HVACMode.HEAT
+            )
+        elif device.regulation_on is not None:
+            self._attr_hvac_mode = (
+                HVACMode.HEAT if device.regulation_on else HVACMode.OFF
+            )
+        elif device.is_heating is not None:
+            self._attr_hvac_mode = HVACMode.HEAT if device.is_heating else HVACMode.OFF
         else:
             # Fallback when no explicit boolean state is provided
             self._attr_hvac_mode = HVACMode.HEAT
+
+        # HVAC action is only known when both the regulation flag and the
+        # heating demand flag are reported (virtual thermostats).
+        if device.regulation_on is None or device.is_heating is None:
+            self._attr_hvac_action = None
+        elif not device.regulation_on:
+            self._attr_hvac_action = HVACAction.OFF
+        elif device.is_heating:
+            self._attr_hvac_action = HVACAction.HEATING
+        else:
+            self._attr_hvac_action = HVACAction.IDLE
 
         # Preset mode mapping for 6POS devices.
         if self._supports_6pos and device.preset_raw:
@@ -419,19 +451,18 @@ class LifedomusClimate(ClimateEntity):
         self.async_write_ha_state()
 
     @property
-    def extra_state_attributes(self) -> dict[str, bool | None]:
-        """Expose diagnostic FLAG and FAULT states as entity attributes with simplified keys."""
+    def extra_state_attributes(self) -> dict[str, bool | str | None]:
+        """Expose diagnostic FLAG/FAULT states and the raw thermal mode."""
         device = self._dev
         if device is None:
             return {}
 
-        result: dict[str, bool | None] = {}
-        for clsid, value in device.diagnostic_states.items():
-            if clsid.startswith("CLSID-STATE-"):
-                key = clsid[12:]  # Remove "CLSID-STATE-" prefix
-            else:
-                key = clsid
-            result[key.lower().replace("-", "_")] = value
+        result: dict[str, bool | str | None] = {
+            clsid.removeprefix("CLSID-STATE-").lower().replace("-", "_"): value
+            for clsid, value in device.diagnostic_states.items()
+        }
+        if device.therm_mode is not None:
+            result["therm_mode"] = device.therm_mode
         return result
 
     async def async_added_to_hass(self) -> None:
