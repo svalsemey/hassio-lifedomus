@@ -8,6 +8,8 @@
 Integration for the Delta Dore Lifedomus gateway.
 It offers zero-configuration discovery, secure local communication, efficient coordinators, and an SSH-based push monitor for near real-time updates.
 
+> Community project — not affiliated with or endorsed by Delta Dore S.A.
+
 ## Features
 
 - Native config flow with automatic discovery (UDP multicast) and manual host fallback
