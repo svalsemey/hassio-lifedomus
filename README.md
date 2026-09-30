@@ -21,7 +21,7 @@ It offers zero-configuration discovery, secure local communication, efficient co
   - Button: native push buttons and alarm action buttons (Full arming, Stop, Acknowledge events)
   - Climate: thermostats (direct setpoint and 6-position presets)
   - Cover: motors (shutters) with UP/DOWN/STOP and exact position
-  - Light: dimmable and on/off devices
+  - Light: RGBWW LED strips, dimmable and on/off devices
   - Sensor: raw measurement devices and alarm “Operating mode” sensors
   - Switch: alarm zones enable/disable
 - Translations available (en, fr, and many others)
@@ -104,6 +104,7 @@ Abort and error cases are clearly reported (invalid UUID/version, no site/user c
   - Position mapping inverted between HA and Lifedomus (HA 100% open = Lifedomus 0%)
 
 - Light
+  - RGBWW LED strips: switch on `CLSID-DEVC-PROP-LEDRGB-SW`, per-channel levels (R/G/B/CW/WW) via `CLSID-ACTION-VALUE` on `CLSID-DEVC-PROP-LEDRGB-VA-*`
   - Dimmable: value action on `CLSID-DEVC-PROP-DIMMER-VA-POS`
   - On/off: TOR switch on `CLSID-DEVC-PROP-TOR-SW`
 

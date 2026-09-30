@@ -397,6 +397,13 @@ LD_PROP_ALARM_EVENTS_ACKNOWLEDGE: Final[str] = (
 # Property constants for dimmers
 LD_PROP_DIMMER_VA_POS: Final[str] = "CLSID-DEVC-PROP-DIMMER-VA-POS"
 LD_PROP_DIMMER_SW: Final[str] = "CLSID-DEVC-PROP-DIMMER-SW"
+# Property constants for RGB LED strips
+LD_PROP_LEDRGB_SW: Final[str] = "CLSID-DEVC-PROP-LEDRGB-SW"
+LD_PROP_LEDRGB_VA_B: Final[str] = "CLSID-DEVC-PROP-LEDRGB-VA-B"
+LD_PROP_LEDRGB_VA_CW: Final[str] = "CLSID-DEVC-PROP-LEDRGB-VA-CW"
+LD_PROP_LEDRGB_VA_G: Final[str] = "CLSID-DEVC-PROP-LEDRGB-VA-G"
+LD_PROP_LEDRGB_VA_R: Final[str] = "CLSID-DEVC-PROP-LEDRGB-VA-R"
+LD_PROP_LEDRGB_VA_WW: Final[str] = "CLSID-DEVC-PROP-LEDRGB-VA-WW"
 # Property constants for motors (covers/blinds)
 LD_PROP_MOTOR_UD: Final[str] = "CLSID-DEVC-PROP-MOTOR-UD"
 LD_PROP_MOTOR_SW_STOP: Final[str] = "CLSID-DEVC-PROP-MOTOR-SW-STOP"
@@ -540,6 +547,10 @@ LD_STATE_FLOOR_HEATING: Final[str] = (
     # Floor heating running state (true=heating/false=idle)
     "CLSID-STATE-DEVC-FLOOR-HEATING"
 )
+LD_STATE_LED: Final[str] = (
+    # RGB LED strip on/off state (true=on/false=off)
+    "CLSID-STATE-LED"
+)
 LD_STATE_LIGHT: Final[str] = (
     # Used both for lights and dimmers (true=on/off=false)
     "CLSID-STATE-LIGHT"
@@ -594,6 +605,26 @@ LD_STATE_TRIGGERED: Final[str] = (
 LD_STATE_VALUE: Final[str] = (
     # Generic numeric value state
     "CLSID-STATE-VALUE"
+)
+LD_STATE_VALUE_LED_BLUE: Final[str] = (
+    # RGB LED strip blue channel raw level (numeric value 0-255)
+    "CLSID-STATE-VALUE-LED-BLUE"
+)
+LD_STATE_VALUE_LED_COLD_WHITE: Final[str] = (
+    # RGB LED strip cold-white channel raw level (numeric value 0-255)
+    "CLSID-STATE-VALUE-LED-COLD-WHITE"
+)
+LD_STATE_VALUE_LED_GREEN: Final[str] = (
+    # RGB LED strip green channel raw level (numeric value 0-255)
+    "CLSID-STATE-VALUE-LED-GREEN"
+)
+LD_STATE_VALUE_LED_RED: Final[str] = (
+    # RGB LED strip red channel raw level (numeric value 0-255)
+    "CLSID-STATE-VALUE-LED-RED"
+)
+LD_STATE_VALUE_LED_WARM_WHITE: Final[str] = (
+    # RGB LED strip warm-white channel raw level (numeric value 0-255)
+    "CLSID-STATE-VALUE-LED-WARM-WHITE"
 )
 
 
