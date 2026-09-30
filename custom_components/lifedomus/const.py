@@ -536,6 +536,10 @@ LD_STATE_FLAG_TEMPORARY: Final[str] = (
     # Thermostat: temporary mode (true=enabled/false=disabled)
     "CLSID-STATE-FLAG-TEMPORARY"
 )
+LD_STATE_FLOOR_HEATING: Final[str] = (
+    # Floor heating running state (true=heating/false=idle)
+    "CLSID-STATE-DEVC-FLOOR-HEATING"
+)
 LD_STATE_LIGHT: Final[str] = (
     # Used both for lights and dimmers (true=on/off=false)
     "CLSID-STATE-LIGHT"
@@ -543,6 +547,10 @@ LD_STATE_LIGHT: Final[str] = (
 LD_STATE_POSITION_PERCENTAGE: Final[str] = (
     # Used both for dimmers and covers (numeric value 0-100)
     "CLSID-STATE-POSITION-PERCENTAGE"
+)
+LD_STATE_REGULATION_ON: Final[str] = (
+    # Virtual thermostat regulation enabled (true/false)
+    "CLSID-STATE-REGULATION-ON"
 )
 LD_STATE_SETPOINT_6POS: Final[str] = (
     # Thermostat mode (LD_VALUE_THERMOSTAT_6POS_*)
@@ -553,17 +561,31 @@ LD_STATE_SOCKET: Final[str] = (
     # Same as on/off light but is identified as a socket (true=on/off=false)
     "CLSID-STATE-SOCKET"
 )
+LD_STATE_TEMPERATURE: Final[str] = (
+    # Ambiant current temperature; variant of CLSID-STATE-AMBIANT-TEMPERATURE
+    # reported by some gateway versions and by virtual thermostats
+    "CLSID-STATE-TEMPERATURE"
+)
 LD_STATE_TEMPERATURE_AMBIANT: Final[str] = (
     # Ambiant current temperature provided by sensor (numeric value with step of 0.5 °C)
     "CLSID-STATE-AMBIANT-TEMPERATURE"
+)
+LD_STATE_TEMPERATURE_COMFORT: Final[str] = (
+    # Thermostat target temperature; variant of CLSID-STATE-SETPOINT-TEMPERATURE
+    # reported by some gateway versions and by virtual thermostats
+    "CLSID-STATE-COMFORT-TEMPERATURE"
 )
 LD_STATE_TEMPERATURE_SETPOINT: Final[str] = (
     # Thermostat target temperature (numeric value with step of 0.5 °C)
     "CLSID-STATE-SETPOINT-TEMPERATURE"
 )
 LD_STATE_THERMOSTAT: Final[str] = (
-    # Ambient current temperature provided by thermostat (numeric value with step of 0.1 °C)
+    # Thermostat working state (true=on/off=false)
     "CLSID-STATE-THERMOSTAT"
+)
+LD_STATE_THERMOSTAT_THERM_MODE: Final[str] = (
+    # Virtual thermostat thermal mode (raw text value)
+    "CLSID-STATE-THERMOSTAT-THERM-MODE"
 )
 LD_STATE_TRIGGERED: Final[str] = (
     # Triggered sensor - Note: spelling as returned by Lifedomus XML
