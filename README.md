@@ -2,6 +2,7 @@
 [![HACS Passing](https://github.com/svalsemey/hassio-lifedomus/actions/workflows/validate.yml/badge.svg)](https://github.com/svalsemey/hassio-lifedomus/actions/workflows/validate.yml)
 [![Total Downloads](https://img.shields.io/github/downloads/svalsemey/hassio-lifedomus/total.svg)](https://github.com/svalsemey/hassio-lifedomus/releases)
 [![Latest Release Downloads](https://img.shields.io/github/downloads/svalsemey/hassio-lifedomus/latest/total.svg)](https://github.com/svalsemey/hassio-lifedomus/releases/latest)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-orange?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/sebastien_valsemey)
 
 # Lifedomus for Home Assistant
 
