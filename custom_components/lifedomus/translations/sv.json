@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Upptäck Lifedomus-gateways",
         "description": "Välj en gateway eller ange en värd manuellt.",
         "data": {
-          "host": "Värd"
+          "host": "Gateway"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Larmkod",
           "clear_alarm_code": "Rensa sparad larmkod"
         }
+      },
+      "reauth_confirm": {
+        "title": "Autentisera igen",
+        "description": "Gatewayen på {host} avvisade det sparade lösenordet. Ange det aktuella lösenordet för den konfigurerade användaren.",
+        "data": {
+          "password": "Lösenord"
+        }
+      },
+      "reconfigure": {
+        "title": "Omkonfigurera gatewayen",
+        "description": "Ange gatewayens aktuella värd (IP-adress eller värdnamn). Larmkoden kan granskas i nästa steg.",
+        "data": {
+          "host": "Värd"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Larmkoden avvisades av gatewayen.",
       "cannot_connect": "Det gick inte att ansluta till gatewayen.",
-      "invalid_auth": "Ogiltig autentisering.",
       "invalid_alarm_code": "Ogiltig larmkod (6 siffror krävs).",
-      "unknown": "Okänt fel."
+      "invalid_auth": "Ogiltig autentisering.",
+      "no_site_configured": "Ingen plats konfigurerad på denna gateway."
     },
     "abort": {
-      "invalid_uuid": "Det gick inte att hämta gateway-UUID.",
-      "invalid_version": "Det gick inte att hämta gateway-versionen.",
-      "no_site_configured": "Ingen plats konfigurerad på denna gateway.",
+      "already_configured": "Denna plats är redan konfigurerad.",
+      "cannot_connect": "Det gick inte att ansluta till gatewayen.",
       "no_user_configured": "Ingen användare konfigurerad för denna plats.",
-      "reconfigure_successful": "Omkonfiguration slutförd. Posten uppdaterades."
+      "reauth_successful": "Omautentisering slutförd.",
+      "reconfigure_successful": "Omkonfiguration slutförd. Posten uppdaterades.",
+      "unique_id_mismatch": "Värden leder inte till gatewayen och platsen för denna post.",
+      "unknown": "Okänt fel."
     }
   },
   "options": {

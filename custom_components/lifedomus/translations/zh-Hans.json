@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "发现 Lifedomus 网关",
         "description": "选择一个网关，或手动输入主机。",
         "data": {
-          "host": "主机"
+          "host": "网关"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "报警代码",
           "clear_alarm_code": "清除已保存的报警代码"
         }
+      },
+      "reauth_confirm": {
+        "title": "重新验证身份",
+        "description": "位于 {host} 的网关拒绝了已保存的密码。请输入已配置用户的当前密码。",
+        "data": {
+          "password": "密码"
+        }
+      },
+      "reconfigure": {
+        "title": "重新配置网关",
+        "description": "输入网关当前的主机（IP 地址或主机名）。报警代码可在下一步中查看。",
+        "data": {
+          "host": "主机"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "报警代码被网关拒绝。",
       "cannot_connect": "无法连接到网关。",
-      "invalid_auth": "无效的身份验证。",
       "invalid_alarm_code": "无效的报警代码（需要 6 位数字）。",
-      "unknown": "未知错误。"
+      "invalid_auth": "无效的身份验证。",
+      "no_site_configured": "此网关上未配置任何站点。"
     },
     "abort": {
-      "invalid_uuid": "无法获取网关 UUID。",
-      "invalid_version": "无法获取网关版本。",
-      "no_site_configured": "此网关上未配置任何站点。",
+      "already_configured": "此站点已配置。",
+      "cannot_connect": "无法连接到网关。",
       "no_user_configured": "此站点未配置任何用户。",
-      "reconfigure_successful": "重新配置完成。条目已更新。"
+      "reauth_successful": "重新验证身份已完成。",
+      "reconfigure_successful": "重新配置完成。条目已更新。",
+      "unique_id_mismatch": "该主机无法连接到此条目的网关和站点。",
+      "unknown": "未知错误。"
     }
   },
   "options": {
@@ -165,7 +181,7 @@
         "name": "电池状态"
       },
       "state_alarm_warn_removal_doubt": {
-        "name": "拆除可疑"
+        "name": "疑似拆除"
       },
       "state_alarm_warn_products_inhibited": {
         "name": "已禁用产品"

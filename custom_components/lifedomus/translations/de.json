@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Lifedomus-Gateways entdecken",
         "description": "Wählen Sie ein Gateway aus oder geben Sie den Host manuell ein.",
         "data": {
-          "host": "Host"
+          "host": "Gateway"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Alarmcode",
           "clear_alarm_code": "Gespeicherten Alarmcode löschen"
         }
+      },
+      "reauth_confirm": {
+        "title": "Erneut authentifizieren",
+        "description": "Das Gateway unter {host} hat das gespeicherte Passwort abgelehnt. Geben Sie das aktuelle Passwort des konfigurierten Benutzers ein.",
+        "data": {
+          "password": "Passwort"
+        }
+      },
+      "reconfigure": {
+        "title": "Gateway neu konfigurieren",
+        "description": "Geben Sie den aktuellen Host (IP-Adresse oder Hostname) des Gateways ein. Der Alarmcode kann im nächsten Schritt überprüft werden.",
+        "data": {
+          "host": "Host"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Der Alarmcode wurde vom Gateway abgelehnt.",
       "cannot_connect": "Verbindung zum Gateway fehlgeschlagen.",
-      "invalid_auth": "Ungültige Authentifizierung.",
       "invalid_alarm_code": "Ungültiger Alarmcode (6 Ziffern erforderlich).",
-      "unknown": "Unbekannter Fehler."
+      "invalid_auth": "Ungültige Authentifizierung.",
+      "no_site_configured": "Auf diesem Gateway ist kein Standort konfiguriert."
     },
     "abort": {
-      "invalid_uuid": "Die Gateway-UUID konnte nicht abgerufen werden.",
-      "invalid_version": "Die Gateway-Version konnte nicht abgerufen werden.",
-      "no_site_configured": "Auf diesem Gateway ist kein Standort konfiguriert.",
+      "already_configured": "Dieser Standort ist bereits konfiguriert.",
+      "cannot_connect": "Verbindung zum Gateway fehlgeschlagen.",
       "no_user_configured": "Für diesen Standort ist kein Benutzer konfiguriert.",
-      "reconfigure_successful": "Neukonfiguration abgeschlossen. Der Eintrag wurde aktualisiert."
+      "reauth_successful": "Erneute Authentifizierung abgeschlossen.",
+      "reconfigure_successful": "Neukonfiguration abgeschlossen. Der Eintrag wurde aktualisiert.",
+      "unique_id_mismatch": "Der Host führt nicht zum Gateway und Standort dieses Eintrags.",
+      "unknown": "Unbekannter Fehler."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Videolink"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Internetzugang"
       }
     }

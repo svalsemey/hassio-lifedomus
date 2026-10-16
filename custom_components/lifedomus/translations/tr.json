@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Lifedomus ağ geçitlerini keşfet",
         "description": "Bir ağ geçidi seçin veya bir ana bilgisayarı manuel olarak girin.",
         "data": {
-          "host": "Ana bilgisayar"
+          "host": "Ağ geçidi"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Alarm kodu",
           "clear_alarm_code": "Kaydedilmiş alarm kodunu temizle"
         }
+      },
+      "reauth_confirm": {
+        "title": "Yeniden kimlik doğrulama",
+        "description": "{host} adresindeki ağ geçidi kaydedilmiş parolayı reddetti. Yapılandırılmış kullanıcının geçerli parolasını girin.",
+        "data": {
+          "password": "Parola"
+        }
+      },
+      "reconfigure": {
+        "title": "Ağ geçidini yeniden yapılandır",
+        "description": "Ağ geçidinin geçerli ana bilgisayarını (IP adresi veya ana bilgisayar adı) girin. Alarm kodu bir sonraki adımda gözden geçirilebilir.",
+        "data": {
+          "host": "Ana bilgisayar"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Alarm kodu ağ geçidi tarafından reddedildi.",
       "cannot_connect": "Ağ geçidine bağlanılamadı.",
-      "invalid_auth": "Geçersiz kimlik doğrulama.",
       "invalid_alarm_code": "Geçersiz alarm kodu (6 hane gerekli).",
-      "unknown": "Bilinmeyen hata."
+      "invalid_auth": "Geçersiz kimlik doğrulama.",
+      "no_site_configured": "Bu ağ geçidinde yapılandırılmış bir site yok."
     },
     "abort": {
-      "invalid_uuid": "Ağ geçidi UUID'si alınamadı.",
-      "invalid_version": "Ağ geçidi sürümü alınamadı.",
-      "no_site_configured": "Bu ağ geçidinde yapılandırılmış bir site yok.",
+      "already_configured": "Bu site zaten yapılandırılmış.",
+      "cannot_connect": "Ağ geçidine bağlanılamadı.",
       "no_user_configured": "Bu site için yapılandırılmış kullanıcı yok.",
-      "reconfigure_successful": "Yeniden yapılandırma tamamlandı. Girdi güncellendi."
+      "reauth_successful": "Yeniden kimlik doğrulama tamamlandı.",
+      "reconfigure_successful": "Yeniden yapılandırma tamamlandı. Girdi güncellendi.",
+      "unique_id_mismatch": "Ana bilgisayar bu girdinin ağ geçidine ve sitesine ulaşmıyor.",
+      "unknown": "Bilinmeyen hata."
     }
   },
   "options": {

@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Lifedomus átjárók felderítése",
         "description": "Válasszon egy átjárót, vagy adja meg a hostot manuálisan.",
         "data": {
-          "host": "Host"
+          "host": "Átjáró"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Riasztókód",
           "clear_alarm_code": "Mentett riasztókód törlése"
         }
+      },
+      "reauth_confirm": {
+        "title": "Újrahitelesítés",
+        "description": "A(z) {host} címen lévő átjáró elutasította a mentett jelszót. Adja meg a konfigurált felhasználó jelenlegi jelszavát.",
+        "data": {
+          "password": "Jelszó"
+        }
+      },
+      "reconfigure": {
+        "title": "Az átjáró újrakonfigurálása",
+        "description": "Adja meg az átjáró jelenlegi hostját (IP-cím vagy hostnév). A riasztókód a következő lépésben tekinthető át.",
+        "data": {
+          "host": "Host"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Az átjáró elutasította a riasztókódot.",
       "cannot_connect": "Nem sikerült csatlakozni az átjáróhoz.",
-      "invalid_auth": "Érvénytelen hitelesítés.",
       "invalid_alarm_code": "Érvénytelen riasztókód (6 számjegy szükséges).",
-      "unknown": "Ismeretlen hiba."
+      "invalid_auth": "Érvénytelen hitelesítés.",
+      "no_site_configured": "Ezen az átjárón nincs konfigurált helyszín."
     },
     "abort": {
-      "invalid_uuid": "Nem sikerült lekérni az átjáró UUID-ját.",
-      "invalid_version": "Nem sikerült lekérni az átjáró verzióját.",
-      "no_site_configured": "Ezen az átjárón nincs konfigurált helyszín.",
+      "already_configured": "Ez a helyszín már konfigurálva van.",
+      "cannot_connect": "Nem sikerült csatlakozni az átjáróhoz.",
       "no_user_configured": "Ehhez a helyszínhez nincs konfigurált felhasználó.",
-      "reconfigure_successful": "Újrakonfigurálás befejeződött. A bejegyzés frissítve lett."
+      "reauth_successful": "Az újrahitelesítés befejeződött.",
+      "reconfigure_successful": "Újrakonfigurálás befejeződött. A bejegyzés frissítve lett.",
+      "unique_id_mismatch": "A host nem ehhez a bejegyzéshez tartozó átjáróhoz és helyszínhez vezet.",
+      "unknown": "Ismeretlen hiba."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Videó hivatkozás"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Internetelérés"
       }
     }

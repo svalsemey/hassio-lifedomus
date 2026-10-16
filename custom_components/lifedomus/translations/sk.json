@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Zistiť brány Lifedomus",
         "description": "Vyberte bránu alebo zadajte hostiteľa manuálne.",
         "data": {
-          "host": "Hostiteľ"
+          "host": "Brána"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Kód alarmu",
           "clear_alarm_code": "Vymazať uložený kód alarmu"
         }
+      },
+      "reauth_confirm": {
+        "title": "Opätovné overenie",
+        "description": "Brána na {host} odmietla uložené heslo. Zadajte aktuálne heslo nakonfigurovaného používateľa.",
+        "data": {
+          "password": "Heslo"
+        }
+      },
+      "reconfigure": {
+        "title": "Rekonfigurovať bránu",
+        "description": "Zadajte aktuálneho hostiteľa (IP adresu alebo názov) brány. Kód alarmu môžete skontrolovať v ďalšom kroku.",
+        "data": {
+          "host": "Hostiteľ"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Kód alarmu bol bránou odmietnutý.",
       "cannot_connect": "Nepodarilo sa pripojiť k bráne.",
-      "invalid_auth": "Neplatné overenie.",
       "invalid_alarm_code": "Neplatný kód alarmu (vyžaduje sa 6 číslic).",
-      "unknown": "Neznáma chyba."
+      "invalid_auth": "Neplatné overenie.",
+      "no_site_configured": "Na tejto bráne nie je nakonfigurovaná žiadna lokalita."
     },
     "abort": {
-      "invalid_uuid": "Nepodarilo sa získať UUID brány.",
-      "invalid_version": "Nepodarilo sa získať verziu brány.",
-      "no_site_configured": "Na tejto bráne nie je nakonfigurovaná žiadna lokalita.",
+      "already_configured": "Táto lokalita je už nakonfigurovaná.",
+      "cannot_connect": "Nepodarilo sa pripojiť k bráne.",
       "no_user_configured": "Pre túto lokalitu nie je nakonfigurovaný používateľ.",
-      "reconfigure_successful": "Rekonfigurácia dokončená. Položka bola aktualizovaná."
+      "reauth_successful": "Opätovné overenie dokončené.",
+      "reconfigure_successful": "Rekonfigurácia dokončená. Položka bola aktualizovaná.",
+      "unique_id_mismatch": "Hostiteľ nevedie k bráne a lokalite tejto položky.",
+      "unknown": "Neznáma chyba."
     }
   },
   "options": {

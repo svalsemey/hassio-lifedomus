@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Detectați gateway-urile Lifedomus",
         "description": "Selectați un gateway sau introduceți manual un host.",
         "data": {
-          "host": "Gazdă"
+          "host": "Gateway"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Cod alarmă",
           "clear_alarm_code": "Șterge codul de alarmă salvat"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reautentificare",
+        "description": "Gateway-ul de la {host} a refuzat parola salvată. Introduceți parola curentă a utilizatorului configurat.",
+        "data": {
+          "password": "Parolă"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurați gateway-ul",
+        "description": "Introduceți gazda curentă (adresa IP sau numele) gateway-ului. Codul de alarmă poate fi revizuit în pasul următor.",
+        "data": {
+          "host": "Gazdă"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Codul de alarmă a fost refuzat de gateway.",
       "cannot_connect": "Conectarea la gateway a eșuat.",
-      "invalid_auth": "Autentificare invalidă.",
       "invalid_alarm_code": "Cod de alarmă invalid (sunt necesare 6 cifre).",
-      "unknown": "Eroare necunoscută."
+      "invalid_auth": "Autentificare invalidă.",
+      "no_site_configured": "Niciun site configurat pe acest gateway."
     },
     "abort": {
-      "invalid_uuid": "UUID-ul gateway-ului nu a putut fi preluat.",
-      "invalid_version": "Versiunea gateway-ului nu a putut fi preluată.",
-      "no_site_configured": "Niciun site configurat pe acest gateway.",
+      "already_configured": "Acest site este deja configurat.",
+      "cannot_connect": "Conectarea la gateway a eșuat.",
       "no_user_configured": "Niciun utilizator configurat pentru acest site.",
-      "reconfigure_successful": "Reconfigurare finalizată. Intrarea a fost actualizată."
+      "reauth_successful": "Reautentificare finalizată.",
+      "reconfigure_successful": "Reconfigurare finalizată. Intrarea a fost actualizată.",
+      "unique_id_mismatch": "Gazda nu duce la gateway-ul și site-ul acestei intrări.",
+      "unknown": "Eroare necunoscută."
     }
   },
   "options": {

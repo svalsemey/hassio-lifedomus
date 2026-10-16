@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Zaznaj prehode Lifedomus",
         "description": "Izberite prehod ali ročno vnesite gostitelja.",
         "data": {
-          "host": "Gostitelj"
+          "host": "Prehod"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Alarmna koda",
           "clear_alarm_code": "Izbriši shranjeno alarmno kodo"
         }
+      },
+      "reauth_confirm": {
+        "title": "Ponovna avtentikacija",
+        "description": "Prehod na {host} je zavrnil shranjeno geslo. Vnesite trenutno geslo konfiguriranega uporabnika.",
+        "data": {
+          "password": "Geslo"
+        }
+      },
+      "reconfigure": {
+        "title": "Ponovno konfiguriraj prehod",
+        "description": "Vnesite trenutnega gostitelja (IP naslov ali ime gostitelja) prehoda. Alarmno kodo lahko pregledate v naslednjem koraku.",
+        "data": {
+          "host": "Gostitelj"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Alarmna koda je bila zavrnjena s strani prehoda.",
       "cannot_connect": "Povezava s prehodom ni uspela.",
-      "invalid_auth": "Neveljavna avtentikacija.",
       "invalid_alarm_code": "Neveljavna alarmna koda (zahtevano 6 številk).",
-      "unknown": "Neznana napaka."
+      "invalid_auth": "Neveljavna avtentikacija.",
+      "no_site_configured": "Na tem prehodu ni konfiguriranega mesta."
     },
     "abort": {
-      "invalid_uuid": "Ni bilo mogoče pridobiti UUID prehoda.",
-      "invalid_version": "Ni bilo mogoče pridobiti različice prehoda.",
-      "no_site_configured": "Na tem prehodu ni konfiguriranega mesta.",
+      "already_configured": "To mesto je že konfigurirano.",
+      "cannot_connect": "Povezava s prehodom ni uspela.",
       "no_user_configured": "Za to mesto ni konfiguriran uporabnik.",
-      "reconfigure_successful": "Ponovna konfiguracija končana. Vnos je bil posodobljen."
+      "reauth_successful": "Ponovna avtentikacija končana.",
+      "reconfigure_successful": "Ponovna konfiguracija končana. Vnos je bil posodobljen.",
+      "unique_id_mismatch": "Gostitelj ne vodi do prehoda in mesta tega vnosa.",
+      "unknown": "Neznana napaka."
     }
   },
   "options": {
@@ -119,7 +135,7 @@
         "name": "Čas"
       },
       "system_var_time_solarnoon": {
-        "name": "Sončni poldne"
+        "name": "Sončno poldne"
       },
       "system_var_time_sunlight": {
         "name": "Trajanje sončne svetlobe"
@@ -180,7 +196,7 @@
         "name": "Napajanje"
       },
       "state_alarm_warn_self_protection": {
-        "name": "Samozascita"
+        "name": "Samozaščita"
       },
       "state_alarm_warn_sim": {
         "name": "SIM kartica"

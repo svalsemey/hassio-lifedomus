@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Rileva gateway Lifedomus",
         "description": "Seleziona un gateway o inserisci manualmente un host.",
         "data": {
-          "host": "Host"
+          "host": "Gateway"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Codice allarme",
           "clear_alarm_code": "Cancella codice allarme salvato"
         }
+      },
+      "reauth_confirm": {
+        "title": "Riautenticazione",
+        "description": "Il gateway all'indirizzo {host} ha rifiutato la password salvata. Inserisci la password attuale dell'utente configurato.",
+        "data": {
+          "password": "Password"
+        }
+      },
+      "reconfigure": {
+        "title": "Riconfigura il gateway",
+        "description": "Inserisci l'host attuale (indirizzo IP o nome host) del gateway. Il codice allarme potrà essere rivisto nel passaggio successivo.",
+        "data": {
+          "host": "Host"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Il codice allarme è stato rifiutato dal gateway.",
       "cannot_connect": "Connessione al gateway non riuscita.",
-      "invalid_auth": "Autenticazione non valida.",
       "invalid_alarm_code": "Codice allarme non valido (richieste 6 cifre).",
-      "unknown": "Errore sconosciuto."
+      "invalid_auth": "Autenticazione non valida.",
+      "no_site_configured": "Nessun sito configurato su questo gateway."
     },
     "abort": {
-      "invalid_uuid": "Impossibile recuperare l'UUID del gateway.",
-      "invalid_version": "Impossibile recuperare la versione del gateway.",
-      "no_site_configured": "Nessun sito configurato su questo gateway.",
+      "already_configured": "Questo sito è già configurato.",
+      "cannot_connect": "Connessione al gateway non riuscita.",
       "no_user_configured": "Nessun utente configurato per questo sito.",
-      "reconfigure_successful": "Riconfigurazione completata. La voce è stata aggiornata."
+      "reauth_successful": "Riautenticazione completata.",
+      "reconfigure_successful": "Riconfigurazione completata. La voce è stata aggiornata.",
+      "unique_id_mismatch": "L'host non porta al gateway e al sito di questa voce.",
+      "unknown": "Errore sconosciuto."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Link video"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Accesso a Internet"
       }
     }

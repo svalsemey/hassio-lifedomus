@@ -15,7 +15,7 @@ from __future__ import annotations
 import asyncio
 from contextlib import suppress
 import logging
-from typing import cast, Final
+from typing import Final, cast
 
 import asyncssh
 from defusedxml import ElementTree as ET
@@ -102,12 +102,16 @@ class LifedomusMonitor:
     """Maintain an SSH monitoring tunnel and dispatch XML notifications."""
 
     def __init__(
-        self, hass: HomeAssistant, entry: LifedomusConfigEntry, host: str
+        self,
+        hass: HomeAssistant,
+        entry: LifedomusConfigEntry,
+        api: LifedomusApi,
+        host: str,
     ) -> None:
         """Initialize the monitor."""
         self._hass = hass
         self._entry = entry
-        self._api = entry.runtime_data.api
+        self._api = api
         self._host = host
         self._task: asyncio.Task[None] | None = None
         self._stopping = asyncio.Event()
@@ -131,6 +135,11 @@ class LifedomusMonitor:
             self._task = self._hass.loop.create_task(
                 self._runner(), name="lifedomus_monitor"
             )
+
+    @property
+    def is_connected(self) -> bool:
+        """Return True while the push channel to the gateway is open."""
+        return self._rdr is not None
 
     def _xml_preview(self, raw: bytes, *, limit: int = LOG_PREVIEW_MAX_CHARS) -> str:
         """Return a safe, size-bounded UTF-8 preview for logs.

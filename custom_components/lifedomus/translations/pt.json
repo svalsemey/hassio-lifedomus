@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Detetar gateways Lifedomus",
         "description": "Selecione uma gateway ou introduza um host manualmente.",
         "data": {
-          "host": "Host"
+          "host": "Gateway"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Código de alarme",
           "clear_alarm_code": "Limpar código de alarme guardado"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reautenticar",
+        "description": "A gateway em {host} rejeitou a palavra-passe guardada. Introduza a palavra-passe atual do utilizador configurado.",
+        "data": {
+          "password": "Palavra-passe"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar a gateway",
+        "description": "Introduza o host atual (endereço IP ou nome) da gateway. O código de alarme poderá ser revisto no passo seguinte.",
+        "data": {
+          "host": "Host"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "O código de alarme foi rejeitado pela gateway.",
       "cannot_connect": "Falha ao ligar à gateway.",
-      "invalid_auth": "Autenticação inválida.",
       "invalid_alarm_code": "Código de alarme inválido (são necessários 6 dígitos).",
-      "unknown": "Erro desconhecido."
+      "invalid_auth": "Autenticação inválida.",
+      "no_site_configured": "Nenhum site configurado nesta gateway."
     },
     "abort": {
-      "invalid_uuid": "Não foi possível obter o UUID da gateway.",
-      "invalid_version": "Não foi possível obter a versão da gateway.",
-      "no_site_configured": "Nenhum site configurado nesta gateway.",
+      "already_configured": "Este site já está configurado.",
+      "cannot_connect": "Falha ao ligar à gateway.",
       "no_user_configured": "Nenhum utilizador configurado para este site.",
-      "reconfigure_successful": "Reconfiguração concluída. A entrada foi atualizada."
+      "reauth_successful": "Reautenticação concluída.",
+      "reconfigure_successful": "Reconfiguração concluída. A entrada foi atualizada.",
+      "unique_id_mismatch": "O host não conduz à gateway e ao site desta entrada.",
+      "unknown": "Erro desconhecido."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Ligação de vídeo"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Acesso à Internet"
       }
     }

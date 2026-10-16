@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Lifedomus ゲートウェイを検出",
         "description": "ゲートウェイを選択するか、ホストを手動で入力してください。",
         "data": {
-          "host": "ホスト"
+          "host": "ゲートウェイ"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "アラームコード",
           "clear_alarm_code": "保存されたアラームコードを消去"
         }
+      },
+      "reauth_confirm": {
+        "title": "再認証",
+        "description": "{host} のゲートウェイが保存されたパスワードを拒否しました。設定済みユーザーの現在のパスワードを入力してください。",
+        "data": {
+          "password": "パスワード"
+        }
+      },
+      "reconfigure": {
+        "title": "ゲートウェイを再設定",
+        "description": "ゲートウェイの現在のホスト（IP アドレスまたはホスト名）を入力してください。アラームコードは次のステップで確認できます。",
+        "data": {
+          "host": "ホスト"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "アラームコードはゲートウェイに拒否されました。",
       "cannot_connect": "ゲートウェイへの接続に失敗しました。",
-      "invalid_auth": "無効な認証です。",
       "invalid_alarm_code": "無効なアラームコード（6 桁が必要）。",
-      "unknown": "不明なエラー。"
+      "invalid_auth": "無効な認証です。",
+      "no_site_configured": "このゲートウェイにはサイトが設定されていません。"
     },
     "abort": {
-      "invalid_uuid": "ゲートウェイの UUID を取得できませんでした。",
-      "invalid_version": "ゲートウェイのバージョンを取得できませんでした。",
-      "no_site_configured": "このゲートウェイにはサイトが設定されていません。",
+      "already_configured": "このサイトはすでに設定されています。",
+      "cannot_connect": "ゲートウェイへの接続に失敗しました。",
       "no_user_configured": "このサイトにはユーザーが設定されていません。",
-      "reconfigure_successful": "再設定が完了しました。エントリが更新されました。"
+      "reauth_successful": "再認証が完了しました。",
+      "reconfigure_successful": "再設定が完了しました。エントリが更新されました。",
+      "unique_id_mismatch": "このホストは、このエントリのゲートウェイおよびサイトに対応していません。",
+      "unknown": "不明なエラー。"
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "ビデオリンク"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "インターネットアクセス"
       }
     }

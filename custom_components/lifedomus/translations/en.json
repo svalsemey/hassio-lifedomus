@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Discover Lifedomus gateways",
         "description": "Select a gateway or choose to enter a host manually.",
         "data": {
-          "host": "Host"
+          "host": "Gateway"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Alarm code",
           "clear_alarm_code": "Clear stored alarm code"
         }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate",
+        "description": "The gateway at {host} rejected the stored password. Enter the current password of the configured user.",
+        "data": {
+          "password": "Password"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure the gateway",
+        "description": "Enter the current host (IP address or hostname) of the gateway. The alarm code can be reviewed in the next step.",
+        "data": {
+          "host": "Host"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Alarm code was denied by the gateway.",
       "cannot_connect": "Failed to connect to the gateway.",
-      "invalid_auth": "Invalid authentication.",
       "invalid_alarm_code": "Invalid alarm code (6 digits required).",
-      "unknown": "Unknown error."
+      "invalid_auth": "Invalid authentication.",
+      "no_site_configured": "No site configured on this gateway."
     },
     "abort": {
-      "invalid_uuid": "The gateway UUID could not be retrieved.",
-      "invalid_version": "The gateway version could not be retrieved.",
-      "no_site_configured": "No site configured on this gateway.",
+      "already_configured": "This site is already configured.",
+      "cannot_connect": "Failed to connect to the gateway.",
       "no_user_configured": "No user configured on this site.",
-      "reconfigure_successful": "Reconfiguration completed. The entry was updated."
+      "reauth_successful": "Reauthentication completed.",
+      "reconfigure_successful": "Reconfiguration completed. The entry was updated.",
+      "unique_id_mismatch": "The host does not lead to the gateway and site of this entry.",
+      "unknown": "Unknown error."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Video link"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Internet access"
       }
     }

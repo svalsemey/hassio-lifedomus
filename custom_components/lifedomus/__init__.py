@@ -9,12 +9,12 @@ from __future__ import annotations
 
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.typing import ConfigType
 
 from .alarm import ALARM_COORDINATOR_CONFIG
-from .api import LifedomusApi, LifedomusApiError
+from .api import LifedomusApi, LifedomusApiError, LifedomusAuthError
 from .binary_sensor import DETECTOR_COORDINATOR_CONFIG
 from .button import PUSH_BUTTON_COORDINATOR_CONFIG
 from .climate import CLIMATE_COORDINATOR_CONFIG
@@ -54,13 +54,6 @@ _PLATFORMS: list[Platform] = [
 ]
 
 
-async def _async_update_listener(
-    hass: HomeAssistant, entry: LifedomusConfigEntry
-) -> None:
-    """Reload the config entry so that updated options are applied."""
-    await hass.config_entries.async_reload(entry.entry_id)
-
-
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the Lifedomus integration at Home Assistant start."""
     return True
@@ -68,10 +61,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: LifedomusConfigEntry) -> bool:
     """Set up Lifedomus from a config entry."""
-    host = str(entry.data.get(CONF_HOST) or "")
-    if not host:
-        raise ConfigEntryNotReady("Missing host in config entry")
-
+    host: str = entry.data[CONF_HOST]
     api = LifedomusApi(
         hass,
         host=host,
@@ -93,12 +83,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: LifedomusConfigEntry) ->
         version = "Unknown"
 
     api.set_auth_context(
-        site_key=str(entry.data.get(CONF_SITE_KEY)),
-        user_key=str(entry.data.get(CONF_USER_KEY)),
-        password=str(entry.data.get(CONF_PASSWORD)),
+        site_key=entry.data[CONF_SITE_KEY],
+        user_key=entry.data[CONF_USER_KEY],
+        password=entry.data[CONF_PASSWORD],
     )
     try:
         await api.async_refresh_session()
+    except LifedomusAuthError as err:
+        raise ConfigEntryAuthFailed(err) from err
     except LifedomusApiError as err:
         raise ConfigEntryNotReady(err) from err
 
@@ -121,8 +113,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: LifedomusConfigEntry) ->
         api=api,
         uuid=uuid,
         hub_device_id=hub_device.id,
-        site_key=str(entry.data.get(CONF_SITE_KEY) or ""),
+        site_key=entry.data[CONF_SITE_KEY],
         alarm_code=str(entry.data.get(CONF_ALARM_CODE) or ""),
+        monitor=LifedomusMonitor(hass, entry, api, host=host),
         alarm=LdCoordinator(hass, api, entry, ALARM_COORDINATOR_CONFIG),
         climate=LdCoordinator(hass, api, entry, CLIMATE_COORDINATOR_CONFIG),
         cover=LdCoordinator(hass, api, entry, COVER_COORDINATOR_CONFIG),
@@ -140,10 +133,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: LifedomusConfigEntry) ->
 
     # The push monitor starts before the platforms so that notifications
     # arriving during setup already reach the coordinators.
-    monitor = LifedomusMonitor(hass, entry, host=host)
-    await monitor.async_start()
-    entry.async_on_unload(monitor.async_stop)
-    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
+    await runtime.monitor.async_start()
+    entry.async_on_unload(runtime.monitor.async_stop)
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
     return True
@@ -154,3 +145,21 @@ async def async_unload_entry(
 ) -> bool:
     """Unload the platforms; the monitor is stopped by its unload callback."""
     return await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant, entry: LifedomusConfigEntry, device_entry: dr.DeviceEntry
+) -> bool:
+    """Allow removing a device that the gateway no longer reports.
+
+    The hub device and devices still present in a coordinator are kept, since
+    their entities would be recreated on the next reload.
+    """
+    runtime = entry.runtime_data
+    known = {runtime.uuid}.union(
+        *(coordinator.data for coordinator in runtime.coordinators)
+    )
+    return not any(
+        domain == DOMAIN and identifier in known
+        for domain, identifier in device_entry.identifiers
+    )

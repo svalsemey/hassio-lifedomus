@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Lifedomus गेटवे खोजें",
         "description": "एक गेटवे चुनें या होस्ट को मैन्युअली दर्ज करें।",
         "data": {
-          "host": "होस्ट"
+          "host": "गेटवे"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "अलार्म कोड",
           "clear_alarm_code": "सहेजा हुआ अलार्म कोड साफ करें"
         }
+      },
+      "reauth_confirm": {
+        "title": "पुनः प्रमाणीकरण",
+        "description": "{host} पर स्थित गेटवे ने सहेजा गया पासवर्ड अस्वीकार कर दिया। कॉन्फ़िगर किए गए उपयोगकर्ता का वर्तमान पासवर्ड दर्ज करें।",
+        "data": {
+          "password": "पासवर्ड"
+        }
+      },
+      "reconfigure": {
+        "title": "गेटवे को पुन: कॉन्फ़िगर करें",
+        "description": "गेटवे का वर्तमान होस्ट (IP पता या होस्टनेम) दर्ज करें। अलार्म कोड की समीक्षा अगले चरण में की जा सकती है।",
+        "data": {
+          "host": "होस्ट"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "गेटवे ने अलार्म कोड अस्वीकार कर दिया।",
       "cannot_connect": "गेटवे से कनेक्ट करने में विफल।",
-      "invalid_auth": "अमान्य प्रमाणीकरण।",
       "invalid_alarm_code": "अमान्य अलार्म कोड (6 अंक आवश्यक)।",
-      "unknown": "अज्ञात त्रुटि।"
+      "invalid_auth": "अमान्य प्रमाणीकरण।",
+      "no_site_configured": "इस गेटवे पर कोई साइट कॉन्फ़िगर नहीं है।"
     },
     "abort": {
-      "invalid_uuid": "गेटवे UUID प्राप्त नहीं किया जा सका।",
-      "invalid_version": "गेटवे संस्करण प्राप्त नहीं किया जा सका।",
-      "no_site_configured": "इस गेटवे पर कोई साइट कॉन्फ़िगर नहीं है।",
+      "already_configured": "यह साइट पहले से कॉन्फ़िगर है।",
+      "cannot_connect": "गेटवे से कनेक्ट करने में विफल।",
       "no_user_configured": "इस साइट के लिए कोई उपयोगकर्ता कॉन्फ़िगर नहीं है।",
-      "reconfigure_successful": "पुन: कॉन्फ़िगरेशन पूर्ण। प्रविष्टि अपडेट की गई।"
+      "reauth_successful": "पुन: प्रमाणीकरण पूर्ण।",
+      "reconfigure_successful": "पुन: कॉन्फ़िगरेशन पूर्ण। प्रविष्टि अपडेट की गई।",
+      "unique_id_mismatch": "यह होस्ट इस प्रविष्टि के गेटवे और साइट तक नहीं ले जाता।",
+      "unknown": "अज्ञात त्रुटि।"
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "वीडियो लिंक"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "इंटरनेट पहुंच"
       }
     }

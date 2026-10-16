@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Detectar pasarelas Lifedomus",
         "description": "Seleccione una pasarela o elija introducir un host manualmente.",
         "data": {
-          "host": "Host"
+          "host": "Pasarela"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Código de alarma",
           "clear_alarm_code": "Borrar código de alarma guardado"
         }
+      },
+      "reauth_confirm": {
+        "title": "Volver a autenticar",
+        "description": "La pasarela en {host} rechazó la contraseña almacenada. Introduzca la contraseña actual del usuario configurado.",
+        "data": {
+          "password": "Contraseña"
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar la pasarela",
+        "description": "Introduzca el host actual (dirección IP o nombre de host) de la pasarela. El código de alarma se podrá revisar en el siguiente paso.",
+        "data": {
+          "host": "Host"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "El código de alarma fue rechazado por la pasarela.",
       "cannot_connect": "No se pudo conectar con la pasarela.",
-      "invalid_auth": "Autenticación inválida.",
       "invalid_alarm_code": "Código de alarma inválido (se requieren 6 dígitos).",
-      "unknown": "Error desconocido."
+      "invalid_auth": "Autenticación inválida.",
+      "no_site_configured": "No hay ningún sitio configurado en esta pasarela."
     },
     "abort": {
-      "invalid_uuid": "No se pudo obtener el UUID de la pasarela.",
-      "invalid_version": "No se pudo obtener la versión de la pasarela.",
-      "no_site_configured": "No hay ningún sitio configurado en esta pasarela.",
+      "already_configured": "Este sitio ya está configurado.",
+      "cannot_connect": "No se pudo conectar con la pasarela.",
       "no_user_configured": "No hay ningún usuario configurado para este sitio.",
-      "reconfigure_successful": "Reconfiguración completada. La entrada se actualizó."
+      "reauth_successful": "Reautenticación completada.",
+      "reconfigure_successful": "Reconfiguración completada. La entrada se actualizó.",
+      "unique_id_mismatch": "El host no corresponde a la pasarela y al sitio de esta entrada.",
+      "unknown": "Error desconocido."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Enlace de video"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Acceso a Internet"
       }
     }

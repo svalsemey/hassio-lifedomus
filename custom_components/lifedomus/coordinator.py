@@ -8,10 +8,10 @@ configurable SOAP actions and parsing functions.
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
+from dataclasses import Field, dataclass
 from datetime import timedelta
 import logging
-from typing import Protocol
+from typing import Any, ClassVar, Protocol
 from xml.etree.ElementTree import Element
 
 from homeassistant.config_entries import ConfigEntry
@@ -25,8 +25,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class LdDeviceSnapshot(Protocol):
-    """Fields shared by every parsed device snapshot."""
+    """Fields shared by every parsed device snapshot.
 
+    Snapshots are dataclasses so that diagnostics can serialize them with asdict().
+    """
+
+    __dataclass_fields__: ClassVar[dict[str, Field[Any]]]
     device_key: str
     device_clsid: str
     label: str

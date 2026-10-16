@@ -315,72 +315,74 @@ class LifedomusApi:
             )
         self._session_key = cleaned_key
 
-    async def async_request(
+    def _build_payload(
+        self, namespace: str, action: str, params: dict[str, Any] | None
+    ) -> tuple[str, str]:
+        """Return the HTTP method and SOAP payload of a request.
+
+        Account/GetUUID and CoreServices/GetVersion are plain GET requests; every
+        other call is a SOAP POST carrying the parameters and, except for Login
+        and GetNameList, the current session key.
+        """
+        if (namespace, action) in {
+            ("Account", "GetUUID"),
+            ("CoreServices", "GetVersion"),
+        }:
+            return "GET", ""
+
+        post_params = dict(params) if params else {}
+        if (
+            action not in {"Login", "GetNameList"}
+            and "session_key" not in post_params
+            and self._session_key is not None
+        ):
+            post_params["session_key"] = self._session_key
+
+        # Device and target keys are validated unless they address a system variable.
+        if post_params.get("target_type") != "SYSTEM_VARIABLE":
+            for key_name in ("device_key", "target_key"):
+                if key_name in post_params:
+                    post_params[key_name] = self._ensure_valid_device_key(
+                        str(post_params[key_name])
+                    )
+
+        domain_hint = (
+            "domobox" if namespace in {"CoreServices", "State"} else "domoboxbusiness"
+        )
+        params_xml = "".join(
+            f"<{escape(str(k))}>{escape(str(v))}</{escape(str(k))}>"
+            for k, v in post_params.items()
+        )
+        return "POST", (
+            f'<soap:Envelope xmlns:soap="{SOAP_NAMESPACE}">'
+            "<soap:Body>"
+            f'<ns2:{escape(action)} xmlns:ns2="http://{escape(namespace)}.ws.{escape(domain_hint)}.com/">'
+            f"{params_xml}"
+            f"</ns2:{escape(action)}>"
+            "</soap:Body>"
+            "</soap:Envelope>"
+        )
+
+    async def async_request_text(
         self,
         namespace: str,
         action: str,
         params: dict[str, Any] | None = None,
-    ) -> list[Element]:
-        """Perform the HTTP request and return the response text."""
+    ) -> str:
+        """Perform a gateway request and return the raw response body.
 
-        def build_payload_and_method() -> tuple[str, str]:
-            """Return (method, payload) for the SOAP request."""
-            # Account/GetUUID and CoreServices/GetVersion are GET; everything else is POST.
-            if (namespace == "Account" and action == "GetUUID") or (
-                namespace == "CoreServices" and action == "GetVersion"
-            ):
-                return "GET", ""
-
-            # All other calls are POST: build payload with params and optional session key injection.
-            post_params = dict(params) if params else {}
-
-            # Inject session_key for authenticated POST calls, except for Login and GetNameList.
-            if (
-                action not in {"Login", "GetNameList"}
-                and "session_key" not in post_params
-                and self._session_key is not None
-            ):
-                post_params["session_key"] = self._session_key
-
-            # Validate device/target keys ONLY if not a system variable
-            target_type = post_params.get("target_type", "")
-            if target_type != "SYSTEM_VARIABLE":
-                for key_name in ("device_key", "target_key"):
-                    if key_name in post_params:
-                        post_params[key_name] = self._ensure_valid_device_key(
-                            str(post_params[key_name])
-                        )
-
-            # Determine the correct domain for the namespace
-            if namespace in ("CoreServices", "State"):
-                domain_hint = "domobox"
-            else:
-                domain_hint = "domoboxbusiness"
-
-            params_xml = "".join(
-                f"<{escape(str(k))}>{escape(str(v))}</{escape(str(k))}>"
-                for k, v in post_params.items()
-            )
-            payload_xml = (
-                f'<soap:Envelope xmlns:soap="{SOAP_NAMESPACE}">'
-                "<soap:Body>"
-                f'<ns2:{escape(action)} xmlns:ns2="http://{escape(namespace)}.ws.{escape(domain_hint)}.com/">'
-                f"{params_xml}"
-                f"</ns2:{escape(action)}>"
-                "</soap:Body>"
-                "</soap:Envelope>"
-            )
-            return "POST", payload_xml
-
+        A refused authentication triggers one session refresh through User/Login
+        before the request is retried with the new session key.
+        """
         attempted_refresh = False
         while True:
-            method, payload = build_payload_and_method()
+            method, payload = self._build_payload(namespace, action, params)
             try:
                 resp = await self._session.request(
                     method,
                     f"https://{self._host}:{LD_PORT}/DomoBox/{namespace}/{action}",
                     headers=LD_HTTP_HEADERS,
-                    data=payload or {},
+                    data=payload or None,
                     timeout=self._timeout,
                 )
             except ClientError as err:
@@ -388,7 +390,6 @@ class LifedomusApi:
                     f"HTTP error while calling {namespace}/{action} on {self._host}: {err}"
                 ) from err
 
-            # If authentication was refused, attempt a session refresh via User/Login and retry once.
             if (
                 resp.status in {401, 403, 500}
                 and action != "Login"
@@ -396,28 +397,32 @@ class LifedomusApi:
             ):
                 await self.async_refresh_session()
                 attempted_refresh = True
-                # Loop will rebuild payload with the new session key and retry once.
                 continue
-
-            # Raise domain-specific exception if not successful.
             if resp.status != HTTP_RESPONSE_OK:
                 raise LifedomusAuthError(
                     f"Auth failed calling {namespace}/{action} on {self._host} (status {resp.status})"
                 )
+            return await resp.text()
 
-            # Parse SOAP XML response.
-            try:
-                root = ET.fromstring(await resp.text())
-                body_el = root.find(f"{{{SOAP_NAMESPACE}}}Body")
-                if body_el is None:
-                    raise LifedomusApiError(
-                        f"SOAP Body not found in XML from {namespace}/{action} on {self._host}"
-                    )
-                return body_el.findall(".//return")
-            except ET.ParseError as err:
-                raise LifedomusApiError(
-                    f"Invalid XML from {namespace}/{action} on {self._host}: {err}"
-                ) from err
+    async def async_request(
+        self,
+        namespace: str,
+        action: str,
+        params: dict[str, Any] | None = None,
+    ) -> list[Element]:
+        """Perform a gateway request and return the <return> elements of the SOAP body."""
+        text = await self.async_request_text(namespace, action, params)
+        try:
+            root = ET.fromstring(text)
+        except ET.ParseError as err:
+            raise LifedomusApiError(
+                f"Invalid XML from {namespace}/{action} on {self._host}: {err}"
+            ) from err
+        if (body_el := root.find(f"{{{SOAP_NAMESPACE}}}Body")) is None:
+            raise LifedomusApiError(
+                f"SOAP Body not found in XML from {namespace}/{action} on {self._host}"
+            )
+        return body_el.findall(".//return")
 
     async def async_refresh_session(self) -> None:
         """Refresh the session by performing a User/Login call.

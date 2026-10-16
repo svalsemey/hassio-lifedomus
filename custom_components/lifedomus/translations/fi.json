@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Etsi Lifedomus-yhdyskäytäviä",
         "description": "Valitse yhdyskäytävä tai syötä isäntä manuaalisesti.",
         "data": {
-          "host": "Isäntä"
+          "host": "Yhdyskäytävä"
         }
       },
       "gateway_manual": {
@@ -38,27 +38,43 @@
         }
       },
       "alarm_code": {
-        "title": "Hälytypaneeli havaittu",
-        "description": "Tällä sivustolla havaittiin hälytypaneeli. Anna 6-numeroinen pääsykoodi nyt tai jätä kenttä tyhjäksi ohittaaksesi. Uudelleenkonfiguroinnin aikana voit myös tyhjentää tallennetun koodin.",
+        "title": "Hälytyspaneeli havaittu",
+        "description": "Tällä sivustolla havaittiin hälytyspaneeli. Anna 6-numeroinen pääsykoodi nyt tai jätä kenttä tyhjäksi ohittaaksesi. Uudelleenkonfiguroinnin aikana voit myös tyhjentää tallennetun koodin.",
         "data": {
           "alarm_code": "Hälytyskoodi",
           "clear_alarm_code": "Tyhjennä tallennettu hälytyskoodi"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Todenna uudelleen",
+        "description": "Osoitteessa {host} oleva yhdyskäytävä hylkäsi tallennetun salasanan. Anna määritetyn käyttäjän nykyinen salasana.",
+        "data": {
+          "password": "Salasana"
+        }
+      },
+      "reconfigure": {
+        "title": "Määritä yhdyskäytävä uudelleen",
+        "description": "Anna yhdyskäytävän nykyinen isäntä (IP-osoite tai isäntänimi). Hälytyskoodi voidaan tarkistaa seuraavassa vaiheessa.",
+        "data": {
+          "host": "Isäntä"
         }
       }
     },
     "error": {
       "alarm_code_denied": "Hälytyskoodi hylättiin yhdyskäytävän toimesta.",
       "cannot_connect": "Yhteyden muodostaminen yhdyskäytävään epäonnistui.",
-      "invalid_auth": "Virheellinen todennus.",
       "invalid_alarm_code": "Virheellinen hälytyskoodi (6 numeroa vaaditaan).",
-      "unknown": "Tuntematon virhe."
+      "invalid_auth": "Virheellinen todennus.",
+      "no_site_configured": "Tässä yhdyskäytävässä ei ole määritetty sivustoa."
     },
     "abort": {
-      "invalid_uuid": "Yhdyskäytävän UUID:ta ei voitu hakea.",
-      "invalid_version": "Yhdyskäytävän versiota ei voitu hakea.",
-      "no_site_configured": "Tässä yhdyskäytävässä ei ole määritetty sivustoa.",
+      "already_configured": "Tämä sivusto on jo määritetty.",
+      "cannot_connect": "Yhteyden muodostaminen yhdyskäytävään epäonnistui.",
       "no_user_configured": "Tälle sivustolle ei ole määritetty käyttäjää.",
-      "reconfigure_successful": "Uudelleenkonfigurointi valmis. Tietue päivitettiin."
+      "reauth_successful": "Uudelleentodennus valmis.",
+      "reconfigure_successful": "Uudelleenkonfigurointi valmis. Tietue päivitettiin.",
+      "unique_id_mismatch": "Isäntä ei johda tämän tietueen yhdyskäytävään ja sivustoon.",
+      "unknown": "Tuntematon virhe."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Videolinkki"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Internet-yhteys"
       }
     }

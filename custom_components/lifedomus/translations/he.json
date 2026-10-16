@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "גילוי שערי Lifedomus",
         "description": "בחרו שער או הזינו מארח ידנית.",
         "data": {
-          "host": "מארח"
+          "host": "שער"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "קוד אזעקה",
           "clear_alarm_code": "מחק קוד אזעקה שמור"
         }
+      },
+      "reauth_confirm": {
+        "title": "אימות מחדש",
+        "description": "השער בכתובת {host} דחה את הסיסמה השמורה. הזינו את הסיסמה הנוכחית של המשתמש שהוגדר.",
+        "data": {
+          "password": "סיסמה"
+        }
+      },
+      "reconfigure": {
+        "title": "הגדרת השער מחדש",
+        "description": "הזינו את המארח הנוכחי (כתובת IP או שם מארח) של השער. ניתן לעיין בקוד האזעקה בשלב הבא.",
+        "data": {
+          "host": "מארח"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "קוד האזעקה נדחה על ידי השער.",
       "cannot_connect": "החיבור לשער נכשל.",
-      "invalid_auth": "אימות שגוי.",
       "invalid_alarm_code": "קוד אזעקה שגוי (נדרשות 6 ספרות).",
-      "unknown": "שגיאה לא ידועה."
+      "invalid_auth": "אימות שגוי.",
+      "no_site_configured": "לא הוגדר אתר בשער זה."
     },
     "abort": {
-      "invalid_uuid": "לא ניתן היה לאחזר את ה-UUID של השער.",
-      "invalid_version": "לא ניתן היה לאחזר את גרסת השער.",
-      "no_site_configured": "לא הוגדר אתר בשער זה.",
+      "already_configured": "אתר זה כבר הוגדר.",
+      "cannot_connect": "החיבור לשער נכשל.",
       "no_user_configured": "לא הוגדר משתמש עבור אתר זה.",
-      "reconfigure_successful": "ההגדרה מחדש הושלמה. הערך עודכן."
+      "reauth_successful": "האימות מחדש הושלם.",
+      "reconfigure_successful": "ההגדרה מחדש הושלמה. הערך עודכן.",
+      "unique_id_mismatch": "המארח אינו מוביל לשער ולאתר של ערך זה.",
+      "unknown": "שגיאה לא ידועה."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "קישור וידאו"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "גישה לאינטרנט"
       }
     }

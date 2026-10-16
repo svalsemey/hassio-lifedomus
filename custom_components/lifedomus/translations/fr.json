@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Découvrir les passerelles Lifedomus",
         "description": "Sélectionnez une passerelle ou choisissez de saisir un hôte manuellement.",
         "data": {
-          "host": "Hôte"
+          "host": "Passerelle"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,33 @@
           "alarm_code": "Code d'alarme",
           "clear_alarm_code": "Effacer le code enregistré"
         }
+      },
+      "reauth_confirm": {
+        "title": "Ré-authentification",
+        "description": "La passerelle {host} a refusé le mot de passe enregistré. Saisissez le mot de passe actuel de l'utilisateur configuré.",
+        "data": { "password": "Mot de passe" }
+      },
+      "reconfigure": {
+        "title": "Reconfigurer la passerelle",
+        "description": "Saisissez l'hôte actuel (adresse IP ou nom) de la passerelle. Le code d'alarme pourra être revu à l'étape suivante.",
+        "data": { "host": "Hôte" }
       }
     },
     "error": {
       "alarm_code_denied": "Le code d’alarme a été refusé par la passerelle.",
       "cannot_connect": "Échec de connexion à la passerelle.",
-      "invalid_auth": "Authentification invalide.",
       "invalid_alarm_code": "Code d’alarme invalide (6 chiffres requis).",
-      "unknown": "Erreur inconnue."
+      "invalid_auth": "Authentification invalide.",
+      "no_site_configured": "Aucun site configuré sur cette passerelle."
     },
     "abort": {
-      "invalid_uuid": "Impossible de récupérer l’UUID de la passerelle.",
-      "invalid_version": "Impossible de récupérer la version de la passerelle.",
-      "no_site_configured": "Aucun site configuré sur cette passerelle.",
+      "already_configured": "Ce site est déjà configuré.",
+      "cannot_connect": "Impossible de se connecter à la passerelle.",
       "no_user_configured": "Aucun utilisateur configuré sur ce site.",
-      "reconfigure_successful": "Reconfiguration terminée. L’entrée a été mise à jour."
+      "reauth_successful": "Ré-authentification terminée.",
+      "reconfigure_successful": "Reconfiguration terminée. L’entrée a été mise à jour.",
+      "unique_id_mismatch": "Cet hôte ne correspond pas à la passerelle et au site de cette entrée.",
+      "unknown": "Erreur inconnue."
     }
   },
   "options": {

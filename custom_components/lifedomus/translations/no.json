@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Oppdag Lifedomus-gatewayer",
         "description": "Velg en gateway eller skriv inn en vert manuelt.",
         "data": {
-          "host": "Vert"
+          "host": "Gateway"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Alarmkode",
           "clear_alarm_code": "Slett lagret alarmkode"
         }
+      },
+      "reauth_confirm": {
+        "title": "Autentiser på nytt",
+        "description": "Gatewayen på {host} avviste det lagrede passordet. Skriv inn gjeldende passord for den konfigurerte brukeren.",
+        "data": {
+          "password": "Passord"
+        }
+      },
+      "reconfigure": {
+        "title": "Rekonfigurer gatewayen",
+        "description": "Angi gjeldende vert (IP-adresse eller vertsnavn) for gatewayen. Alarmkoden kan gjennomgås i neste trinn.",
+        "data": {
+          "host": "Vert"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Alarmkoden ble avvist av gatewayen.",
       "cannot_connect": "Kunne ikke koble til gatewayen.",
-      "invalid_auth": "Ugyldig autentisering.",
       "invalid_alarm_code": "Ugyldig alarmkode (6 sifre kreves).",
-      "unknown": "Ukjent feil."
+      "invalid_auth": "Ugyldig autentisering.",
+      "no_site_configured": "Intet område konfigurert på denne gatewayen."
     },
     "abort": {
-      "invalid_uuid": "Kunne ikke hente gateway-UUID.",
-      "invalid_version": "Kunne ikke hente gateway-versjonen.",
-      "no_site_configured": "Ingen område konfigurert på denne gatewayen.",
+      "already_configured": "Dette området er allerede konfigurert.",
+      "cannot_connect": "Kunne ikke koble til gatewayen.",
       "no_user_configured": "Ingen bruker konfigurert for dette området.",
-      "reconfigure_successful": "Rekonfigurering fullført. Oppføringen ble oppdatert."
+      "reauth_successful": "Ny autentisering fullført.",
+      "reconfigure_successful": "Rekonfigurering fullført. Oppføringen ble oppdatert.",
+      "unique_id_mismatch": "Verten fører ikke til gatewayen og området for denne oppføringen.",
+      "unknown": "Ukjent feil."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Videolenke"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Internettilgang"
       }
     }

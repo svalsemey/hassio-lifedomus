@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Find Lifedomus-gateways",
         "description": "Vælg en gateway eller indtast en vært manuelt.",
         "data": {
-          "host": "Vært"
+          "host": "Gateway"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Alarmkode",
           "clear_alarm_code": "Ryd gemt alarmkode"
         }
+      },
+      "reauth_confirm": {
+        "title": "Godkend igen",
+        "description": "Gatewayen på {host} afviste den gemte adgangskode. Indtast den aktuelle adgangskode for den konfigurerede bruger.",
+        "data": {
+          "password": "Adgangskode"
+        }
+      },
+      "reconfigure": {
+        "title": "Rekonfigurer gatewayen",
+        "description": "Indtast den aktuelle vært (IP-adresse eller værtsnavn) for gatewayen. Alarmkoden kan gennemgås i næste trin.",
+        "data": {
+          "host": "Vært"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Alarmkoden blev afvist af gatewayen.",
       "cannot_connect": "Kunne ikke oprette forbindelse til gatewayen.",
-      "invalid_auth": "Ugyldig godkendelse.",
       "invalid_alarm_code": "Ugyldig alarmkode (6 cifre krævet).",
-      "unknown": "Ukendt fejl."
+      "invalid_auth": "Ugyldig godkendelse.",
+      "no_site_configured": "Intet site konfigureret på denne gateway."
     },
     "abort": {
-      "invalid_uuid": "Gateway-UUID kunne ikke hentes.",
-      "invalid_version": "Gateway-versionen kunne ikke hentes.",
-      "no_site_configured": "Intet site konfigureret på denne gateway.",
+      "already_configured": "Dette site er allerede konfigureret.",
+      "cannot_connect": "Kunne ikke oprette forbindelse til gatewayen.",
       "no_user_configured": "Ingen bruger konfigureret til dette site.",
-      "reconfigure_successful": "Rekonfiguration fuldført. Posten blev opdateret."
+      "reauth_successful": "Ny godkendelse fuldført.",
+      "reconfigure_successful": "Rekonfiguration fuldført. Posten blev opdateret.",
+      "unique_id_mismatch": "Værten fører ikke til gatewayen og sitet for denne post.",
+      "unknown": "Ukendt fejl."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Videolink"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Internetadgang"
       }
     }

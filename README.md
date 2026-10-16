@@ -16,6 +16,9 @@ It offers zero-configuration discovery, secure local communication, efficient co
 - Native config flow with automatic discovery (UDP multicast) and manual host fallback
 - Per-site and per-user selection with authentication
 - Optional 6-digit alarm access code management (with verification and reconfigure flow)
+- Reauthentication flow when the gateway rejects the stored password, and reconfiguration flow to change the gateway host
+- Diagnostics download (config entry and per device) including the raw XML returned by the gateway
+- Manual removal of devices no longer reported by the gateway
 - Local push (SSH tunnel + XML dispatcher) to minimize polling where possible
 - Supported platforms:
   - Binary Sensor: detectors, heat demand indicators, plus alarm boolean states with icon and fault attributes
@@ -73,7 +76,13 @@ Step overview:
      - Initial configuration: supplying a correct code enables alarm actions and faults.
      - Reconfigure flow: you can keep, update, or clear the stored code.
 
-Abort and error cases are clearly reported (invalid UUID/version, no site/user configured, invalid credentials, denied alarm code, etc.).
+Errors are reported on the form so the input can be corrected; the flow only aborts when no action is possible (site already configured, no user on the site).
+
+Afterwards:
+- **Reauthenticate**: offered automatically when the gateway rejects the stored password.
+- **Reconfigure**: change the gateway host (e.g. after an IP change) and keep, replace or clear the alarm code.
+- **Download diagnostics**: available on the integration entry and on each device; secrets are redacted, including inside the raw XML.
+- **Delete device**: available for devices the gateway no longer reports.
 
 ## Options
 

@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "اكتشاف بوابات Lifedomus",
         "description": "حدد بوابة أو اختر إدخال المضيف يدويًا.",
         "data": {
-          "host": "المضيف"
+          "host": "البوابة"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "رمز الإنذار",
           "clear_alarm_code": "مسح رمز الإنذار المخزن"
         }
+      },
+      "reauth_confirm": {
+        "title": "إعادة المصادقة",
+        "description": "رفضت البوابة على {host} كلمة المرور المخزنة. أدخل كلمة المرور الحالية للمستخدم المهيأ.",
+        "data": {
+          "password": "كلمة المرور"
+        }
+      },
+      "reconfigure": {
+        "title": "إعادة تهيئة البوابة",
+        "description": "أدخل المضيف الحالي (عنوان IP أو اسم المضيف) للبوابة. يمكن مراجعة رمز الإنذار في الخطوة التالية.",
+        "data": {
+          "host": "المضيف"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "تم رفض رمز الإنذار بواسطة البوابة.",
       "cannot_connect": "فشل الاتصال بالبوابة.",
-      "invalid_auth": "مصادقة غير صالحة.",
       "invalid_alarm_code": "رمز إنذار غير صالح (مطلوب 6 أرقام).",
-      "unknown": "خطأ غير معروف."
+      "invalid_auth": "مصادقة غير صالحة.",
+      "no_site_configured": "لا يوجد موقع مهيأ على هذه البوابة."
     },
     "abort": {
-      "invalid_uuid": "تعذر استرداد UUID الخاص بالبوابة.",
-      "invalid_version": "تعذر استرداد إصدار البوابة.",
-      "no_site_configured": "لا يوجد موقع مهيأ على هذه البوابة.",
+      "already_configured": "تم تهيئة هذا الموقع مسبقًا.",
+      "cannot_connect": "فشل الاتصال بالبوابة.",
       "no_user_configured": "لا يوجد مستخدم مهيأ لهذا الموقع.",
-      "reconfigure_successful": "اكتملت إعادة التهيئة. تم تحديث الإدخال."
+      "reauth_successful": "اكتملت إعادة المصادقة.",
+      "reconfigure_successful": "اكتملت إعادة التهيئة. تم تحديث الإدخال.",
+      "unique_id_mismatch": "المضيف لا يؤدي إلى بوابة وموقع هذا الإدخال.",
+      "unknown": "خطأ غير معروف."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "اتصال فيديو"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "الوصول إلى الإنترنت"
       }
     }

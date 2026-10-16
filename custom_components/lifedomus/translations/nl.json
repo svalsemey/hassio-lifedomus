@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Lifedomus-gateways detecteren",
         "description": "Selecteer een gateway of voer handmatig een host in.",
         "data": {
-          "host": "Host"
+          "host": "Gateway"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Alarmcode",
           "clear_alarm_code": "Opgeslagen alarmcode wissen"
         }
+      },
+      "reauth_confirm": {
+        "title": "Opnieuw authenticeren",
+        "description": "De gateway op {host} heeft het opgeslagen wachtwoord geweigerd. Voer het huidige wachtwoord van de geconfigureerde gebruiker in.",
+        "data": {
+          "password": "Wachtwoord"
+        }
+      },
+      "reconfigure": {
+        "title": "Gateway opnieuw configureren",
+        "description": "Voer de huidige host (IP-adres of hostnaam) van de gateway in. De alarmcode kan in de volgende stap worden bekeken.",
+        "data": {
+          "host": "Host"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "De alarmcode is geweigerd door de gateway.",
       "cannot_connect": "Kan geen verbinding maken met de gateway.",
-      "invalid_auth": "Ongeldige authenticatie.",
       "invalid_alarm_code": "Ongeldige alarmcode (6 cijfers vereist).",
-      "unknown": "Onbekende fout."
+      "invalid_auth": "Ongeldige authenticatie.",
+      "no_site_configured": "Geen site geconfigureerd op deze gateway."
     },
     "abort": {
-      "invalid_uuid": "De gateway-UUID kon niet worden opgehaald.",
-      "invalid_version": "De gatewayversie kon niet worden opgehaald.",
-      "no_site_configured": "Geen site geconfigureerd op deze gateway.",
+      "already_configured": "Deze site is al geconfigureerd.",
+      "cannot_connect": "Kan geen verbinding maken met de gateway.",
       "no_user_configured": "Geen gebruiker geconfigureerd voor deze site.",
-      "reconfigure_successful": "Herconfiguratie voltooid. De invoer is bijgewerkt."
+      "reauth_successful": "Herauthenticatie voltooid.",
+      "reconfigure_successful": "Herconfiguratie voltooid. De invoer is bijgewerkt.",
+      "unique_id_mismatch": "De host leidt niet naar de gateway en site van deze invoer.",
+      "unknown": "Onbekende fout."
     }
   },
   "options": {
@@ -153,7 +169,7 @@
         "name": "Alarm geactiveerd"
       },
       "state_alarm_alert_delayed": {
-        "name": "Vertraald alarm"
+        "name": "Vertraagd alarm"
       },
       "state_alarm_alert_silent": {
         "name": "Stil alarm"
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Videokoppeling"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Internettoegang"
       }
     }

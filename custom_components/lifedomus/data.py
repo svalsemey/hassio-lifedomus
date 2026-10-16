@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from .cover import LdCoverDevice
     from .energy import LifedomusEnergyCoordinator
     from .light import LdLightDevice
+    from .monitor import LifedomusMonitor
     from .sensor import LdRawSensor
 
 
@@ -34,6 +35,7 @@ class LifedomusRuntimeData:
     hub_device_id: str
     site_key: str
     alarm_code: str
+    monitor: LifedomusMonitor
     alarm: LdCoordinator[LdAlarmDevice]
     climate: LdCoordinator[LdClimateDevice]
     cover: LdCoordinator[LdCoverDevice]

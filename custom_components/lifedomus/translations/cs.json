@@ -2,11 +2,11 @@
   "title": "Lifedomus",
   "config": {
     "step": {
-      "discover": {
+      "user": {
         "title": "Vyhledat brány Lifedomus",
         "description": "Vyberte bránu nebo zadejte hostitele ručně.",
         "data": {
-          "host": "Hostitel"
+          "host": "Brána"
         }
       },
       "gateway_manual": {
@@ -44,21 +44,37 @@
           "alarm_code": "Kód alarmu",
           "clear_alarm_code": "Vymazat uložený kód alarmu"
         }
+      },
+      "reauth_confirm": {
+        "title": "Opětovné ověření",
+        "description": "Brána na {host} odmítla uložené heslo. Zadejte aktuální heslo nakonfigurovaného uživatele.",
+        "data": {
+          "password": "Heslo"
+        }
+      },
+      "reconfigure": {
+        "title": "Překonfigurovat bránu",
+        "description": "Zadejte aktuálního hostitele (IP adresu nebo název) brány. Kód alarmu můžete zkontrolovat v dalším kroku.",
+        "data": {
+          "host": "Hostitel"
+        }
       }
     },
     "error": {
       "alarm_code_denied": "Kód alarmu byl bránou odmítnut.",
       "cannot_connect": "Nepodařilo se připojit k bráně.",
-      "invalid_auth": "Neplatné ověření.",
       "invalid_alarm_code": "Neplatný kód alarmu (vyžadováno 6 číslic).",
-      "unknown": "Neznámá chyba."
+      "invalid_auth": "Neplatné ověření.",
+      "no_site_configured": "Na této bráně není nakonfigurována žádná lokalita."
     },
     "abort": {
-      "invalid_uuid": "Nepodařilo se získat UUID brány.",
-      "invalid_version": "Nepodařilo se získat verzi brány.",
-      "no_site_configured": "Na této bráně není nakonfigurována žádná lokalita.",
+      "already_configured": "Tato lokalita je již nakonfigurována.",
+      "cannot_connect": "Nepodařilo se připojit k bráně.",
       "no_user_configured": "Na této lokalitě není nakonfigurován žádný uživatel.",
-      "reconfigure_successful": "Přeconfigurování dokončeno. Položka byla aktualizována."
+      "reauth_successful": "Opětovné ověření dokončeno.",
+      "reconfigure_successful": "Překonfigurování dokončeno. Položka byla aktualizována.",
+      "unique_id_mismatch": "Hostitel nevede k bráně a lokalitě tohoto záznamu.",
+      "unknown": "Neznámá chyba."
     }
   },
   "options": {
@@ -200,7 +216,7 @@
       "state_alarm_warn_link_video": {
         "name": "Video odkaz"
       },
-      "state_system_var_web_status": {
+      "system_var_web_status": {
         "name": "Přístup k internetu"
       }
     }
