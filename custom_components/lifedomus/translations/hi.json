@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "{entity} पर {action} निष्पादित करने में विफल: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

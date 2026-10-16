@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "فشل تنفيذ {action} على {entity}: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

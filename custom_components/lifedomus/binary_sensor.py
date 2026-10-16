@@ -24,9 +24,7 @@ State handling:
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import date, datetime
 import logging
 from typing import Final
 from xml.etree.ElementTree import Element
@@ -35,33 +33,28 @@ from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .alarm import (
     ALARM_BOOL_STATES,
     ALARM_FAULT_LABEL_TO_CATEGORY,
     AlarmBoolDef,
     LdAlarmDevice,
-    get_or_create_alarm_coordinator,
 )
-from .api import LifedomusApi, LifedomusApiError
-from .climate import LdClimateDevice, get_or_create_climate_coordinator
+from .api import LifedomusApi, LifedomusApiError, SystemVariableValue
+from .climate import LdClimateDevice
 from .const import (
-    CONF_ALARM_CODE,
-    CONF_SITE_KEY,
-    DOMAIN,
     LD_CLSID_SYSTEM_VARIABLES,
     LD_DEFAULT_ITEMS_LIMIT,
     LD_DEVICE_TYPE_FLOOR_HEATING,
     LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED,
     LD_STATE_TRIGGERED,
-    LD_SYSTEM_VAR_WEB_STATUS,
-    MODEL,
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
+from .data import LifedomusConfigEntry, LifedomusRuntimeData
+from .entity import LifedomusEntity, LifedomusSystemVariableEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -207,7 +200,7 @@ def _device_class_from_string(name: str | None) -> BinarySensorDeviceClass | Non
 
 
 @dataclass(slots=True)
-class _LdBinarySensor:
+class LdDetectorDevice:
     """Container for a parsed Lifedomus binary sensor."""
 
     device_key: str
@@ -217,9 +210,9 @@ class _LdBinarySensor:
     is_on: bool | None  # None means unknown
 
 
-def _parse_binary_sensor_device_element(
+def _parse_detector_device_element(
     api: LifedomusApi, dev_el: Element
-) -> _LdBinarySensor | None:
+) -> LdDetectorDevice | None:
     """Parse a <device> element returned by GetDevicesFromCatg into a sensor snapshot."""
     device_key = api.txt("device_key", dev_el)
     if not device_key:
@@ -258,7 +251,7 @@ def _parse_binary_sensor_device_element(
                     result = txt == "true"
                     break
 
-    return _LdBinarySensor(
+    return LdDetectorDevice(
         device_key=device_key,
         device_clsid=device_clsid,
         label=label,
@@ -267,68 +260,39 @@ def _parse_binary_sensor_device_element(
     )
 
 
-class LifedomusBinarySensor(BinarySensorEntity):
-    """Lifedomus binary sensor entity."""
+DETECTOR_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdDetectorDevice]] = (
+    LdCoordinatorConfig(
+        name="Lifedomus binary sensor coordinator",
+        category_clsid=LdDeviceCategory.SURVEILLANCE_DETECTOR,
+        parse_device=_parse_detector_device_element,
+    )
+)
 
-    _attr_should_poll = False
+
+class LifedomusBinarySensor(LifedomusEntity[LdDetectorDevice], BinarySensorEntity):
+    """Lifedomus detector entity."""
 
     def __init__(
         self,
-        coordinator: LdCoordinator[_LdBinarySensor],
-        dependencies: EntityDependencies,
-        device: _LdBinarySensor,
+        coordinator: LdCoordinator[LdDetectorDevice],
+        device: LdDetectorDevice,
+        runtime: LifedomusRuntimeData,
     ) -> None:
-        """Initialize the binary sensor entity and attach the coordinator by composition."""
-        super().__init__()
-        self.coordinator = coordinator
-
+        """Initialize the detector entity."""
+        super().__init__(coordinator, device, runtime)
         self._attr_unique_id = device.device_key
-        self._attr_name = device.label
         self._attr_device_class = DEVICE_CLASS_BY_CLSID.get(device.device_clsid)
-
-        self._attr_device_info = build_device_info(
-            device_key=self._attr_unique_id,
-            device_clsid=device.device_clsid,
-            label=self._attr_name,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
-        )
-
         self._apply_device_snapshot(device)
 
-    def _apply_device_snapshot(self, device: _LdBinarySensor) -> None:
-        """Apply the coordinator snapshot to HA attributes."""
+    def _apply_device_snapshot(self, device: LdDetectorDevice) -> None:
+        """Copy the label and boolean state from the snapshot."""
         self._attr_name = device.label
         self._attr_is_on = device.is_on
 
-    @property
-    def _dev(self) -> _LdBinarySensor | None:
-        """Return the current device snapshot from the coordinator."""
-        if self._attr_unique_id is None:
-            return None
-        return self.coordinator.data.get(self._attr_unique_id)
 
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle state update from the coordinator."""
-        device = self._dev
-        if device is not None:
-            self._apply_device_snapshot(device)
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Register coordinator update listener and publish initial state."""
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
-        )
-        device = self._dev
-        if device is not None:
-            self._apply_device_snapshot(device)
-        self.async_write_ha_state()
-
-
-class LifedomusHeatingDemandBinarySensor(BinarySensorEntity):
+class LifedomusHeatingDemandBinarySensor(
+    LifedomusEntity[LdClimateDevice], BinarySensorEntity
+):
     """Heat demand indicator of a heating channel (CLSID-DEVC-A-CC15).
 
     The device only reports the boolean state CLSID-STATE-DEVC-FLOOR-HEATING
@@ -336,7 +300,6 @@ class LifedomusHeatingDemandBinarySensor(BinarySensorEntity):
     coordinator and exposed as a single entity named after the device.
     """
 
-    _attr_should_poll = False
     _attr_has_entity_name = True
     _attr_name = None
     _attr_device_class = BinarySensorDeviceClass.HEAT
@@ -344,168 +307,111 @@ class LifedomusHeatingDemandBinarySensor(BinarySensorEntity):
     def __init__(
         self,
         coordinator: LdCoordinator[LdClimateDevice],
-        dependencies: EntityDependencies,
         device: LdClimateDevice,
+        runtime: LifedomusRuntimeData,
     ) -> None:
-        """Initialize the entity and attach the coordinator by composition."""
-        super().__init__()
-        self.coordinator = coordinator
-        self._device_key = device.device_key
-
+        """Initialize the heat demand entity."""
+        super().__init__(coordinator, device, runtime)
         self._attr_unique_id = device.device_key
+        self._apply_device_snapshot(device)
+
+    def _apply_device_snapshot(self, device: LdClimateDevice) -> None:
+        """Copy the heat demand flag from the snapshot."""
         self._attr_is_on = device.is_heating
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=device.label,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
-        )
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Refresh the heat demand flag from the coordinator snapshot."""
-        if (device := self.coordinator.data.get(self._device_key)) is not None:
-            self._attr_is_on = device.is_heating
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Register coordinator update listener and publish initial state."""
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
-        )
-        self._handle_coordinator_update()
 
 
-class LifedomusAlarmBinarySensor(BinarySensorEntity):
-    """Alarm boolean state as a binary sensor with type-specific icon and FAULT attributes."""
+class LifedomusAlarmBinarySensor(LifedomusEntity[LdAlarmDevice], BinarySensorEntity):
+    """Alarm boolean state as a binary sensor with type-specific icon and detail attributes.
 
-    _attr_should_poll = False
+    Warning states tied to a fault label expose the matching fault objects in the
+    'items' attribute; the unacknowledged events state exposes the alarm history
+    entries. Details are fetched only while the state is active.
+    """
+
     _attr_has_entity_name = True
 
     def __init__(
         self,
-        coordinator: LdCoordinator,
-        dependencies: EntityDependencies,
+        coordinator: LdCoordinator[LdAlarmDevice],
         device: LdAlarmDevice,
+        runtime: LifedomusRuntimeData,
         state_clsid: str,
         definition: AlarmBoolDef,
     ) -> None:
         """Initialize the alarm boolean entity."""
-        super().__init__()
-        self.coordinator = coordinator
-        self._api = dependencies.api
-        self._device_key = device.device_key
+        super().__init__(coordinator, device, runtime)
+        self._api = runtime.api
+        self._site_key = runtime.site_key
+        self._alarm_code = runtime.alarm_code
         self._state_clsid = state_clsid
         self._definition = definition
 
-        # Access context for GetAlarmFaultObjectList
-        self._site_key: str = str(dependencies.entry.data.get(CONF_SITE_KEY) or "")
-        self._alarm_code: str = str(
-            dependencies.entry.data.get(CONF_ALARM_CODE, "") or ""
-        )
-
-        # Faults-related fields
-        self._fault_label: str | None = definition.fault_label
-        self._fault_category: str | None = (
-            ALARM_FAULT_LABEL_TO_CATEGORY.get(self._fault_label)
-            if self._fault_label
+        self._fault_label = definition.fault_label
+        self._fault_category = (
+            ALARM_FAULT_LABEL_TO_CATEGORY.get(definition.fault_label)
+            if definition.fault_label
             else None
         )
-        self._fault_objects: list[dict[str, str | int | None]] = []
-        self._fault_lock = asyncio.Lock()
-
-        self._history_events: list[dict[str, str]] = []
-        self._history_lock = asyncio.Lock()
+        self._tracks_faults = self._fault_category is not None
+        self._tracks_history = state_clsid == LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED
+        self._items: list[dict[str, str | int | None]] | list[dict[str, str]] = []
+        self._items_lock = asyncio.Lock()
 
         self._attr_unique_id = f"{device.device_key}::{state_clsid}"
         self._attr_translation_key = definition.translation_key
-
-        # Convert string device class (from AlarmBoolDef) to BinarySensorDeviceClass when available.
         self._attr_device_class = _device_class_from_string(definition.device_class)
+        self._apply_device_snapshot(device)
 
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=device.label,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
+    def _apply_device_snapshot(self, device: LdAlarmDevice) -> None:
+        """Copy the boolean state and derive the matching icon."""
+        self._attr_is_on = device.bool_states.get(self._state_clsid)
+        self._attr_icon = (
+            "mdi:help-circle-outline"
+            if self._attr_is_on is None
+            else self._definition.icon_on
+            if self._attr_is_on
+            else self._definition.icon_off
         )
-
-        val = device.bool_states.get(state_clsid)
-        self._attr_is_on = val
-        self._attr_icon = self._resolve_icon(self._definition, val)
-
-    @staticmethod
-    def _resolve_icon(definition: AlarmBoolDef, is_on: bool | None) -> str:
-        """Return a state-specific icon for the given alarm boolean."""
-        if is_on is None:
-            return "mdi:help-circle-outline"
-        return definition.icon_on if is_on else definition.icon_off
-
-    @property
-    def _dev(self) -> LdAlarmDevice | None:
-        """Return the current alarm device snapshot."""
-        return self.coordinator.data.get(self._device_key)
 
     @property
     def extra_state_attributes(self) -> dict[str, object]:
-        """Expose alarm extra attributes for supported warning states.
-
-        For alarm warning binary sensors, detailed data is exposed through a single
-        normalized attribute named 'items'. The content depends on the sensor type:
-
-        - Fault-oriented sensors expose parsed objects associated with the current fault.
-        - The unacknowledged events sensor exposes parsed alarm history entries.
-
-        When the binary sensor is not active (state is not True), this property returns
-        an empty list for 'items' without triggering any network operation.
-
-        Returns:
-            A mapping of extra state attributes. For supported sensors, it includes:
-            - items: list of parsed dictionaries representing the detailed objects/events.
-        """
-        if self._attr_is_on is True:
-            if self._fault_label:
-                return {"items": list(self._fault_objects)}
-
-            if self._state_clsid == LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED:
-                return {"items": list(self._history_events)}
-
+        """Expose the detail items while the state is active."""
+        if self._attr_is_on is True and (self._tracks_faults or self._tracks_history):
+            return {"items": list(self._items)}
         return {}
 
+    def _schedule_details_refresh(self) -> None:
+        """Schedule the background refresh of the detail items when supported."""
+        if self._tracks_faults:
+            self.hass.async_create_task(self._async_refresh_fault_objects())
+        elif self._tracks_history:
+            self.hass.async_create_task(self._async_refresh_unacknowledged_events())
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Apply the snapshot, then refresh the detail items."""
+        super()._handle_coordinator_update()
+        self._schedule_details_refresh()
+
+    async def async_added_to_hass(self) -> None:
+        """Populate the detail items once the entity is registered."""
+        await super().async_added_to_hass()
+        self._schedule_details_refresh()
+
+    def _can_fetch_details(self) -> bool:
+        """Return True when the state is active and the access context is complete."""
+        return self._attr_is_on is True and bool(self._site_key and self._alarm_code)
+
     async def _async_refresh_fault_objects(self) -> None:
-        """Refresh fault-related objects for the current alarm warning state.
+        """Refresh the fault objects of the current warning state.
 
-        When this entity is associated with a fault label and a resolvable fault category,
-        this method queries the gateway for the corresponding fault objects and updates
-        the local cache used for attribute exposure.
-
-        Network access is performed only when the entity state is active (True). If the
-        entity is inactive or required context is missing, the cached objects are cleared
-        to prevent exposing stale data.
-
-        This method schedules a state write after updating the cache.
-
-        Returns:
-            None.
+        The cache is cleared when the state is inactive or the access context
+        is missing, so stale objects are never exposed.
         """
-        if not self._fault_label or not self._fault_category:
-            return
-
-        if self._attr_is_on is not True:
-            async with self._fault_lock:
-                self._fault_objects.clear()
-            return
-
-        # Missing auth context: clear attributes to avoid stale exposure
-        if not self._site_key or not self._alarm_code or not self._device_key:
-            async with self._fault_lock:
-                self._fault_objects.clear()
-            return
-
-        async with self._fault_lock:
+        async with self._items_lock:
+            if not self._can_fetch_details():
+                self._items = []
+                return
             try:
                 returns = await self._api.async_request(
                     namespace="Mobile",
@@ -529,17 +435,14 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
                 )
                 return
 
-            # Build the set of allowed labels for this category to avoid false "unknown" warnings
-            allowed_labels: set[str] = {
-                lbl
-                for lbl, cat in ALARM_FAULT_LABEL_TO_CATEGORY.items()
-                if cat == self._fault_category
-            }
-
             parsed, unknown = _parse_alarm_fault_objects(
                 returns,
                 expected_label=self._fault_label,
-                allowed_labels=allowed_labels,
+                allowed_labels={
+                    label
+                    for label, category in ALARM_FAULT_LABEL_TO_CATEGORY.items()
+                    if category == self._fault_category
+                },
             )
             if unknown:
                 _LOGGER.warning(
@@ -548,41 +451,19 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
                     self._fault_category,
                     ", ".join(sorted(unknown)),
                 )
-
-            # Update attributes and publish
-            self._fault_objects = parsed
-            self.async_write_ha_state()
+            self._items = parsed
+        self.async_write_ha_state()
 
     async def _async_refresh_unacknowledged_events(self) -> None:
-        """Refresh unacknowledged alarm history events for the alarm device.
+        """Refresh the unacknowledged alarm history entries.
 
-        This method fetches the list of unacknowledged alarm history entries and updates
-        the local cache used to populate the 'items' attribute.
-
-        Network access is performed only when the entity state is active (True). If the
-        entity is inactive or required context is missing, the cached events are cleared
-        to prevent exposing stale data.
-
-        The request is performed using the 'UNACKNOWLEDGED' category and a bounded count
-        to limit payload size.
-
-        Returns:
-            None.
+        The cache is cleared when the state is inactive or the access context
+        is missing, so stale events are never exposed.
         """
-        if self._state_clsid != LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED:
-            return
-
-        if self._attr_is_on is not True:
-            async with self._history_lock:
-                self._history_events.clear()
-            return
-
-        if not self._site_key or not self._alarm_code or not self._device_key:
-            async with self._history_lock:
-                self._history_events.clear()
-            return
-
-        async with self._history_lock:
+        async with self._items_lock:
+            if not self._can_fetch_details():
+                self._items = []
+                return
             try:
                 returns = await self._api.async_request(
                     namespace="Mobile",
@@ -603,197 +484,53 @@ class LifedomusAlarmBinarySensor(BinarySensorEntity):
                     err,
                 )
                 return
-
-            self._history_events = _parse_alarm_history_objects(returns)
-            self.async_write_ha_state()
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle coordinator updates and schedule attribute refresh when needed.
-
-        This callback updates the entity state and icon from the latest coordinator
-        snapshot. For supported warning sensors, it also schedules a background refresh
-        task responsible for fetching additional details (fault objects or alarm history
-        events) only when the entity is active.
-
-        The entity state is written after applying the snapshot update.
-
-        Returns:
-            None.
-        """
-        device = self._dev
-        if device is not None:
-            val = device.bool_states.get(self._state_clsid)
-            self._attr_is_on = val
-            self._attr_icon = self._resolve_icon(self._definition, val)
-
-        # Schedule a fault refresh on each coordinator update for supported states.
-        if self._fault_label and self._fault_category:
-            self.hass.async_create_task(self._async_refresh_fault_objects())
-
-        if self._state_clsid == LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED:
-            self.hass.async_create_task(self._async_refresh_unacknowledged_events())
-
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Register update listeners and trigger initial refresh for supported attributes.
-
-        This method registers the entity as a listener of the shared coordinator and
-        publishes the initial Home Assistant state.
-
-        For supported warning sensors, an initial background refresh is scheduled to
-        populate the cached attribute data. Network access is still conditioned by the
-        current entity state to avoid unnecessary requests.
-
-        Returns:
-            None.
-        """
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
-        )
-        # Initial fault fetch when supported.
-        if self._fault_label and self._fault_category:
-            self.hass.async_create_task(self._async_refresh_fault_objects())
-        if self._state_clsid == LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED:
-            self.hass.async_create_task(self._async_refresh_unacknowledged_events())
-
+            self._items = _parse_alarm_history_objects(returns)
         self.async_write_ha_state()
 
 
-class LifedomusSystemVariableBinarySensor(BinarySensorEntity):
-    """System variable binary sensor for connectivity status."""
+class LifedomusSystemVariableBinarySensor(
+    LifedomusSystemVariableEntity, BinarySensorEntity
+):
+    """Boolean system variable of the hub."""
 
-    _attr_should_poll = False
-    _attr_has_entity_name = True
-    _attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
-    _attr_translation_key = "state_system_var_web_status"
-    _attr_icon = "mdi:web"
+    def __init__(self, entry: LifedomusConfigEntry, variable_key: str) -> None:
+        """Initialize the entity and apply the configured device class."""
+        super().__init__(entry, variable_key)
+        if isinstance(self._config.sensor_class, BinarySensorDeviceClass):
+            self._attr_device_class = self._config.sensor_class
 
-    def __init__(
-        self,
-        hass: HomeAssistant,
-        api: LifedomusApi,
-        site_key: str,
-        uuid: str,
-        variable_key: str,
-    ) -> None:
-        """Initialize the system variable binary sensor."""
-        super().__init__()
-        self._hass = hass
-        self._api = api
-        self._site_key = site_key
-        self.variable_key = variable_key
-
-        config = LD_CLSID_SYSTEM_VARIABLES[variable_key]
-
-        self._attr_unique_id = f"{uuid}::system::{variable_key}"
-        self._attr_translation_key = config.translation_key
-        self._attr_icon = config.icon
-        self._attr_entity_registry_enabled_default = config.enabled
-
-        if isinstance(config.sensor_class, BinarySensorDeviceClass):
-            self._attr_device_class = config.sensor_class
-
-        self._attr_device_info = build_device_info(
-            device_key=uuid,
-            device_clsid=MODEL,
-            label=MODEL,
-            room_label="",
-        )
-
-        self._attr_is_on = None
-
-    def _apply_value(self, value: bool | date | datetime | float | str | None) -> None:
-        """Apply and validate a boolean system variable value."""
-        if isinstance(value, bool):
-            self._attr_is_on = value
-        else:
-            self._attr_is_on = None
-
-    async def async_added_to_hass(self) -> None:
-        """Fetch initial value when entity is added to Home Assistant."""
-        await super().async_added_to_hass()
-        if self.enabled:
-            await self.async_update()
-        self.async_write_ha_state()
-
-    async def async_update(self) -> None:
-        """Fetch the current system variable value."""
-        try:
-            value = await self._api.async_get_system_variable(
-                site_key=self._site_key, variable_key=self.variable_key
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to fetch system variable %s: %s", self.variable_key, err
-            )
-            return
-
-        self._apply_value(value)
-
-    def handle_push_update(self, value: bool | float | str | datetime | None) -> None:
-        """Handle a push notification update for this system variable."""
-        self._apply_value(value)
-        self.async_write_ha_state()
+    def _apply_value(self, value: SystemVariableValue) -> None:
+        """Accept boolean values only; anything else leaves the state unknown."""
+        self._attr_is_on = value if isinstance(value, bool) else None
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: Callable[[list[BinarySensorEntity]], None],
+    entry: LifedomusConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Lifedomus binary_sensor platform from a config entry."""
-    api: LifedomusApi = entry.runtime_data
-    shared = hass.data.setdefault(DOMAIN, {})
-
-    # Detectors coordinator
-    cfg = LdCoordinatorConfig[_LdBinarySensor](
-        name="Lifedomus binary sensor coordinator",
-        entry=entry,
-        category_clsid=LdDeviceCategory.SURVEILLANCE_DETECTOR,
-        parse_device=_parse_binary_sensor_device_element,
-    )
-    binary_sensor_coordinator = LdCoordinator(hass, api, cfg)
-    await binary_sensor_coordinator.async_config_entry_first_refresh()
-    shared["binary_sensor_coordinator"] = binary_sensor_coordinator
-
-    # Shared coordinators (created on first use, reused afterwards)
-    alarm_coordinator = await get_or_create_alarm_coordinator(hass, api, entry)
-    climate_coordinator = await get_or_create_climate_coordinator(hass, api, entry)
-
-    dependencies = build_entity_dependencies(hass, api, entry)
-
-    # System variable binary sensor (web status), referenced for push updates
-    web_status_sensor = LifedomusSystemVariableBinarySensor(
-        hass,
-        api,
-        str(entry.data.get(CONF_SITE_KEY, "")),
-        str(shared.get("uuid", "")),
-        LD_SYSTEM_VAR_WEB_STATUS,
-    )
-    shared.setdefault("system_binary_sensors", {})[LD_SYSTEM_VAR_WEB_STATUS] = (
-        web_status_sensor
-    )
-
+    runtime = entry.runtime_data
     entities: list[BinarySensorEntity] = [
-        LifedomusBinarySensor(binary_sensor_coordinator, dependencies, device)
-        for device in binary_sensor_coordinator.data.values()
+        LifedomusBinarySensor(runtime.detector, device, runtime)
+        for device in runtime.detector.data.values()
     ]
     entities.extend(
         LifedomusAlarmBinarySensor(
-            alarm_coordinator, dependencies, device, state_clsid, definition
+            runtime.alarm, device, runtime, state_clsid, definition
         )
-        for device in alarm_coordinator.data.values()
+        for device in runtime.alarm.data.values()
         for state_clsid, definition in ALARM_BOOL_STATES.items()
         if state_clsid in device.bool_states
     )
     entities.extend(
-        LifedomusHeatingDemandBinarySensor(climate_coordinator, dependencies, device)
-        for device in climate_coordinator.data.values()
+        LifedomusHeatingDemandBinarySensor(runtime.climate, device, runtime)
+        for device in runtime.climate.data.values()
         if device.device_clsid == LD_DEVICE_TYPE_FLOOR_HEATING
     )
-    entities.append(web_status_sensor)
-
+    entities.extend(
+        LifedomusSystemVariableBinarySensor(entry, variable_key)
+        for variable_key, config in LD_CLSID_SYSTEM_VARIABLES.items()
+        if config.value_type is bool
+    )
     async_add_entities(entities)

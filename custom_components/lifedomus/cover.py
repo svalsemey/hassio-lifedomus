@@ -15,10 +15,8 @@ State mapping:
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
-import logging
-from typing import Any
+from typing import Any, Final
 from xml.etree.ElementTree import Element
 
 from homeassistant.components.cover import (
@@ -27,14 +25,11 @@ from homeassistant.components.cover import (
     CoverEntity,
     CoverEntityFeature,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .api import LifedomusApi, LifedomusApiError, build_action_descriptor
+from .api import LifedomusApi, build_action_descriptor
 from .const import (
-    CONF_SITE_KEY,
-    CONF_USER_KEY,
-    DOMAIN,
     LD_ACTION_DOWN,
     LD_ACTION_STOP,
     LD_ACTION_UP,
@@ -46,13 +41,12 @@ from .const import (
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
-
-_LOGGER = logging.getLogger(__name__)
+from .data import LifedomusConfigEntry, LifedomusRuntimeData
+from .entity import LifedomusEntity
 
 
 @dataclass(slots=True)
-class _LdCoverDevice:
+class LdCoverDevice:
     """Container for a parsed Lifedomus motor device."""
 
     device_key: str
@@ -66,7 +60,7 @@ class _LdCoverDevice:
 
 def _parse_cover_device_element(
     api: LifedomusApi, dev_el: Element
-) -> _LdCoverDevice | None:
+) -> LdCoverDevice | None:
     """Parse a <device> element into a cover snapshot with HA-inverted position."""
     device_key = api.txt("device_key", dev_el)
     if not device_key:
@@ -78,7 +72,7 @@ def _parse_cover_device_element(
 
     states_el = dev_el.find("./states")
     if states_el is None or states_el.find(".//value") is None:
-        return _LdCoverDevice(
+        return LdCoverDevice(
             device_key=device_key,
             device_clsid=device_clsid,
             label=label,
@@ -101,7 +95,7 @@ def _parse_cover_device_element(
             position_ha = None
         break
 
-    return _LdCoverDevice(
+    return LdCoverDevice(
         device_key=device_key,
         device_clsid=device_clsid,
         label=label,
@@ -110,10 +104,18 @@ def _parse_cover_device_element(
     )
 
 
-class LifedomusCover(CoverEntity):
+COVER_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdCoverDevice]] = (
+    LdCoordinatorConfig(
+        name="Lifedomus cover coordinator",
+        category_clsid=LdDeviceCategory.ACTUATOR_MOTOR,
+        parse_device=_parse_cover_device_element,
+    )
+)
+
+
+class LifedomusCover(LifedomusEntity[LdCoverDevice], CoverEntity):
     """Lifedomus shutter/cover entity."""
 
-    _attr_should_poll = False
     _attr_supported_features = (
         CoverEntityFeature.OPEN
         | CoverEntityFeature.CLOSE
@@ -124,204 +126,64 @@ class LifedomusCover(CoverEntity):
 
     def __init__(
         self,
-        coordinator: LdCoordinator[_LdCoverDevice],
-        device: _LdCoverDevice,
-        dependencies: EntityDependencies,
+        coordinator: LdCoordinator[LdCoverDevice],
+        device: LdCoverDevice,
+        runtime: LifedomusRuntimeData,
     ) -> None:
-        """Initialize the cover entity and attach the coordinator by composition."""
-        super().__init__()
-        self.coordinator = coordinator
-        self._api = dependencies.api
-        self._site_key = str(dependencies.entry.data.get(CONF_SITE_KEY))
-        self._user_key = str(dependencies.entry.data.get(CONF_USER_KEY))
-
+        """Initialize the cover entity."""
+        super().__init__(coordinator, device, runtime)
         self._attr_unique_id = device.device_key
-        self._attr_name = device.label
-
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=self._attr_name,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
-        )
-
         self._apply_device_snapshot(device)
 
-    def _apply_device_snapshot(self, device: _LdCoverDevice) -> None:
-        """Apply the coordinator snapshot to HA attributes."""
+    def _apply_device_snapshot(self, device: LdCoverDevice) -> None:
+        """Apply the position; an unknown position keeps the entity in assumed mode."""
         self._attr_name = device.label
         self._attr_current_cover_position = device.position_ha
-        if device.position_ha is None:
-            # Unknown position; keep entity available with assumed state.
-            self._attr_is_closed = None
-            self._attr_assumed_state = True
-        else:
-            self._attr_is_closed = device.position_ha == 0
-            self._attr_assumed_state = False
-
-    @property
-    def _dev(self) -> _LdCoverDevice | None:
-        """Return the current device snapshot from the coordinator."""
-        if self._attr_unique_id is None:
-            return None
-        return self.coordinator.data.get(self._attr_unique_id)
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle state update from the coordinator."""
-        if self._dev is not None:
-            self._apply_device_snapshot(self._dev)
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Register coordinator update listener and publish initial state."""
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        self._attr_is_closed = (
+            None if device.position_ha is None else device.position_ha == 0
         )
-        if self._dev is not None:
-            self._apply_device_snapshot(self._dev)
+        self._attr_assumed_state = device.position_ha is None
+
+    def _write_optimistic_position(self, position: int) -> None:
+        """Publish the target position as an assumed state while the motor runs."""
+        self._attr_current_cover_position = position
+        self._attr_is_closed = position == 0
+        self._attr_assumed_state = True
         self.async_write_ha_state()
-
-    async def _async_refresh_instant_state(self) -> None:
-        """Fetch and apply instant state for this device using GetDeviceState."""
-        if self._attr_unique_id is None:
-            return
-
-        updated = await self.coordinator.async_fetch_device_snapshot(
-            self._attr_unique_id
-        )
-        if updated is None:
-            _LOGGER.debug(
-                "Instant state fetch returned no data for %s", self._attr_unique_id
-            )
-            return
-
-        self._apply_device_snapshot(updated)
-        self.async_write_ha_state()
-
-        self.coordinator.data[self._attr_unique_id] = updated
 
     async def async_open_cover(self, **_kwargs: Any) -> None:
-        """Open the cover using UP action on MOTOR-UD."""
-        if not self._dev or not self._attr_unique_id:
-            return
-
-        # Optimistic update
-        self._attr_is_closed = False
-        self._attr_current_cover_position = 100
-        self._attr_assumed_state = True
-        self.async_write_ha_state()
-
-        try:
-            await self.coordinator.api.async_execute_one_action(
-                target_key=self._attr_unique_id,
-                prop_clsid=LD_PROP_MOTOR_UD,
-                action_clsid=LD_ACTION_UP,
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to execute UP action for %s: %s", self._attr_unique_id, err
-            )
+        """Open the cover using UP on MOTOR-UD."""
+        self._write_optimistic_position(100)
+        await self._async_execute_action(LD_PROP_MOTOR_UD, LD_ACTION_UP)
 
     async def async_close_cover(self, **_kwargs: Any) -> None:
-        """Close the cover using DOWN action on MOTOR-UD."""
-        if not self._dev or not self._attr_unique_id:
-            return
-
-        # Optimistic update
-        self._attr_is_closed = True
-        self._attr_current_cover_position = 0
-        self._attr_assumed_state = True
-        self.async_write_ha_state()
-
-        try:
-            await self.coordinator.api.async_execute_one_action(
-                target_key=self._attr_unique_id,
-                prop_clsid=LD_PROP_MOTOR_UD,
-                action_clsid=LD_ACTION_DOWN,
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to execute DOWN action for %s: %s",
-                self._attr_unique_id,
-                err,
-            )
+        """Close the cover using DOWN on MOTOR-UD."""
+        self._write_optimistic_position(0)
+        await self._async_execute_action(LD_PROP_MOTOR_UD, LD_ACTION_DOWN)
 
     async def async_stop_cover(self, **_kwargs: Any) -> None:
         """Stop the cover using STOP on MOTOR-SW-STOP."""
-        if not self._dev or not self._attr_unique_id:
-            return
-
-        try:
-            await self.coordinator.api.async_execute_one_action(
-                target_key=self._attr_unique_id,
-                prop_clsid=LD_PROP_MOTOR_SW_STOP,
-                action_clsid=LD_ACTION_STOP,
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to execute STOP action for %s: %s",
-                self._attr_unique_id,
-                err,
-            )
+        await self._async_execute_action(LD_PROP_MOTOR_SW_STOP, LD_ACTION_STOP)
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
-        """Set the cover position using VALUE on MOTOR-VA-POS (with inverted mapping)."""
-        if not self._dev or not self._attr_unique_id:
-            return
-
-        ha_position = int(kwargs.get(ATTR_POSITION, 0))
-        ha_position = max(0, min(100, ha_position))
-        ld_position = 100 - ha_position  # Inversion HA -> Lifedomus
-
-        # Optimistic update
-        self._attr_current_cover_position = ha_position
-        self._attr_is_closed = ha_position == 0
-        self._attr_assumed_state = True
-        self.async_write_ha_state()
-
-        try:
-            await self.coordinator.api.async_execute_one_action(
-                target_key=self._attr_unique_id,
-                prop_clsid=LD_PROP_MOTOR_VA_POS,
-                action_clsid=LD_ACTION_VALUE,
-                descriptor=build_action_descriptor({"position": ld_position}),
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to execute VALUE action for %s: %s",
-                self._attr_unique_id,
-                err,
-            )
+        """Set the position using VALUE on MOTOR-VA-POS, inverting the HA scale."""
+        position = max(0, min(100, int(kwargs[ATTR_POSITION])))
+        self._write_optimistic_position(position)
+        await self._async_execute_action(
+            LD_PROP_MOTOR_VA_POS,
+            LD_ACTION_VALUE,
+            build_action_descriptor({"position": 100 - position}),
+        )
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: Callable[[list[CoverEntity]], None],
+    entry: LifedomusConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Lifedomus cover platform from a config entry."""
-    api: LifedomusApi = entry.runtime_data
-
-    cfg = LdCoordinatorConfig[_LdCoverDevice](
-        name="Lifedomus cover coordinator",
-        entry=entry,
-        category_clsid=LdDeviceCategory.ACTUATOR_MOTOR,
-        parse_device=_parse_cover_device_element,
+    runtime = entry.runtime_data
+    async_add_entities(
+        LifedomusCover(runtime.cover, device, runtime)
+        for device in runtime.cover.data.values()
     )
-    coordinator = LdCoordinator(hass, api, cfg)
-    await coordinator.async_config_entry_first_refresh()
-
-    # Share the coordinator for potential reuse.
-    hass.data.setdefault(DOMAIN, {})["cover_coordinator"] = coordinator
-
-    dependencies = build_entity_dependencies(hass, api, entry)
-
-    entities: list[CoverEntity] = [
-        LifedomusCover(coordinator, dev, dependencies)
-        for dev in coordinator.data.values()
-    ]
-
-    async_add_entities(entities)

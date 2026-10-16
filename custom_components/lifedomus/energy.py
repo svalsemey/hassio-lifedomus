@@ -1,25 +1,19 @@
 """Energy meter coordinator and models for Lifedomus.
 
-Parses energy meter devices (category CLSID-DEVC-M-CP) and exposes snapshots
-containing total consumption values fetched via Mobile/GetTotalDataValue.
+Parses energy meter devices (category CLSID-DEVC-M-CP) and enriches heating
+managers with the totals returned by Mobile/GetTotalDataValue.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import logging
+from typing import Final
 from xml.etree.ElementTree import Element
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-
 from .api import LifedomusApi, LifedomusApiError
-from .const import CONF_SITE_KEY, LdDeviceCategory
-from .coordinator import (
-    LdCoordinator,
-    LdCoordinatorConfig,
-    async_get_or_create_coordinator,
-)
+from .const import CONF_SITE_KEY, LD_DEVICE_TYPE_HEATING_MANAGER, LdDeviceCategory
+from .coordinator import LdCoordinator, LdCoordinatorConfig
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,128 +26,72 @@ class LdEnergyMeter:
     device_clsid: str
     label: str
     room_label: str
-    total_value: float | None
-    total_value_reset: float | None
-    date: str | None
-    date_reset: str | None
-    available: bool
+    total_value: float | None = None
+    total_value_reset: float | None = None
+    date: str | None = None
+    date_reset: str | None = None
 
 
 def _parse_energy_device_element(
     api: LifedomusApi, dev_el: Element
 ) -> LdEnergyMeter | None:
-    """Parse a <device> element into an LdEnergyMeter snapshot stub.
+    """Parse a <device> element into a meter snapshot without totals.
 
-    Initial parsing extracts only device metadata; actual energy values
-    are fetched separately via GetTotalDataValue during coordinator refresh.
+    Totals are fetched separately by the coordinator through GetTotalDataValue.
     """
     device_key = api.txt("device_key", dev_el)
     if not device_key:
         return None
-
-    device_clsid = api.txt("device_clsid", dev_el)
-    label = api.txt("label", dev_el) or device_key
-    room_label = api.txt("room_label", dev_el)
-
     return LdEnergyMeter(
         device_key=device_key,
-        device_clsid=device_clsid,
-        label=label,
-        room_label=room_label,
-        total_value=None,
-        total_value_reset=None,
-        date=None,
-        date_reset=None,
-        available=True,
+        device_clsid=api.txt("device_clsid", dev_el),
+        label=api.txt("label", dev_el) or device_key,
+        room_label=api.txt("room_label", dev_el),
     )
 
 
-class LifedomusEnergyCoordinator(LdCoordinator[LdEnergyMeter]):
-    """Coordinator for energy meters with enriched data fetch."""
+ENERGY_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdEnergyMeter]] = (
+    LdCoordinatorConfig(
+        name="Lifedomus energy coordinator",
+        category_clsid=LdDeviceCategory.MEASURE_CONSUMPTION,
+        parse_device=_parse_energy_device_element,
+    )
+)
 
-    def __init__(
-        self,
-        hass: HomeAssistant,
-        api: LifedomusApi,
-        config: LdCoordinatorConfig[LdEnergyMeter],
-        site_key: str,
-    ) -> None:
-        """Initialize the energy coordinator."""
-        super().__init__(hass, api, config)
-        self._site_key = site_key
+
+class LifedomusEnergyCoordinator(LdCoordinator[LdEnergyMeter]):
+    """Coordinator for energy meters, enriching heating managers with their totals."""
+
+    async def _async_enrich(self, meter: LdEnergyMeter) -> LdEnergyMeter:
+        """Return the meter completed with its totals, unchanged when unsupported or on failure."""
+        if meter.device_clsid != LD_DEVICE_TYPE_HEATING_MANAGER:
+            return meter
+        try:
+            data = await self.api.async_get_total_data_value(
+                site_key=str(self.config_entry.data.get(CONF_SITE_KEY) or ""),
+                device_key=meter.device_key,
+            )
+        except LifedomusApiError as err:
+            _LOGGER.debug(
+                "Failed to fetch energy data for %s: %s", meter.device_key, err
+            )
+            return meter
+        return replace(
+            meter,
+            total_value=data.get("value"),
+            total_value_reset=data.get("value_reset"),
+            date=data.get("date"),
+            date_reset=data.get("date_reset"),
+        )
 
     async def _async_update_data(self) -> dict[str, LdEnergyMeter]:
-        """Fetch device list and enrich each with GetTotalDataValue."""
+        """Fetch the device list and enrich heating managers."""
         devices = await super()._async_update_data()
-
-        for key, meter in list(devices.items()):
-            if meter.device_clsid != "CLSID-DEVC-M-CP13":
-                continue
-
-            try:
-                data = await self.api.async_get_total_data_value(
-                    site_key=self._site_key, device_key=key, value_type="elec"
-                )
-                devices[key] = LdEnergyMeter(
-                    device_key=meter.device_key,
-                    device_clsid=meter.device_clsid,
-                    label=meter.label,
-                    room_label=meter.room_label,
-                    total_value=data.get("value"),
-                    total_value_reset=data.get("value_reset"),
-                    date=data.get("date"),
-                    date_reset=data.get("date_reset"),
-                    available=True,
-                )
-            except LifedomusApiError as err:
-                _LOGGER.debug("Failed to fetch energy data for %s: %s", key, err)
-
-        return devices
+        return {key: await self._async_enrich(meter) for key, meter in devices.items()}
 
     async def async_fetch_device_snapshot(
         self, device_key: str
     ) -> LdEnergyMeter | None:
-        """Fetch a single energy meter snapshot with enriched data."""
+        """Fetch a single meter snapshot with its totals."""
         stub = await super().async_fetch_device_snapshot(device_key)
-        if stub is None or stub.device_clsid != "CLSID-DEVC-M-CP13":
-            return stub
-
-        try:
-            data = await self.api.async_get_total_data_value(
-                site_key=self._site_key, device_key=device_key, value_type="elec"
-            )
-            return LdEnergyMeter(
-                device_key=stub.device_key,
-                device_clsid=stub.device_clsid,
-                label=stub.label,
-                room_label=stub.room_label,
-                total_value=data.get("value"),
-                total_value_reset=data.get("value_reset"),
-                date=data.get("date"),
-                date_reset=data.get("date_reset"),
-                available=True,
-            )
-        except LifedomusApiError as err:
-            _LOGGER.debug("Failed to fetch energy data for %s: %s", device_key, err)
-            return stub
-
-
-async def get_or_create_energy_coordinator(
-    hass: HomeAssistant, api: LifedomusApi, entry: ConfigEntry
-) -> LifedomusEnergyCoordinator:
-    """Return the shared energy coordinator, creating and refreshing it if missing."""
-    return await async_get_or_create_coordinator(
-        hass,
-        "energy_coordinator",
-        lambda: LifedomusEnergyCoordinator(
-            hass,
-            api,
-            LdCoordinatorConfig[LdEnergyMeter](
-                name="Lifedomus energy coordinator",
-                entry=entry,
-                category_clsid=LdDeviceCategory.MEASURE_CONSUMPTION,
-                parse_device=_parse_energy_device_element,
-            ),
-            str(entry.data.get(CONF_SITE_KEY) or ""),
-        ),
-    )
+        return None if stub is None else await self._async_enrich(stub)

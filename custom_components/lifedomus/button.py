@@ -14,20 +14,17 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
-import logging
+from operator import attrgetter
+from typing import Final
 from xml.etree.ElementTree import Element
 
 from homeassistant.components.button import ButtonEntity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .alarm import LdAlarmDevice, get_or_create_alarm_coordinator
-from .api import LifedomusApi, LifedomusApiError, build_action_descriptor
+from .alarm import LdAlarmDevice
+from .api import LifedomusApi, build_action_descriptor
 from .const import (
-    CONF_ALARM_CODE,
-    CONF_SITE_KEY,
-    CONF_USER_KEY,
-    DOMAIN,
     LD_ACTION_ALARM_EVENTS_ACKNOWLEDGE,
     LD_ACTION_ALARM_FULL_ARMING,
     LD_ACTION_ALARM_STOP,
@@ -35,13 +32,12 @@ from .const import (
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
-
-_LOGGER = logging.getLogger(__name__)
+from .data import LifedomusConfigEntry, LifedomusRuntimeData
+from .entity import LifedomusEntity
 
 
 @dataclass(slots=True)
-class _LdPushButtonDevice:
+class LdPushButtonDevice:
     """Container for a parsed Lifedomus push button device."""
 
     device_key: str
@@ -49,249 +45,160 @@ class _LdPushButtonDevice:
     label: str
     room_label: str
     push_prop_clsid: str | None
-    push_prop_numr: int
 
 
 @dataclass(frozen=True, slots=True)
 class _AlarmActionSpec:
-    """Specification for a single alarm action button."""
+    """Specification of one alarm action button.
 
-    button_kind: str
-    prop_clsid: str | None
+    Attributes:
+        key: Suffix of the unique id.
+        translation_key: Key of the entity name in the translation files.
+        action_clsid: Action sent on press.
+        prop_of: Returns the property CLSID carrying the action, from the alarm snapshot.
+    """
+
+    key: str
+    translation_key: str
     action_clsid: str
+    prop_of: Callable[[LdAlarmDevice], str | None]
+
+
+ALARM_ACTION_SPECS: Final[tuple[_AlarmActionSpec, ...]] = (
+    _AlarmActionSpec(
+        "full_arming",
+        "alarm_full_arming",
+        LD_ACTION_ALARM_FULL_ARMING,
+        attrgetter("prop_operating_mode"),
+    ),
+    _AlarmActionSpec(
+        "stop", "alarm_stop", LD_ACTION_ALARM_STOP, attrgetter("prop_operating_mode")
+    ),
+    _AlarmActionSpec(
+        "ack_events",
+        "alarm_ack_events",
+        LD_ACTION_ALARM_EVENTS_ACKNOWLEDGE,
+        attrgetter("prop_ack_events"),
+    ),
+)
 
 
 def _parse_push_button_device_element(
     api: LifedomusApi, dev_el: Element
-) -> _LdPushButtonDevice | None:
+) -> LdPushButtonDevice | None:
     """Parse a <device> element returned by GetDevicesFromCatg into a push button snapshot."""
     device_key = api.txt("device_key", dev_el)
     if not device_key:
         return None
 
-    device_clsid = api.txt("device_clsid", dev_el)
-    label = api.txt("label", dev_el) or device_key
-    room_label = api.txt("room_label", dev_el)
-
-    push_prop_clsid: str | None = None
-    push_prop_numr = 0
-
-    for action_el in dev_el.findall("./actions/action"):
-        action_clsid = api.txt("action_clsid", action_el)
-        if action_clsid != LD_ACTION_PUSH:
-            continue
-        push_prop_clsid = api.txt("prop_clsid", action_el) or None
-        push_prop_numr = 0
-        break
-
-    return _LdPushButtonDevice(
+    return LdPushButtonDevice(
         device_key=device_key,
-        device_clsid=device_clsid,
-        label=label,
-        room_label=room_label,
-        push_prop_clsid=push_prop_clsid,
-        push_prop_numr=push_prop_numr,
+        device_clsid=api.txt("device_clsid", dev_el),
+        label=api.txt("label", dev_el) or device_key,
+        room_label=api.txt("room_label", dev_el),
+        push_prop_clsid=next(
+            (
+                api.txt("prop_clsid", action_el) or None
+                for action_el in dev_el.findall("./actions/action")
+                if api.txt("action_clsid", action_el) == LD_ACTION_PUSH
+            ),
+            None,
+        ),
     )
 
 
-class LifedomusPushButton(ButtonEntity):
-    """Lifedomus native push button entity."""
+PUSH_BUTTON_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdPushButtonDevice]] = (
+    LdCoordinatorConfig(
+        name="Lifedomus push button coordinator",
+        category_clsid=LdDeviceCategory.ACTUATOR_REMOTE_CONTROL,
+        parse_device=_parse_push_button_device_element,
+    )
+)
 
-    _attr_should_poll = False
+
+class LifedomusPushButton(LifedomusEntity[LdPushButtonDevice], ButtonEntity):
+    """Lifedomus native push button entity."""
 
     def __init__(
         self,
-        coordinator: LdCoordinator,
-        device: _LdPushButtonDevice,
-        dependencies: EntityDependencies,
+        coordinator: LdCoordinator[LdPushButtonDevice],
+        device: LdPushButtonDevice,
+        runtime: LifedomusRuntimeData,
     ) -> None:
-        """Initialize the push button entity and attach the coordinator by composition."""
-        super().__init__()
-        self.coordinator = coordinator
-        self._api = dependencies.api
-        self._site_key = str(dependencies.entry.data.get(CONF_SITE_KEY))
-        self._user_key = str(dependencies.entry.data.get(CONF_USER_KEY))
-        self._push_prop_clsid = device.push_prop_clsid
-        self._push_prop_numr = int(device.push_prop_numr)
-
+        """Initialize the push button entity."""
+        super().__init__(coordinator, device, runtime)
         self._attr_unique_id = device.device_key
         self._attr_name = device.label
 
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=self._attr_name,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
-        )
+    @property
+    def _push_prop_clsid(self) -> str | None:
+        """Return the property carrying the PUSH action, when the device exposes one."""
+        return device.push_prop_clsid if (device := self.device) is not None else None
 
-        # Available only when a PUSH action is known for this device.
-        self._attr_available = self._push_prop_clsid is not None
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle state update from the coordinator."""
-        device = (
-            self.coordinator.data.get(self._attr_unique_id)
-            if self._attr_unique_id
-            else None
-        )
-        if device is not None:
-            self._attr_available = device.push_prop_clsid is not None
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Register coordinator update listener and publish initial state."""
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
-        )
-        self.async_write_ha_state()
+    @property
+    def available(self) -> bool:
+        """Return False when the device exposes no PUSH action."""
+        return super().available and self._push_prop_clsid is not None
 
     async def async_press(self) -> None:
-        """Send a PUSH action to the device using ExecuteOneAction."""
-        if not self._attr_unique_id or not self._push_prop_clsid:
-            return
-
-        try:
-            await self.coordinator.api.async_execute_one_action(
-                target_key=self._attr_unique_id,
-                prop_clsid=self._push_prop_clsid,
-                prop_numr=self._push_prop_numr,
-                action_clsid=LD_ACTION_PUSH,
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to execute PUSH action for %s: %s", self._attr_unique_id, err
-            )
+        """Send the PUSH action to the device."""
+        if (prop_clsid := self._push_prop_clsid) is not None:
+            await self._async_execute_action(prop_clsid, LD_ACTION_PUSH)
 
 
-class LifedomusAlarmActionButton(ButtonEntity):
+class LifedomusAlarmActionButton(LifedomusEntity[LdAlarmDevice], ButtonEntity):
     """Alarm action button (Full arming, Stop, Acknowledge events)."""
 
-    _attr_should_poll = False
     _attr_has_entity_name = True
 
     def __init__(
         self,
-        alarm_coordinator: LdCoordinator,
-        dependencies: EntityDependencies,
+        coordinator: LdCoordinator[LdAlarmDevice],
         device: LdAlarmDevice,
+        runtime: LifedomusRuntimeData,
         spec: _AlarmActionSpec,
     ) -> None:
         """Initialize the alarm action button."""
-        super().__init__()
-        self.coordinator = alarm_coordinator
-        self._api = dependencies.api
-        self._site_key = str(dependencies.entry.data.get(CONF_SITE_KEY))
-        self._user_key = str(dependencies.entry.data.get(CONF_USER_KEY))
-        self._device_key = device.device_key
-        self._prop_clsid = spec.prop_clsid
-        self._action_clsid = spec.action_clsid
-        self._button_kind = spec.button_kind
-        self._alarm_code = str(dependencies.entry.data.get(CONF_ALARM_CODE, "") or "")
+        super().__init__(coordinator, device, runtime)
+        self._spec = spec
+        self._alarm_code = runtime.alarm_code
+        self._attr_unique_id = f"{device.device_key}::alarm_btn::{spec.key}"
+        self._attr_translation_key = spec.translation_key
 
-        self._attr_unique_id = f"{device.device_key}::alarm_btn::{self._button_kind}"
-        if self._button_kind == "full_arming":
-            self._attr_translation_key = "alarm_full_arming"
-        elif self._button_kind == "stop":
-            self._attr_translation_key = "alarm_stop"
-        elif self._button_kind == "ack_events":
-            self._attr_translation_key = "alarm_ack_events"
-        else:
-            self._attr_translation_key = "button_kind_unknown"
+    @property
+    def _prop_clsid(self) -> str | None:
+        """Return the property carrying the action, when the alarm exposes it."""
+        return self._spec.prop_of(device) if (device := self.device) is not None else None
 
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=device.label,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
-        )
-
-        self._attr_available = self._prop_clsid is not None
+    @property
+    def available(self) -> bool:
+        """Return False when the alarm does not expose the action property."""
+        return super().available and self._prop_clsid is not None
 
     async def async_press(self) -> None:
-        """Send the alarm action via ExecuteOneAction."""
-        if not self._prop_clsid:
-            return
-
-        try:
-            await self.coordinator.api.async_execute_one_action(
-                target_key=self._device_key,
-                prop_clsid=self._prop_clsid,
-                action_clsid=self._action_clsid,
-                descriptor=build_action_descriptor({"password": self._alarm_code}),
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to execute alarm action %s for %s: %s",
-                self._action_clsid,
-                self._device_key,
-                err,
+        """Send the alarm action with the stored access code."""
+        if (prop_clsid := self._prop_clsid) is not None:
+            await self._async_execute_action(
+                prop_clsid,
+                self._spec.action_clsid,
+                build_action_descriptor({"password": self._alarm_code}),
             )
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: Callable[[list[ButtonEntity]], None],
+    entry: LifedomusConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up Lifedomus buttons from a config entry."""
-    api: LifedomusApi = entry.runtime_data
-
-    cfg = LdCoordinatorConfig[_LdPushButtonDevice](
-        name="Lifedomus push button coordinator",
-        entry=entry,
-        category_clsid=LdDeviceCategory.ACTUATOR_REMOTE_CONTROL,
-        parse_device=_parse_push_button_device_element,
+    runtime = entry.runtime_data
+    entities: list[ButtonEntity] = [
+        LifedomusPushButton(runtime.push_button, device, runtime)
+        for device in runtime.push_button.data.values()
+    ]
+    entities.extend(
+        LifedomusAlarmActionButton(runtime.alarm, device, runtime, spec)
+        for device in runtime.alarm.data.values()
+        for spec in ALARM_ACTION_SPECS
     )
-    button_coordinator = LdCoordinator(hass, api, cfg)
-    await button_coordinator.async_config_entry_first_refresh()
-    shared = hass.data.setdefault(DOMAIN, {})
-    shared["button_coordinator"] = button_coordinator
-
-    alarm_coordinator = await get_or_create_alarm_coordinator(hass, api, entry)
-
-    dependencies = build_entity_dependencies(hass, api, entry)
-
-    # Native PUSH buttons
-    push_entities: list[ButtonEntity] = [
-        LifedomusPushButton(button_coordinator, device, dependencies)
-        for device in button_coordinator.data.values()
-    ]
-
-    # Alarm action buttons
-    alarm_specs_per_device = {
-        device.device_key: [
-            _AlarmActionSpec(
-                button_kind="full_arming",
-                prop_clsid=device.prop_operating_mode,
-                action_clsid=LD_ACTION_ALARM_FULL_ARMING,
-            ),
-            _AlarmActionSpec(
-                button_kind="stop",
-                prop_clsid=device.prop_operating_mode,
-                action_clsid=LD_ACTION_ALARM_STOP,
-            ),
-            _AlarmActionSpec(
-                button_kind="ack_events",
-                prop_clsid=device.prop_ack_events,
-                action_clsid=LD_ACTION_ALARM_EVENTS_ACKNOWLEDGE,
-            ),
-        ]
-        for device in alarm_coordinator.data.values()
-    }
-
-    alarm_entities: list[ButtonEntity] = [
-        LifedomusAlarmActionButton(alarm_coordinator, dependencies, device, spec)
-        for device in alarm_coordinator.data.values()
-        for spec in alarm_specs_per_device.get(device.device_key, [])
-    ]
-
-    entities: list[ButtonEntity] = []
-    entities.extend(push_entities)
-    entities.extend(alarm_entities)
-
-    if callable(async_add_entities):
-        async_add_entities(entities)
+    async_add_entities(entities)

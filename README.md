@@ -20,7 +20,7 @@ It offers zero-configuration discovery, secure local communication, efficient co
 - Supported platforms:
   - Binary Sensor: detectors, heat demand indicators, plus alarm boolean states with icon and fault attributes
   - Button: native push buttons and alarm action buttons (Full arming, Stop, Acknowledge events)
-  Climate: thermostats (direct setpoint, 6-position and heat mode presets, on/off regulation)
+  - Climate: thermostats (direct setpoint, 6-position and heat mode presets, on/off regulation)
   - Cover: motors (shutters) with UP/DOWN/STOP and exact position
   - Light: RGBWW LED strips, dimmable and on/off devices
   - Sensor: raw measurement devices and alarm “Operating mode” sensors
@@ -30,10 +30,10 @@ It offers zero-configuration discovery, secure local communication, efficient co
 
 ## Requirements
 
-- Home Assistant 2025.1+
+- Home Assistant 2026.8+
 - Python 3.13+
 - Lifedomus gateway (reachable on your LAN for discovery)
-- asyncssh >= 2.14.2,<3.0.0 (installed automatically by Home Assistant)
+- asyncssh >=2.14.2, <3.0.0 (installed automatically by Home Assistant)
 
 ## Installation
 

@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "Toiminnon {action} suorittaminen kohteessa {entity} epäonnistui: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

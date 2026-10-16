@@ -21,11 +21,9 @@ Notes:
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime
-import logging
-from typing import cast
+from typing import Final
 from xml.etree.ElementTree import Element
 
 from homeassistant.components.sensor import (
@@ -33,36 +31,26 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import UnitOfEnergy
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .alarm import (
-    ALARM_OPERATING_MODE_ICON_BY_VALUE,
-    LdAlarmDevice,
-    get_or_create_alarm_coordinator,
-)
-from .api import LifedomusApi, LifedomusApiError, parse_number
+from .alarm import ALARM_OPERATING_MODE_ICON_BY_VALUE, LdAlarmDevice
+from .api import LifedomusApi, SystemVariableValue, parse_number
 from .const import (
-    CONF_SITE_KEY,
-    DOMAIN,
     LD_CLSID_SYSTEM_VARIABLES,
+    LD_DEVICE_TYPE_HEATING_MANAGER,
     LD_STATE_VALUE,
     LD_VALUE_ALARM_MODE_ARMED_FULL,
     LD_VALUE_ALARM_MODE_ARMED_PARTIAL,
     LD_VALUE_ALARM_MODE_MAINTENANCE,
     LD_VALUE_ALARM_MODE_STOP,
-    MODEL,
     LdDeviceCategory,
 )
-from .coordinator import (
-    LdCoordinator,
-    LdCoordinatorConfig,
-    async_get_or_create_coordinator,
-)
-from .energy import LdEnergyMeter, get_or_create_energy_coordinator
-from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
-
-_LOGGER = logging.getLogger(__name__)
+from .coordinator import LdCoordinator, LdCoordinatorConfig
+from .data import LifedomusConfigEntry, LifedomusRuntimeData
+from .energy import LdEnergyMeter
+from .entity import LifedomusEntity, LifedomusSystemVariableEntity
 
 
 def normalize_operating_mode_value(mode: str | None) -> str | None:
@@ -84,7 +72,7 @@ def normalize_operating_mode_value(mode: str | None) -> str | None:
 
 
 @dataclass(slots=True)
-class _LdRawSensor:
+class LdRawSensor:
     """Container for a parsed Lifedomus raw sensor."""
 
     device_key: str
@@ -97,7 +85,7 @@ class _LdRawSensor:
 
 def _parse_raw_sensor_device_element(
     api: LifedomusApi, dev_el: Element
-) -> _LdRawSensor | None:
+) -> LdRawSensor | None:
     """Parse a <device> element returned by GetDevicesFromCatg into a sensor snapshot."""
     device_key = api.txt("device_key", dev_el)
     if not device_key:
@@ -125,7 +113,7 @@ def _parse_raw_sensor_device_element(
                 unit = unit_txt
             break
 
-    return _LdRawSensor(
+    return LdRawSensor(
         device_key=device_key,
         device_clsid=device_clsid,
         label=label,
@@ -135,378 +123,155 @@ def _parse_raw_sensor_device_element(
     )
 
 
-async def get_or_create_sensor_coordinator(
-    hass: HomeAssistant, api: LifedomusApi, entry: ConfigEntry
-) -> LdCoordinator[_LdRawSensor]:
-    """Return the shared raw sensor coordinator, creating and refreshing it if missing.
-
-    The coordinator is shared across platforms so that targeted refreshes
-    triggered by the SSH monitor reach every entity of the category.
-    """
-    return await async_get_or_create_coordinator(
-        hass,
-        "sensor_coordinator",
-        lambda: LdCoordinator(
-            hass,
-            api,
-            LdCoordinatorConfig[_LdRawSensor](
-                name="Lifedomus sensor coordinator",
-                entry=entry,
-                category_clsid=LdDeviceCategory.MEASURE_SENSOR,
-                parse_device=_parse_raw_sensor_device_element,
-            ),
-        ),
+SENSOR_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdRawSensor]] = (
+    LdCoordinatorConfig(
+        name="Lifedomus sensor coordinator",
+        category_clsid=LdDeviceCategory.MEASURE_SENSOR,
+        parse_device=_parse_raw_sensor_device_element,
     )
+)
 
 
-class LifedomusRawSensor(SensorEntity):
-    """Lifedomus raw sensor entity."""
+def _device_class_for_unit(unit: str | None) -> SensorDeviceClass | None:
+    """Return a best-effort device class inferred from the unit reported by the gateway."""
+    if not unit:
+        return None
+    if "°C" in unit:
+        return SensorDeviceClass.TEMPERATURE
+    if "W/m²" in unit:
+        return SensorDeviceClass.IRRADIANCE
+    return None
 
-    _attr_should_poll = False
+
+class LifedomusRawSensor(LifedomusEntity[LdRawSensor], SensorEntity):
+    """Lifedomus raw measurement sensor."""
+
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
-        coordinator: LdCoordinator[_LdRawSensor],
-        device: _LdRawSensor,
-        dependencies: EntityDependencies,
+        coordinator: LdCoordinator[LdRawSensor],
+        device: LdRawSensor,
+        runtime: LifedomusRuntimeData,
     ) -> None:
-        """Initialize the sensor entity and attach the coordinator by composition."""
-        super().__init__()
-        self.coordinator = coordinator
-        self._api = dependencies.api
-
+        """Initialize the sensor entity."""
+        super().__init__(coordinator, device, runtime)
         self._attr_unique_id = device.device_key
-        self._attr_name = device.label
-
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=self._attr_name,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
-        )
-
         self._apply_device_snapshot(device)
 
-    def _apply_device_snapshot(self, device: _LdRawSensor) -> None:
-        """Apply the coordinator snapshot to HA attributes."""
+    def _apply_device_snapshot(self, device: LdRawSensor) -> None:
+        """Copy the value and unit, deriving the device class from the unit."""
         self._attr_name = device.label
         self._attr_native_value = device.value
         self._attr_native_unit_of_measurement = device.unit
-
-        # Try to set a device class when unit is known (best-effort).
-        device_class: SensorDeviceClass | None = None
-        if device.unit:
-            if "°C" in device.unit:
-                device_class = SensorDeviceClass.TEMPERATURE
-            elif "W/m²" in device.unit:
-                device_class = SensorDeviceClass.IRRADIANCE
-        self._attr_device_class = device_class
-
-    @property
-    def _dev(self) -> _LdRawSensor | None:
-        """Return the current device snapshot from the coordinator."""
-        if self._attr_unique_id is None:
-            return None
-        return self.coordinator.data.get(self._attr_unique_id)
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle state update from the coordinator."""
-        if self._dev is not None:
-            self._apply_device_snapshot(self._dev)
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Register coordinator update listener and publish initial state."""
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
-        )
-        if self._dev is not None:
-            self._apply_device_snapshot(self._dev)
-        self.async_write_ha_state()
+        self._attr_device_class = _device_class_for_unit(device.unit)
 
 
-class LifedomusAlarmOperatingModeSensor(SensorEntity):
+class LifedomusAlarmOperatingModeSensor(LifedomusEntity[LdAlarmDevice], SensorEntity):
     """Alarm 'Operating mode' sensor (text) with mode-specific icon."""
 
-    _attr_should_poll = False
     _attr_has_entity_name = True
     _attr_translation_key = "operating_mode"
 
     def __init__(
         self,
-        coordinator: LdCoordinator,
+        coordinator: LdCoordinator[LdAlarmDevice],
         device: LdAlarmDevice,
-        dependencies: EntityDependencies,
+        runtime: LifedomusRuntimeData,
     ) -> None:
         """Initialize the alarm operating mode sensor."""
-        super().__init__()
-        self.coordinator = coordinator
-        self._api = dependencies.api
-        self._device_key = device.device_key
-
+        super().__init__(coordinator, device, runtime)
         self._attr_unique_id = f"{device.device_key}::operating_mode"
+        self._apply_device_snapshot(device)
 
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=device.label,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
+    def _apply_device_snapshot(self, device: LdAlarmDevice) -> None:
+        """Normalize the mode for translations and pick the matching icon."""
+        self._attr_native_value = normalize_operating_mode_value(device.operating_mode)
+        self._attr_icon = ALARM_OPERATING_MODE_ICON_BY_VALUE.get(
+            (device.operating_mode or "").strip().upper(), "mdi:help-circle-outline"
         )
 
-        current_mode: str | None = device.operating_mode
-        norm_mode = normalize_operating_mode_value(current_mode)
-        self._attr_native_value = norm_mode
 
-        raw_for_icon = current_mode or (norm_mode.upper() if norm_mode else None)
-        self._attr_icon = self._resolve_icon(raw_for_icon)
-
-    @staticmethod
-    def _resolve_icon(mode: str | None) -> str:
-        """Return an icon representing the current operating mode."""
-        if not mode:
-            return "mdi:help-circle-outline"
-        return ALARM_OPERATING_MODE_ICON_BY_VALUE.get(
-            mode.upper(), "mdi:help-circle-outline"
-        )
-
-    @property
-    def _dev(self) -> LdAlarmDevice | None:
-        """Return the current alarm device snapshot."""
-        return self.coordinator.data.get(self._device_key)
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle update from alarm coordinator."""
-        device = self._dev
-        if device is not None:
-            norm_mode = normalize_operating_mode_value(device.operating_mode)
-            self._attr_native_value = norm_mode
-            raw_for_icon = device.operating_mode or (
-                norm_mode.upper() if norm_mode else None
-            )
-            self._attr_icon = self._resolve_icon(raw_for_icon)
-        self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """Register update listener and publish initial state."""
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
-        )
-        self.async_write_ha_state()
-
-
-class LifedomusEnergyMeterSensor(SensorEntity):
+class LifedomusEnergyMeterSensor(LifedomusEntity[LdEnergyMeter], SensorEntity):
     """Energy meter sensor exposing total consumption."""
 
-    _attr_should_poll = False
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_device_class = SensorDeviceClass.ENERGY
-    _attr_native_unit_of_measurement = "Wh"
+    _attr_native_unit_of_measurement = UnitOfEnergy.WATT_HOUR
 
     def __init__(
         self,
-        coordinator: LdCoordinator,
+        coordinator: LdCoordinator[LdEnergyMeter],
         device: LdEnergyMeter,
-        dependencies: EntityDependencies,
+        runtime: LifedomusRuntimeData,
     ) -> None:
         """Initialize the energy meter sensor."""
-        super().__init__()
-        self.coordinator = coordinator
-        self._api = dependencies.api
-        self._device_key = device.device_key
-
+        super().__init__(coordinator, device, runtime)
         self._attr_unique_id = f"{device.device_key}::total_energy"
-        self._attr_name = device.label
-
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=device.label,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
-        )
-
         self._apply_device_snapshot(device)
 
     def _apply_device_snapshot(self, device: LdEnergyMeter) -> None:
-        """Apply the coordinator snapshot to HA attributes."""
+        """Copy the total and expose the reset values as attributes."""
+        self._attr_name = device.label
         self._attr_native_value = device.total_value
-
-    @property
-    def _dev(self) -> LdEnergyMeter | None:
-        """Return the current device snapshot."""
-        return self.coordinator.data.get(self._device_key)
-
-    @property
-    def extra_state_attributes(self) -> dict[str, object]:
-        """Expose additional energy meter attributes."""
-        device = self._dev
-        if device is None:
-            return {}
-        return {
+        self._attr_extra_state_attributes = {
             "value_reset": device.total_value_reset,
             "date": device.date,
             "date_reset": device.date_reset,
         }
 
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle update from energy coordinator."""
-        device = self._dev
-        if device is not None:
-            self._apply_device_snapshot(device)
-        self.async_write_ha_state()
 
-    async def async_added_to_hass(self) -> None:
-        """Register update listener and publish initial state."""
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
-        )
-        self.async_write_ha_state()
+class LifedomusSystemVariableSensor(LifedomusSystemVariableEntity, SensorEntity):
+    """Non-boolean system variable of the hub."""
 
-
-class LifedomusSystemVariableSensor(SensorEntity):
-    """System variable sensor exposed by the Lifedomus hub."""
-
-    _attr_should_poll = False
-    _attr_has_entity_name = True
-
-    def __init__(
-        self,
-        hass: HomeAssistant,
-        api: LifedomusApi,
-        site_key: str,
-        uuid: str,
-        variable_key: str,
-    ) -> None:
-        """Initialize the system variable sensor."""
-        super().__init__()
-        self._hass = hass
-        self._api = api
-        self._site_key = site_key
-        self.variable_key = variable_key
-
-        config = LD_CLSID_SYSTEM_VARIABLES[variable_key]
-
-        self._attr_unique_id = f"{uuid}::system::{variable_key}"
-        self._attr_translation_key = config.translation_key
-        self._attr_icon = config.icon
-        self._attr_entity_registry_enabled_default = config.enabled
-
-        if config.value_type in (date, datetime):
-            if isinstance(config.sensor_class, SensorDeviceClass):
-                self._attr_device_class = config.sensor_class
-            elif config.value_type is datetime:
-                self._attr_device_class = SensorDeviceClass.TIMESTAMP
-            elif config.value_type is date:
-                self._attr_device_class = SensorDeviceClass.DATE
-
-        if config.unit:
-            self._attr_native_unit_of_measurement = config.unit
-
+    def __init__(self, entry: LifedomusConfigEntry, variable_key: str) -> None:
+        """Initialize the entity and apply the configured classes and unit."""
+        super().__init__(entry, variable_key)
+        config = self._config
+        if config.value_type is datetime:
+            self._attr_device_class = SensorDeviceClass.TIMESTAMP
+        elif config.value_type is date:
+            self._attr_device_class = SensorDeviceClass.DATE
         if isinstance(config.sensor_class, SensorStateClass):
             self._attr_state_class = config.sensor_class
+        self._attr_native_unit_of_measurement = config.unit
 
-        self._attr_device_info = build_device_info(
-            device_key=uuid,
-            device_clsid=MODEL,
-            label=MODEL,
-            room_label="",
-        )
-
-        self._attr_native_value = None
-
-    def _apply_value(self, value: bool | date | datetime | float | str | None) -> None:
-        """Apply and validate a system variable value based on its declared type."""
-        config = LD_CLSID_SYSTEM_VARIABLES[self.variable_key]
-
+    def _apply_value(self, value: SystemVariableValue) -> None:
+        """Keep the value only when it matches the declared type of the variable."""
+        config = self._config
         if config.value_type is int and isinstance(value, (int, float)):
             self._attr_native_value = int(value)
         elif config.value_type is float and isinstance(value, (int, float)):
             self._attr_native_value = float(value)
-        elif (
-            (config.value_type is str and isinstance(value, str))
-            or (config.value_type is date and isinstance(value, date))
-            or (config.value_type is datetime and isinstance(value, datetime))
+        elif config.value_type in (str, date, datetime) and isinstance(
+            value, config.value_type
         ):
             self._attr_native_value = value
-
-    async def async_added_to_hass(self) -> None:
-        """Fetch initial value when entity is added to Home Assistant."""
-        await super().async_added_to_hass()
-        if self.enabled:
-            await self.async_update()
-        self.async_write_ha_state()
-
-    async def async_update(self) -> None:
-        """Fetch the current system variable value."""
-        try:
-            value = await self._api.async_get_system_variable(
-                site_key=self._site_key, variable_key=self.variable_key
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to fetch system variable %s: %s", self.variable_key, err
-            )
-            return
-
-        self._apply_value(value)
-
-    def handle_push_update(
-        self, value: bool | date | datetime | float | str | None
-    ) -> None:
-        """Handle a push notification update for this system variable."""
-        self._apply_value(value)
-        self.async_write_ha_state()
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: Callable[[list[SensorEntity]], None],
+    entry: LifedomusConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    """Set up the Lifedomus raw sensors platform from a config entry."""
-    api: LifedomusApi = entry.runtime_data
-    site_key = str(entry.data.get(CONF_SITE_KEY, ""))
-    shared = hass.data.setdefault(DOMAIN, {})
-    uuid = str(shared.get("uuid", ""))
-
-    sensor_coordinator = await get_or_create_sensor_coordinator(hass, api, entry)
-    alarm_coordinator = await get_or_create_alarm_coordinator(hass, api, entry)
-    energy_coordinator = await get_or_create_energy_coordinator(hass, api, entry)
-
-    dependencies = build_entity_dependencies(hass, api, entry)
-
-    system_sensors = [
-        LifedomusSystemVariableSensor(hass, api, site_key, uuid, var_key)
-        for var_key, config in LD_CLSID_SYSTEM_VARIABLES.items()
-        if config.value_type is not bool
+    """Set up the Lifedomus sensor platform from a config entry."""
+    runtime = entry.runtime_data
+    entities: list[SensorEntity] = [
+        LifedomusRawSensor(runtime.sensor, device, runtime)
+        for device in runtime.sensor.data.values()
     ]
-    shared["system_sensors"] = {s.variable_key: s for s in system_sensors}
-
-    entities = cast(
-        list[SensorEntity],
-        [
-            LifedomusRawSensor(sensor_coordinator, device, dependencies)
-            for device in sensor_coordinator.data.values()
-        ]
-        + [
-            LifedomusAlarmOperatingModeSensor(alarm_coordinator, device, dependencies)
-            for device in alarm_coordinator.data.values()
-        ]
-        + [
-            LifedomusEnergyMeterSensor(energy_coordinator, device, dependencies)
-            for device in energy_coordinator.data.values()
-            if device.device_clsid == "CLSID-DEVC-M-CP13"
-        ]
-        + system_sensors,
+    entities.extend(
+        LifedomusAlarmOperatingModeSensor(runtime.alarm, device, runtime)
+        for device in runtime.alarm.data.values()
     )
-
+    entities.extend(
+        LifedomusEnergyMeterSensor(runtime.energy, device, runtime)
+        for device in runtime.energy.data.values()
+        if device.device_clsid == LD_DEVICE_TYPE_HEATING_MANAGER
+    )
+    entities.extend(
+        LifedomusSystemVariableSensor(entry, variable_key)
+        for variable_key, config in LD_CLSID_SYSTEM_VARIABLES.items()
+        if config.value_type is not bool
+    )
     async_add_entities(entities)

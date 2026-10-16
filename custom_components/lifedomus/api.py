@@ -68,6 +68,9 @@ class LifedomusAuthError(LifedomusApiError):
     """Authentication or authorization error."""
 
 
+type SystemVariableValue = bool | date | datetime | int | float | str | None
+
+
 def parse_bool(txt: str | None) -> bool | None:
     """Convert a textual boolean to a Python boolean."""
     if txt is None:
@@ -594,7 +597,7 @@ class LifedomusApi:
 
     async def async_get_system_variable(
         self, *, site_key: str, variable_key: str
-    ) -> bool | date | datetime | int | float | str | None:
+    ) -> SystemVariableValue:
         """Fetch a system variable value from State/GetNewValue.
 
         Args:

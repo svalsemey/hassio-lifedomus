@@ -71,5 +71,10 @@
         }
       }
     }
+  },
+  "exceptions": {
+    "action_failed": {
+      "message": "Failed to execute {action} on {entity}: {error}"
+    }
   }
 }

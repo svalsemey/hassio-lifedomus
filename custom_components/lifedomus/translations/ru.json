@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "Не удалось выполнить {action} для {entity}: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "Αποτυχία εκτέλεσης {action} στο {entity}: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

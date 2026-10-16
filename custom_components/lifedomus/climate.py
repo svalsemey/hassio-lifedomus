@@ -42,10 +42,9 @@ State handling:
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 import html
-import logging
 import re
 from typing import Any, Final
 from xml.etree.ElementTree import Element
@@ -62,18 +61,12 @@ from homeassistant.components.climate import (
     HVACAction,
     HVACMode,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_TEMPERATURE, Platform, UnitOfTemperature
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .api import (
-    LifedomusApi,
-    LifedomusApiError,
-    build_action_descriptor,
-    parse_bool,
-    parse_number,
-)
+from .api import LifedomusApi, build_action_descriptor, parse_bool, parse_number
 from .const import (
     DOMAIN,
     LD_ACTION_HEATMODE_COMFORT,
@@ -127,14 +120,9 @@ from .const import (
     LD_VALUE_THERMOSTAT_STEP,
     LdDeviceCategory,
 )
-from .coordinator import (
-    LdCoordinator,
-    LdCoordinatorConfig,
-    async_get_or_create_coordinator,
-)
-from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
-
-_LOGGER = logging.getLogger(__name__)
+from .coordinator import LdCoordinator, LdCoordinatorConfig
+from .data import LifedomusConfigEntry, LifedomusRuntimeData
+from .entity import LifedomusEntity
 
 
 @dataclass(frozen=True, slots=True)
@@ -266,9 +254,6 @@ class LdClimateDevice:
 
     # Diagnostic boolean states (FLAG/FAULT)
     diagnostic_states: dict[str, bool | None]
-
-    # Availability flag
-    available: bool
 
 
 @dataclass(slots=True)
@@ -427,14 +412,21 @@ def _parse_climate_device_element(
         min_temp=caps.min_temp,
         max_temp=caps.max_temp,
         diagnostic_states=states.diagnostic_states,
-        available=True,
     )
 
 
-class LifedomusClimate(ClimateEntity):
+CLIMATE_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdClimateDevice]] = (
+    LdCoordinatorConfig(
+        name="Lifedomus climate coordinator",
+        category_clsid=LdDeviceCategory.ACTUATOR_CLIMATECONTROL,
+        parse_device=_parse_climate_device_element,
+    )
+)
+
+
+class LifedomusClimate(LifedomusEntity[LdClimateDevice], ClimateEntity):
     """Lifedomus climate entity."""
 
-    _attr_should_poll = False
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = LD_VALUE_THERMOSTAT_STEP
 
@@ -442,21 +434,11 @@ class LifedomusClimate(ClimateEntity):
         self,
         coordinator: LdCoordinator[LdClimateDevice],
         device: LdClimateDevice,
-        dependencies: EntityDependencies,
+        runtime: LifedomusRuntimeData,
     ) -> None:
-        """Initialize the climate entity and attach the coordinator by composition."""
-        super().__init__()
-        self.coordinator = coordinator
-
+        """Initialize the climate entity."""
+        super().__init__(coordinator, device, runtime)
         self._attr_unique_id = device.device_key
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=device.label,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
-        )
-
         self._apply_device_snapshot(device)
 
     def _apply_device_snapshot(self, device: LdClimateDevice) -> None:
@@ -535,20 +517,6 @@ class LifedomusClimate(ClimateEntity):
         return HVACMode.HEAT
 
     @property
-    def _dev(self) -> LdClimateDevice | None:
-        """Return the current device snapshot from the coordinator."""
-        if self._attr_unique_id is None:
-            return None
-        return self.coordinator.data.get(self._attr_unique_id)
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle state update from the coordinator."""
-        if (device := self._dev) is not None:
-            self._apply_device_snapshot(device)
-        self.async_write_ha_state()
-
-    @property
     def extra_state_attributes(self) -> dict[str, bool | str | None]:
         """Expose diagnostic FLAG/FAULT states and the raw thermal mode."""
         result: dict[str, bool | str | None] = {
@@ -558,44 +526,6 @@ class LifedomusClimate(ClimateEntity):
         if self._device.therm_mode is not None:
             result["therm_mode"] = self._device.therm_mode
         return result
-
-    async def async_added_to_hass(self) -> None:
-        """Register coordinator update listener and publish initial state."""
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
-        )
-        self._handle_coordinator_update()
-
-    async def _async_execute_action(
-        self, prop_clsid: str, action_clsid: str, descriptor: str | None = None
-    ) -> None:
-        """Execute a device action; on failure, revert to the last confirmed snapshot.
-
-        Callers publish an optimistic state before the call, so a failed
-        request restores the attributes from the coordinator data instead of
-        leaving a state the device never reached.
-        """
-        if self._attr_unique_id is None:
-            return
-        try:
-            await self.coordinator.api.async_execute_one_action(
-                target_key=self._attr_unique_id,
-                prop_clsid=prop_clsid,
-                action_clsid=action_clsid,
-                descriptor=descriptor,
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to execute %s on %s for %s: %s",
-                action_clsid,
-                prop_clsid,
-                self._attr_unique_id,
-                err,
-            )
-            if (device := self._dev) is not None:
-                self._apply_device_snapshot(device)
-                self.async_write_ha_state()
 
     async def _async_send_setpoint(self, temp: float) -> None:
         """Clamp and step the setpoint, publish it optimistically and send it on GENERALCONST."""
@@ -683,34 +613,10 @@ class LifedomusClimate(ClimateEntity):
             )
 
 
-async def get_or_create_climate_coordinator(
-    hass: HomeAssistant, api: LifedomusApi, entry: ConfigEntry
-) -> LdCoordinator[LdClimateDevice]:
-    """Return the shared climate coordinator, creating and refreshing it if missing.
-
-    The coordinator covers the whole climate control category, including heat
-    demand indicators which are exposed by the binary_sensor platform.
-    """
-    return await async_get_or_create_coordinator(
-        hass,
-        "climate_coordinator",
-        lambda: LdCoordinator(
-            hass,
-            api,
-            LdCoordinatorConfig[LdClimateDevice](
-                name="Lifedomus climate coordinator",
-                entry=entry,
-                category_clsid=LdDeviceCategory.ACTUATOR_CLIMATECONTROL,
-                parse_device=_parse_climate_device_element,
-            ),
-        ),
-    )
-
-
 async def async_setup_entry(
     hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: Callable[[list[ClimateEntity]], None],
+    entry: LifedomusConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up the Lifedomus climate platform from a config entry.
 
@@ -718,15 +624,13 @@ async def async_setup_entry(
     platform; any climate entity previously registered for them is removed from
     the entity registry so no orphan remains after an upgrade.
     """
-    api: LifedomusApi = entry.runtime_data
-    coordinator = await get_or_create_climate_coordinator(hass, api, entry)
-    dependencies = build_entity_dependencies(hass, api, entry)
+    runtime = entry.runtime_data
     registry = er.async_get(hass)
 
     entities: list[ClimateEntity] = []
-    for device in coordinator.data.values():
+    for device in runtime.climate.data.values():
         if device.device_clsid != LD_DEVICE_TYPE_FLOOR_HEATING:
-            entities.append(LifedomusClimate(coordinator, device, dependencies))
+            entities.append(LifedomusClimate(runtime.climate, device, runtime))
         elif entity_id := registry.async_get_entity_id(
             Platform.CLIMATE, DOMAIN, device.device_key
         ):

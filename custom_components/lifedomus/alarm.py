@@ -11,9 +11,6 @@ import logging
 from typing import Final
 from xml.etree.ElementTree import Element
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-
 from .api import LifedomusApi, parse_bool
 from .const import (
     LD_LABEL_FAULT_BATTERY,
@@ -52,11 +49,7 @@ from .const import (
     LD_VALUE_ALARM_MODE_STOP,
     LdDeviceCategory,
 )
-from .coordinator import (
-    LdCoordinator,
-    LdCoordinatorConfig,
-    async_get_or_create_coordinator,
-)
+from .coordinator import LdCoordinatorConfig
 
 # Mapping from FAULT label returned by GetAlarmFaultObjectList to request category.
 ALARM_FAULT_LABEL_TO_CATEGORY: Final[dict[str, str]] = {
@@ -256,8 +249,6 @@ class LdAlarmDevice:
     prop_zone_sw: str | None
     prop_ack_events: str | None
 
-    available: bool
-
 
 def _parse_alarm_action_properties(
     api: LifedomusApi, dev_el: Element
@@ -369,31 +360,13 @@ def _parse_alarm_device_element(
         prop_operating_mode=prop_operating_mode,
         prop_zone_sw=prop_zone_sw,
         prop_ack_events=prop_ack_events,
-        available=True,
     )
 
 
-class LifedomusAlarmCoordinator(LdCoordinator[LdAlarmDevice]):
-    """Typed alias maintained for backward imports."""
-
-    # No custom behavior; inherits everything from LdCoordinator.
-
-
-async def get_or_create_alarm_coordinator(
-    hass: HomeAssistant, api: LifedomusApi, entry: ConfigEntry
-) -> LifedomusAlarmCoordinator:
-    """Return the shared alarm coordinator, creating and refreshing it if missing."""
-    return await async_get_or_create_coordinator(
-        hass,
-        "alarm_coordinator",
-        lambda: LifedomusAlarmCoordinator(
-            hass,
-            api,
-            LdCoordinatorConfig[LdAlarmDevice](
-                name="Lifedomus alarm coordinator",
-                entry=entry,
-                category_clsid=LdDeviceCategory.SURVEILLANCE_PROTECTION,
-                parse_device=_parse_alarm_device_element,
-            ),
-        ),
+ALARM_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdAlarmDevice]] = (
+    LdCoordinatorConfig(
+        name="Lifedomus alarm coordinator",
+        category_clsid=LdDeviceCategory.SURVEILLANCE_PROTECTION,
+        parse_device=_parse_alarm_device_element,
     )
+)

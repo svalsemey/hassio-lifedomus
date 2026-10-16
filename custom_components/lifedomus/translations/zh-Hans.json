@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "无法在 {entity} 上执行 {action}：{error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

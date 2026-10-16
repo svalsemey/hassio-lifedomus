@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "{entity}에서 {action}을(를) 실행하지 못했습니다: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

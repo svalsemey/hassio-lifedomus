@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "Ni bilo mogoče izvesti {action} na {entity}: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

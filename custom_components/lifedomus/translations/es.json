@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "Error al ejecutar {action} en {entity}: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

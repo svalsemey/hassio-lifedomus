@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "{entity} で {action} を実行できませんでした: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

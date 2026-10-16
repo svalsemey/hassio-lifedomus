@@ -15,18 +15,16 @@ from __future__ import annotations
 import asyncio
 from contextlib import suppress
 import logging
-from typing import Any, Final, Protocol, cast, runtime_checkable
-from xml.etree.ElementTree import Element
+from typing import cast, Final
 
 import asyncssh
 from defusedxml import ElementTree as ET
 
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.dispatcher import async_dispatcher_send
 
 from .api import LifedomusApi, LifedomusApiError
 from .const import (
-    DOMAIN,
     LD_CLSID_SYSTEM_VARIABLES,
     LD_MONITOR_SSH_PORT,
     LD_MONITOR_SSH_USER,
@@ -56,6 +54,8 @@ from .const import (
     LD_STATE_VALUE_LED_WARM_WHITE,
     PATTERN_DEVICE_KEY,
 )
+from .data import LifedomusConfigEntry
+from .helpers import system_variable_signal
 
 # Accepted state CLSIDs for push filtering
 ACCEPTED_STATE_CLSIDS: Final[frozenset[str]] = frozenset(
@@ -86,6 +86,11 @@ ACCEPTED_STATE_CLSIDS: Final[frozenset[str]] = frozenset(
     }
 )
 
+# States reported only by the alarm coordinator; their refresh is targeted to it.
+ALARM_STATE_CLSIDS: Final[frozenset[str]] = frozenset(
+    {LD_STATE_ALARM_OPERATINGMODE, LD_STATE_ALARM_ZONESTATUS}
+)
+
 _LOGGER = logging.getLogger(__name__)
 
 LOG_PREVIEW_MAX_CHARS: Final[int] = 4096
@@ -93,23 +98,16 @@ READ_CHUNK_SIZE: Final[int] = 65536
 RX_MAX_BUFFER_BYTES: Final[int] = 2_000_000
 
 
-@runtime_checkable
-class _SnapshotCoordinator(Protocol):
-    """Coordinator interface exposing per-device snapshot fetch and listener notification."""
-
-    data: dict[str, Any]
-
-    async def async_fetch_device_snapshot(self, device_key: str) -> Any: ...
-    def async_set_updated_data(self, data: dict[str, Any]) -> None: ...
-
-
 class LifedomusMonitor:
     """Maintain an SSH monitoring tunnel and dispatch XML notifications."""
 
-    def __init__(self, hass: HomeAssistant, api: LifedomusApi, host: str) -> None:
+    def __init__(
+        self, hass: HomeAssistant, entry: LifedomusConfigEntry, host: str
+    ) -> None:
         """Initialize the monitor."""
         self._hass = hass
-        self._api = api
+        self._entry = entry
+        self._api = entry.runtime_data.api
         self._host = host
         self._task: asyncio.Task[None] | None = None
         self._stopping = asyncio.Event()
@@ -133,48 +131,6 @@ class LifedomusMonitor:
             self._task = self._hass.loop.create_task(
                 self._runner(), name="lifedomus_monitor"
             )
-
-    def _iter_coordinators_with_snapshot(self) -> list[_SnapshotCoordinator]:
-        """Return all integration coordinators that can fetch per-device snapshots.
-
-        A coordinator is considered eligible when:
-         - it lives under hass.data[DOMAIN],
-         - it exposes a dict-like 'data',
-         - it implements an async 'async_fetch_device_snapshot(device_key)' coroutine.
-        """
-        shared = self._hass.data.setdefault(DOMAIN, {})
-        coords: list[_SnapshotCoordinator] = []
-        if not isinstance(shared, dict):
-            return coords
-
-        for value in shared.values():
-            # Check 'data' shape first
-            data = getattr(value, "data", None)
-            if not isinstance(data, dict):
-                continue
-
-            # Check for a coroutine-typed 'async_fetch_device_snapshot'
-            fetch_obj = getattr(value, "async_fetch_device_snapshot", None)
-            if fetch_obj is None or not asyncio.iscoroutinefunction(fetch_obj):
-                continue
-
-            coords.append(cast(_SnapshotCoordinator, value))
-
-        return coords
-
-    def _get_alarm_coordinator(self) -> _SnapshotCoordinator | None:
-        """Return the alarm coordinator if available and eligible."""
-        shared = self._hass.data.setdefault(DOMAIN, {})
-        if not isinstance(shared, dict):
-            return None
-        cand = shared.get("alarm_coordinator")
-        if cand is None:
-            return None
-        data = getattr(cand, "data", None)
-        fetch_obj = getattr(cand, "async_fetch_device_snapshot", None)
-        if isinstance(data, dict) and asyncio.iscoroutinefunction(fetch_obj):
-            return cast(_SnapshotCoordinator, cand)
-        return None
 
     def _xml_preview(self, raw: bytes, *, limit: int = LOG_PREVIEW_MAX_CHARS) -> str:
         """Return a safe, size-bounded UTF-8 preview for logs.
@@ -572,10 +528,12 @@ class LifedomusMonitor:
             _LOGGER.debug("State ignored (clsid %s not accepted)", clsid)
             return
 
-        if system_variable_key and system_variable_key in LD_CLSID_SYSTEM_VARIABLES:
+        if system_variable_key in LD_CLSID_SYSTEM_VARIABLES:
             _LOGGER.debug("System variable notification: %s", system_variable_key)
-            self._hass.async_create_task(
-                self._refresh_system_variable(system_variable_key, root)
+            async_dispatcher_send(
+                self._hass,
+                system_variable_signal(self._entry.entry_id),
+                system_variable_key,
             )
             return
 
@@ -594,87 +552,21 @@ class LifedomusMonitor:
         self._throttle[device_key] = now
         self._hass.async_create_task(self._refresh_existing_device(device_key, clsid))
 
-    async def _refresh_existing_device(
-        self, device_key: str, clsid: str | None = None
-    ) -> None:
-        """Refresh a device snapshot on coordinators that already know this device.
+    async def _refresh_existing_device(self, device_key: str, clsid: str) -> None:
+        """Refresh the device snapshot on every coordinator that already knows it.
 
-        When the state comes from the alarm domain (operating mode or zone status),
-        refresh only the shared alarm coordinator for efficiency. This ensures that
-        zone status changes (LD_STATE_ALARM_ZONESTATUS) propagate to
-        LifedomusAlarmZoneSwitch entities, which listen to the alarm coordinator.
-
-        For other state types, fall back to iterating all eligible coordinators.
+        Alarm states are only reported by the alarm coordinator, so their
+        refresh skips the other coordinators.
         """
-        targets: list[_SnapshotCoordinator] = []
-
-        # Target the alarm coordinator on alarm-related notifications, including zone status.
-        if clsid in (LD_STATE_ALARM_OPERATINGMODE, LD_STATE_ALARM_ZONESTATUS):
-            alarm_coord = self._get_alarm_coordinator()
-            if alarm_coord is not None and device_key in alarm_coord.data:
-                targets = [alarm_coord]
-
-        if not targets:
-            targets = self._iter_coordinators_with_snapshot()
-
-        for coord in targets:
-            if device_key not in coord.data:
+        runtime = self._entry.runtime_data
+        targets = (
+            (runtime.alarm,) if clsid in ALARM_STATE_CLSIDS else runtime.coordinators
+        )
+        for coordinator in targets:
+            if device_key not in coordinator.data:
                 continue
-            try:
-                updated = await coord.async_fetch_device_snapshot(device_key)
-            except LifedomusApiError as err:
-                _LOGGER.debug(
-                    "Existing-device refresh failed on %s for %s: %s",
-                    getattr(coord, "name", type(coord).__name__),
-                    device_key,
-                    err,
+            updated = await coordinator.async_fetch_device_snapshot(device_key)
+            if updated is not None:
+                coordinator.async_set_updated_data(
+                    {**coordinator.data, device_key: updated}
                 )
-                continue
-
-            if updated is None:
-                continue
-
-            new_data = dict(coord.data)
-            new_data[device_key] = updated
-            coord.async_set_updated_data(new_data)
-
-    async def _refresh_system_variable(self, variable_key: str, root: Element) -> None:
-        """Refresh a system variable sensor from a push notification.
-
-        Push notifications for system variables contain only the clsid and system_variable_key.
-        The actual value must be fetched via the API using async_get_system_variable.
-
-        Args:
-            variable_key: The system variable key (e.g., CLSID-SYSTEM-WEB).
-            root: The XML <State/> element (used for potential future enhancements).
-        """
-        shared = self._hass.data.setdefault(DOMAIN, {})
-        config = LD_CLSID_SYSTEM_VARIABLES.get(variable_key)
-
-        if not config:
-            return
-
-        registry = er.async_get(self._hass)
-
-        if config.value_type is bool:
-            system_binary_sensors = shared.get("system_binary_sensors", {})
-            binary_sensor = system_binary_sensors.get(variable_key)
-            if binary_sensor is not None:
-                entity_id = binary_sensor.entity_id
-                if entity_id:
-                    entry = registry.async_get(entity_id)
-                    if entry and entry.disabled:
-                        return
-                await binary_sensor.async_update()
-                binary_sensor.async_write_ha_state()
-        else:
-            system_sensors = shared.get("system_sensors", {})
-            sensor = system_sensors.get(variable_key)
-            if sensor is not None:
-                entity_id = sensor.entity_id
-                if entity_id:
-                    entry = registry.async_get(entity_id)
-                    if entry and entry.disabled:
-                        return
-                await sensor.async_update()
-                sensor.async_write_ha_state()

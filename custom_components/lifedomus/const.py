@@ -379,6 +379,10 @@ LD_DEVICE_TYPE_FLOOR_HEATING: Final[str] = (
     # as a binary sensor rather than a climate entity
     "CLSID-DEVC-A-CC15"
 )
+LD_DEVICE_TYPE_HEATING_MANAGER: Final[str] = (
+    # Heating manager reporting cumulative consumption through Mobile/GetTotalDataValue
+    "CLSID-DEVC-M-CP13"
+)
 
 # Labels for various alarm faults. Some are probably missing (not found in tested devices).
 LD_LABEL_FAULT_BATTERY: Final[str] = "{CLSID-LBL-XXD-FAULTS-BATTERY-CELL}"

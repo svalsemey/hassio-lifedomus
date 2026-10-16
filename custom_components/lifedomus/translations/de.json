@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "Fehler beim Ausführen von {action} auf {entity}: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

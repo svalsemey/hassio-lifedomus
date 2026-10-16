@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "Nem sikerült végrehajtani a(z) {action} műveletet a(z) {entity} entitáson: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

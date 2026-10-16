@@ -1,22 +1,25 @@
 """Lifedomus integration setup.
 
-This module wires the integration into Home Assistant: it validates connectivity,
-sets up config entries, forwards platforms, and ensures the hub device in the
-device registry uses the discovered name as friendly_name.
+This module validates connectivity to the gateway, registers the hub device,
+creates the device coordinators shared by the platforms, starts the push
+monitor and forwards the config entry to the platforms.
 """
 
 from __future__ import annotations
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_validation as cv, device_registry as dr
 from homeassistant.helpers.typing import ConfigType
 
-from .alarm import get_or_create_alarm_coordinator
-from .api import LifedomusApi, LifedomusApiError, LifedomusAuthError
+from .alarm import ALARM_COORDINATOR_CONFIG
+from .api import LifedomusApi, LifedomusApiError
+from .binary_sensor import DETECTOR_COORDINATOR_CONFIG
+from .button import PUSH_BUTTON_COORDINATOR_CONFIG
+from .climate import CLIMATE_COORDINATOR_CONFIG
 from .const import (
+    CONF_ALARM_CODE,
     CONF_HOST,
     CONF_NAME,
     CONF_PASSWORD,
@@ -29,10 +32,15 @@ from .const import (
     OPTION_UPDATE_INTERVAL,
     OPTION_UPDATE_INTERVAL_DEFAULT,
 )
+from .coordinator import LdCoordinator
+from .cover import COVER_COORDINATOR_CONFIG
+from .data import LifedomusConfigEntry, LifedomusRuntimeData
+from .energy import ENERGY_COORDINATOR_CONFIG, LifedomusEnergyCoordinator
+from .light import LIGHT_COORDINATOR_CONFIG
 from .monitor import LifedomusMonitor
+from .sensor import SENSOR_COORDINATOR_CONFIG
 
 # This integration is configured exclusively via config entries (no YAML).
-# Declaring a module-level CONFIG_SCHEMA satisfies hassfest when async_setup is present.
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 _PLATFORMS: list[Platform] = [
@@ -46,29 +54,21 @@ _PLATFORMS: list[Platform] = [
 ]
 
 
-async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    """Handle options update by reloading the config entry to propagate changes."""
+async def _async_update_listener(
+    hass: HomeAssistant, entry: LifedomusConfigEntry
+) -> None:
+    """Reload the config entry so that updated options are applied."""
     await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Set up the Lifedomus integration at Home Assistant start.
-
-    Home Assistant passes the global YAML configuration mapping as 'config'.
-    The ConfigType type annotation is required for proper typing checks.
-    """
-    # No global YAML schema to process; config flow handles user input.
+    """Set up the Lifedomus integration at Home Assistant start."""
     return True
 
 
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry[LifedomusApi]
-) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: LifedomusConfigEntry) -> bool:
     """Set up Lifedomus from a config entry."""
-
-    hass.data.setdefault(DOMAIN, {})
-
-    host = entry.data.get(CONF_HOST)
+    host = str(entry.data.get(CONF_HOST) or "")
     if not host:
         raise ConfigEntryNotReady("Missing host in config entry")
 
@@ -85,39 +85,27 @@ async def async_setup_entry(
     try:
         uuid = await api.async_get_uuid()
     except LifedomusApiError as err:
-        # Defer setup until gateway is reachable.
         raise ConfigEntryNotReady(err) from err
 
-    # Retrieve gateway version for hub device model
     try:
         version = await api.async_get_version()
     except LifedomusApiError:
         version = "Unknown"
 
-    # Inject stored auth context from the config entry.
     api.set_auth_context(
         site_key=str(entry.data.get(CONF_SITE_KEY)),
         user_key=str(entry.data.get(CONF_USER_KEY)),
         password=str(entry.data.get(CONF_PASSWORD)),
     )
-
     try:
         await api.async_refresh_session()
-    except (LifedomusAuthError, LifedomusApiError) as err:
-        # Postpone entry setup until the gateway or session becomes usable.
-        # This avoids raising ConfigEntryNotReady from forwarded platforms.
+    except LifedomusApiError as err:
         raise ConfigEntryNotReady(err) from err
 
-    # Store the API instance in the config entry for use in platforms.
-    entry.runtime_data = api
+    if (name := entry.data.get(CONF_NAME)) and entry.title != name:
+        hass.config_entries.async_update_entry(entry, title=name)
 
-    # Ensure the config entry title reflects the discovered name when present.
-    discovered_name = entry.data.get(CONF_NAME)
-    if discovered_name and entry.title != discovered_name:
-        hass.config_entries.async_update_entry(entry, title=discovered_name)
-
-    # Register the gateway as a hub device and keep its registry id so that
-    # child devices can reference it through via_device_id.
+    # Register the gateway as the hub device; child devices link to it through via_device_id.
     hub_device = dr.async_get(hass).async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, uuid)},
@@ -129,41 +117,40 @@ async def async_setup_entry(
         configuration_url=f"https://{host}:{LD_PORT}/",
     )
 
-    # Store gateway UUID and hub device registry id for use by platforms
-    shared = hass.data.setdefault(DOMAIN, {})
-    shared["uuid"] = uuid
-    shared["hub_device_id"] = hub_device.id
+    runtime = LifedomusRuntimeData(
+        api=api,
+        uuid=uuid,
+        hub_device_id=hub_device.id,
+        site_key=str(entry.data.get(CONF_SITE_KEY) or ""),
+        alarm_code=str(entry.data.get(CONF_ALARM_CODE) or ""),
+        alarm=LdCoordinator(hass, api, entry, ALARM_COORDINATOR_CONFIG),
+        climate=LdCoordinator(hass, api, entry, CLIMATE_COORDINATOR_CONFIG),
+        cover=LdCoordinator(hass, api, entry, COVER_COORDINATOR_CONFIG),
+        detector=LdCoordinator(hass, api, entry, DETECTOR_COORDINATOR_CONFIG),
+        energy=LifedomusEnergyCoordinator(hass, api, entry, ENERGY_COORDINATOR_CONFIG),
+        light=LdCoordinator(hass, api, entry, LIGHT_COORDINATOR_CONFIG),
+        push_button=LdCoordinator(hass, api, entry, PUSH_BUTTON_COORDINATOR_CONFIG),
+        sensor=LdCoordinator(hass, api, entry, SENSOR_COORDINATOR_CONFIG),
+    )
+    # Sequential refreshes keep the load on the embedded gateway moderate and
+    # avoid concurrent session refreshes on the shared API client.
+    for coordinator in runtime.coordinators:
+        await coordinator.async_config_entry_first_refresh()
+    entry.runtime_data = runtime
 
-    # Reload the entry whenever options are updated to apply global changes.
-    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
-
-    # Ensure the alarm coordinator exists before starting the push monitor.
-    # Push notifications may arrive immediately and must be routed to the right coordinator.
-    await get_or_create_alarm_coordinator(hass, api, entry)
-
-    # Start SSH monitoring tunnel (local_push) alongside regular polling.
-    monitor = LifedomusMonitor(hass, api, host=str(host))
+    # The push monitor starts before the platforms so that notifications
+    # arriving during setup already reach the coordinators.
+    monitor = LifedomusMonitor(hass, entry, host=host)
     await monitor.async_start()
-    shared["monitor"] = monitor
+    entry.async_on_unload(monitor.async_stop)
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
     return True
 
 
 async def async_unload_entry(
-    hass: HomeAssistant, entry: ConfigEntry[LifedomusApi]
+    hass: HomeAssistant, entry: LifedomusConfigEntry
 ) -> bool:
-    """Unload a config entry and drop the shared integration state.
-
-    Coordinators are recreated on the next setup so that a reload applies the
-    current options and API instance instead of reusing stale shared objects.
-    """
-    shared = hass.data.get(DOMAIN, {})
-    if (monitor := shared.pop("monitor", None)) is not None:
-        await monitor.async_stop()
-
-    if unload_ok := await hass.config_entries.async_unload_platforms(
-        entry, _PLATFORMS
-    ):
-        hass.data.pop(DOMAIN, None)
-    return unload_ok
+    """Unload the platforms; the monitor is stopped by its unload callback."""
+    return await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)

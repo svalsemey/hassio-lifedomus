@@ -72,6 +72,11 @@
       }
     }
   },
+  "exceptions": {
+    "action_failed": {
+      "message": "Mislukt om {action} uit te voeren op {entity}: {error}"
+    }
+  },
   "entity": {
     "sensor": {
       "operating_mode": {

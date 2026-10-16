@@ -14,9 +14,7 @@ Behavior when state is missing:
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass
-import logging
 from typing import Any, Final
 from xml.etree.ElementTree import Element
 
@@ -26,14 +24,11 @@ from homeassistant.components.light import (
     ColorMode,
     LightEntity,
 )
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .api import LifedomusApi, LifedomusApiError, build_action_descriptor
+from .api import LifedomusApi, build_action_descriptor
 from .const import (
-    CONF_SITE_KEY,
-    CONF_USER_KEY,
-    DOMAIN,
     LD_ACTION_OFF,
     LD_ACTION_ON,
     LD_ACTION_VALUE,
@@ -58,13 +53,8 @@ from .const import (
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import (
-    EntityDependencies,
-    build_device_info,
-    build_entity_dependencies,
-)
-
-_LOGGER = logging.getLogger(__name__)
+from .data import LifedomusConfigEntry, LifedomusRuntimeData
+from .entity import LifedomusEntity
 
 # Raw RGBWW channel levels ordered as the HA rgbww_color tuple (R, G, B, CW, WW).
 RgbwwColor = tuple[int, int, int, int, int]
@@ -110,7 +100,7 @@ def _scale_rgbww(color: RgbwwColor, numerator: int, denominator: int) -> RgbwwCo
 
 
 @dataclass(slots=True)
-class _LdLightDevice:
+class LdLightDevice:
     """Container for a parsed Lifedomus light device."""
 
     device_key: str
@@ -122,7 +112,6 @@ class _LdLightDevice:
     is_on: bool | None
     brightness_pct: int | None  # 0..100; None means unknown
     rgbww: RgbwwColor | None  # Raw channel levels 0..255; None means unknown
-    available: bool
 
 
 def _parse_light_capabilities(api: LifedomusApi, dev_el: Element) -> tuple[bool, bool]:
@@ -201,7 +190,7 @@ def _parse_light_states(
 
 def _parse_light_device_element(
     api: LifedomusApi, dev_el: Element
-) -> _LdLightDevice | None:
+) -> LdLightDevice | None:
     """Parse a <device> element returned by GetDevicesFromCatg into a device snapshot."""
     device_key = api.txt("device_key", dev_el)
     if not device_key:
@@ -212,7 +201,7 @@ def _parse_light_device_element(
         api, dev_el, is_dimmer=is_dimmer, is_rgb=is_rgb
     )
 
-    return _LdLightDevice(
+    return LdLightDevice(
         device_key=device_key,
         device_clsid=api.txt("device_clsid", dev_el),
         label=api.txt("label", dev_el) or device_key,
@@ -222,56 +211,27 @@ def _parse_light_device_element(
         is_on=is_on,
         brightness_pct=brightness_pct,
         rgbww=rgbww,
-        available=True,
     )
 
 
-class _LdBaseLight(LightEntity):
+class _LdBaseLight(LifedomusEntity[LdLightDevice], LightEntity):
     """Base HA light for Lifedomus."""
-
-    _attr_should_poll = False
 
     # Property CLSID carrying the plain ON/OFF actions; defined by each subclass.
     _switch_prop_clsid: str
 
     def __init__(
         self,
-        coordinator: LdCoordinator[_LdLightDevice],
-        device: _LdLightDevice,
-        dependencies: EntityDependencies,
+        coordinator: LdCoordinator[LdLightDevice],
+        device: LdLightDevice,
+        runtime: LifedomusRuntimeData,
     ) -> None:
-        """Initialize the entity and attach the coordinator by composition."""
-        super().__init__()
-        self.coordinator = coordinator
-        self._api = dependencies.api
-        self._site_key = str(dependencies.entry.data.get(CONF_SITE_KEY))
-        self._user_key = str(dependencies.entry.data.get(CONF_USER_KEY))
-
+        """Initialize the light entity."""
+        super().__init__(coordinator, device, runtime)
         self._attr_unique_id = device.device_key
-        self._attr_name = device.label
-
-        self._attr_device_info = build_device_info(
-            device_key=device.device_key,
-            device_clsid=device.device_clsid,
-            label=self._attr_name,
-            room_label=device.room_label,
-            via_device_id=dependencies.hub_device_id,
-        )
-
         self._apply_device_snapshot(device)
 
-    async def async_added_to_hass(self) -> None:
-        """Register coordinator update listener and publish initial state."""
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            self.coordinator.async_add_listener(self._handle_coordinator_update)
-        )
-        if (device := self._dev) is not None:
-            self._apply_device_snapshot(device)
-            self._attr_available = device.available
-        self.async_write_ha_state()
-
-    def _apply_device_snapshot(self, device: _LdLightDevice) -> None:
+    def _apply_device_snapshot(self, device: LdLightDevice) -> None:
         """Apply the coordinator snapshot to HA attributes."""
         self._attr_name = device.label
         # is_on must always be bool for HA. When unknown, default to False and mark as assumed
@@ -284,49 +244,12 @@ class _LdBaseLight(LightEntity):
             self._attr_assumed_state = False
             self._attr_icon = None
 
-    @property
-    def _dev(self) -> _LdLightDevice | None:
-        """Return the current device snapshot from the coordinator."""
-        if self._attr_unique_id is None:
-            return None
-        return self.coordinator.data.get(self._attr_unique_id)
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle state update from the coordinator."""
-        if (device := self._dev) is not None:
-            self._apply_device_snapshot(device)
-            self._attr_available = device.available
-        self.async_write_ha_state()
-
     def _write_optimistic_power(self, is_on: bool) -> None:
         """Publish an optimistic on/off state and restore the default icon."""
         self._attr_is_on = is_on
         self._attr_assumed_state = False
         self._attr_icon = None
         self.async_write_ha_state()
-
-    async def _async_execute_action(
-        self, prop_clsid: str, action_clsid: str, descriptor: str | None = None
-    ) -> None:
-        """Execute a single device action, logging API failures."""
-        if self._attr_unique_id is None:
-            return
-        try:
-            await self.coordinator.api.async_execute_one_action(
-                target_key=self._attr_unique_id,
-                prop_clsid=prop_clsid,
-                action_clsid=action_clsid,
-                descriptor=descriptor,
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to execute %s on %s for %s: %s",
-                action_clsid,
-                prop_clsid,
-                self._attr_unique_id,
-                err,
-            )
 
     async def async_turn_on(self, **_kwargs: Any) -> None:
         """Turn on the light through its switch property."""
@@ -354,7 +277,7 @@ class LifedomusDimmerLight(_LdBaseLight):
     _attr_color_mode = ColorMode.BRIGHTNESS
     _switch_prop_clsid = LD_PROP_DIMMER_SW
 
-    def _apply_device_snapshot(self, device: _LdLightDevice) -> None:
+    def _apply_device_snapshot(self, device: LdLightDevice) -> None:
         """Apply snapshot, including brightness mapping for dimmers."""
         super()._apply_device_snapshot(device)
         self._attr_brightness = (
@@ -397,7 +320,7 @@ class LifedomusRgbLight(_LdBaseLight):
     _attr_color_mode = ColorMode.RGBWW
     _switch_prop_clsid = LD_PROP_LEDRGB_SW
 
-    def _apply_device_snapshot(self, device: _LdLightDevice) -> None:
+    def _apply_device_snapshot(self, device: LdLightDevice) -> None:
         """Apply snapshot, splitting raw channels into brightness and color.
 
         The gateway exposes one raw 0-255 level per channel without a separate
@@ -471,7 +394,7 @@ class LifedomusRgbLight(_LdBaseLight):
         await self._async_write_channels(_scale_rgbww(color, brightness, 255))
 
 
-def _light_entity_class(device: _LdLightDevice) -> type[_LdBaseLight]:
+def _light_entity_class(device: LdLightDevice) -> type[_LdBaseLight]:
     """Return the light entity class matching the parsed device capabilities."""
     if device.is_rgb:
         return LifedomusRgbLight
@@ -480,31 +403,23 @@ def _light_entity_class(device: _LdLightDevice) -> type[_LdBaseLight]:
     return LifedomusTorLight
 
 
-async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: Callable[[list[LightEntity]], None],
-) -> None:
-    """Set up the Lifedomus light platform from a config entry."""
-    api: LifedomusApi = entry.runtime_data
-
-    cfg = LdCoordinatorConfig[_LdLightDevice](
+LIGHT_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdLightDevice]] = (
+    LdCoordinatorConfig(
         name="Lifedomus light coordinator",
-        entry=entry,
         category_clsid=LdDeviceCategory.ACTUATOR_LIGHT,
         parse_device=_parse_light_device_element,
     )
-    coordinator = LdCoordinator(hass, api, cfg)
-    await coordinator.async_config_entry_first_refresh()
+)
 
-    # Share the coordinator so the button platform can reuse it.
-    hass.data.setdefault(DOMAIN, {})["light_coordinator"] = coordinator
 
-    dependencies = build_entity_dependencies(hass, api, entry)
-
-    entities: list[LightEntity] = [
-        _light_entity_class(device)(coordinator, device, dependencies)
-        for device in coordinator.data.values()
-    ]
-
-    async_add_entities(entities)
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: LifedomusConfigEntry,
+    async_add_entities: AddConfigEntryEntitiesCallback,
+) -> None:
+    """Set up the Lifedomus light platform from a config entry."""
+    runtime = entry.runtime_data
+    async_add_entities(
+        _light_entity_class(device)(runtime.light, device, runtime)
+        for device in runtime.light.data.values()
+    )
