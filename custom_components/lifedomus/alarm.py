@@ -16,7 +16,6 @@ from homeassistant.core import HomeAssistant
 
 from .api import LifedomusApi, parse_bool
 from .const import (
-    DOMAIN,
     LD_LABEL_FAULT_BATTERY,
     LD_LABEL_FAULT_INHIBITION,
     LD_LABEL_FAULT_INTRUSION,
@@ -53,8 +52,11 @@ from .const import (
     LD_VALUE_ALARM_MODE_STOP,
     LdDeviceCategory,
 )
-from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import get_update_interval
+from .coordinator import (
+    LdCoordinator,
+    LdCoordinatorConfig,
+    async_get_or_create_coordinator,
+)
 
 # Mapping from FAULT label returned by GetAlarmFaultObjectList to request category.
 ALARM_FAULT_LABEL_TO_CATEGORY: Final[dict[str, str]] = {
@@ -381,18 +383,17 @@ async def get_or_create_alarm_coordinator(
     hass: HomeAssistant, api: LifedomusApi, entry: ConfigEntry
 ) -> LifedomusAlarmCoordinator:
     """Return the shared alarm coordinator, creating and refreshing it if missing."""
-    shared = hass.data.setdefault(DOMAIN, {})
-    coord = shared.get("alarm_coordinator")
-    if isinstance(coord, LifedomusAlarmCoordinator):
-        return coord
-
-    cfg = LdCoordinatorConfig[LdAlarmDevice](
-        name="Lifedomus alarm coordinator",
-        update_interval=get_update_interval(entry),
-        category_clsid=LdDeviceCategory.SURVEILLANCE_PROTECTION,
-        parse_device=_parse_alarm_device_element,
+    return await async_get_or_create_coordinator(
+        hass,
+        "alarm_coordinator",
+        lambda: LifedomusAlarmCoordinator(
+            hass,
+            api,
+            LdCoordinatorConfig[LdAlarmDevice](
+                name="Lifedomus alarm coordinator",
+                entry=entry,
+                category_clsid=LdDeviceCategory.SURVEILLANCE_PROTECTION,
+                parse_device=_parse_alarm_device_element,
+            ),
+        ),
     )
-    coord = LifedomusAlarmCoordinator(hass, api, cfg)
-    await coord.async_config_entry_first_refresh()
-    shared["alarm_coordinator"] = coord
-    return coord

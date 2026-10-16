@@ -153,14 +153,17 @@ async def async_setup_entry(
 async def async_unload_entry(
     hass: HomeAssistant, entry: ConfigEntry[LifedomusApi]
 ) -> bool:
-    """Unload a config entry."""
+    """Unload a config entry and drop the shared integration state.
 
-    # Stop the monitoring tunnel first.
-    shared = hass.data.setdefault(DOMAIN, {})
-    monitor: LifedomusMonitor | None = None
-    if isinstance(shared, dict):
-        monitor = shared.pop("monitor", None)
-    if monitor is not None:
+    Coordinators are recreated on the next setup so that a reload applies the
+    current options and API instance instead of reusing stale shared objects.
+    """
+    shared = hass.data.get(DOMAIN, {})
+    if (monitor := shared.pop("monitor", None)) is not None:
         await monitor.async_stop()
 
-    return await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
+    if unload_ok := await hass.config_entries.async_unload_platforms(
+        entry, _PLATFORMS
+    ):
+        hass.data.pop(DOMAIN, None)
+    return unload_ok

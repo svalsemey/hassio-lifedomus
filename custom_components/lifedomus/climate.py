@@ -1,39 +1,48 @@
 """Climate platform for Lifedomus.
 
-This platform queries the Lifedomus gateway for all thermostats in the
-"thermostat" category (CLSID-DEVC-A-CC) and exposes them as Home Assistant
+This platform queries the Lifedomus gateway for all devices in the climate
+control category (CLSID-DEVC-A-CC) and exposes thermostats as Home Assistant
 climate entities.
 
-Two operating modes:
- - Direct setpoint thermostat:
-    - states: current temperature is read from CLSID-STATE-AMBIANT-TEMPERATURE
-      or CLSID-STATE-TEMPERATURE, target temperature from
-      CLSID-STATE-SETPOINT-TEMPERATURE or CLSID-STATE-COMFORT-TEMPERATURE;
-      the reported CLSIDs vary across gateway versions and device types.
-    - min/max allowed target range is derived from the action descriptor of
-      prop_clsid CLSID-DEVC-PROP-ENVIRONMENTTHERMOSTAT-VA-GENERALCONST.
-    - step is 0.5°C.
-    - Turning ON is done by re-sending the target setpoint.
- - Preset-based thermostat:
-    - actions on prop_clsid CLSID-DEVC-PROP-ENVIRONMENTTHERMOSTAT-VA-SETPOINT-6POS:
-      ANTI-FROST, COMFORT, REDUCED, STOP.
-    - STOP maps to HVAC OFF; others map to HVAC HEAT and HW presets.
+Capabilities are detected from the <actions> block of each device:
+ - Direct setpoint: CLSID-ACTION-VALUE on
+   CLSID-DEVC-PROP-ENVIRONMENTTHERMOSTAT-VA-GENERALCONST; the allowed range is
+   read from the action descriptor and the step is 0.5 °C.
+ - Preset family, one of two mutually exclusive properties:
+    * 6POS (CLSID-DEVC-PROP-ENVIRONMENTTHERMOSTAT-VA-SETPOINT-6POS): ANTI-FROST,
+      COMFORT, REDUCED and STOP actions; STOP maps to HVAC OFF.
+    * HEATMODE (CLSID-DEVC-PROP-ENVIRONMENTTHERMOSTAT-VA-HEATMODE): COMFORT,
+      REDUCED, ECONOMIC and FROST actions. The family has no off position and
+      the reported state values differ from the action names, hence explicit
+      lookup tables in both directions.
+ - On/off switch: CLSID-ACTION-ON / CLSID-ACTION-OFF on a known switch property
+   (regulation switch of virtual thermostats, stop property of direct setpoint
+   devices).
+
+HVAC OFF, together with the TURN_ON / TURN_OFF features, is only advertised when
+the device exposes a way to switch off (preset off action or switch property);
+otherwise the entity is heat-only and reports HEAT regardless of its flags.
+
 Device specifics:
  - Floor heating devices (CLSID-DEVC-A-CC15) only report the boolean state
    CLSID-STATE-DEVC-FLOOR-HEATING and expose no actuator; they are parsed by
    the shared climate coordinator but exposed by the binary_sensor platform.
- - Virtual thermostats (CLSID-DEVC-A-CC16) additionally report
-   CLSID-STATE-REGULATION-ON (drives the HVAC mode), CLSID-STATE-THERMOSTAT
-   (drives the HVAC action) and CLSID-STATE-THERMOSTAT-THERM-MODE (exposed as
-   an entity attribute).
+ - Virtual thermostats (CLSID-DEVC-A-CC16) report CLSID-STATE-REGULATION-ON
+   (drives the HVAC mode), CLSID-STATE-THERMOSTAT (drives the HVAC action) and
+   CLSID-STATE-THERMOSTAT-THERM-MODE (exposed as an entity attribute).
+
 State handling:
- - If a value is missing in states, the entity remains available with unknown
-   value (None), consistent with other platforms.
+ - Temperature and heating states accept several CLSID aliases; the first
+   non-empty value wins.
+ - A missing or empty value leaves the matching attribute unknown (None) while
+   the entity stays available, consistent with other platforms.
+ - On preset-based devices the reported setpoint follows the active preset and
+   may change without any command from Home Assistant.
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 import html
 import logging
@@ -47,13 +56,14 @@ from homeassistant.components.climate import (
     PRESET_AWAY,
     PRESET_COMFORT,
     PRESET_ECO,
+    PRESET_HOME,
     ClimateEntity,
     ClimateEntityFeature,
     HVACAction,
     HVACMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform, UnitOfTemperature
+from homeassistant.const import ATTR_TEMPERATURE, Platform, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 
@@ -65,16 +75,21 @@ from .api import (
     parse_number,
 )
 from .const import (
-    CONF_SITE_KEY,
-    CONF_USER_KEY,
     DOMAIN,
+    LD_ACTION_HEATMODE_COMFORT,
+    LD_ACTION_HEATMODE_ECONOMIC,
+    LD_ACTION_HEATMODE_FROST,
+    LD_ACTION_HEATMODE_REDUCED,
     LD_ACTION_OFF,
+    LD_ACTION_ON,
     LD_ACTION_SETPOINT_6POS_ANTIFROST,
     LD_ACTION_SETPOINT_6POS_COMFORT,
     LD_ACTION_SETPOINT_6POS_ECO,
     LD_ACTION_SETPOINT_6POS_STOP,
     LD_ACTION_VALUE,
     LD_DEVICE_TYPE_FLOOR_HEATING,
+    LD_PROP_THERMOSTAT_HEATMODE,
+    LD_PROP_THERMOSTAT_REGULATION_SW,
     LD_PROP_THERMOSTAT_SETPOINT,
     LD_PROP_THERMOSTAT_SETPOINT_6POS,
     LD_PROP_THERMOSTAT_STOP,
@@ -90,6 +105,7 @@ from .const import (
     LD_STATE_FLAG_PRESENCE,
     LD_STATE_FLAG_TEMPORARY,
     LD_STATE_FLOOR_HEATING,
+    LD_STATE_HEATMODE,
     LD_STATE_REGULATION_ON,
     LD_STATE_SETPOINT_6POS,
     LD_STATE_TEMPERATURE,
@@ -102,28 +118,91 @@ from .const import (
     LD_VALUE_THERMOSTAT_6POS_COMFORT,
     LD_VALUE_THERMOSTAT_6POS_ECO,
     LD_VALUE_THERMOSTAT_6POS_STOP,
+    LD_VALUE_THERMOSTAT_HEATMODE_COMFORT,
+    LD_VALUE_THERMOSTAT_HEATMODE_ECO,
+    LD_VALUE_THERMOSTAT_HEATMODE_FROST,
+    LD_VALUE_THERMOSTAT_HEATMODE_REDUCED,
     LD_VALUE_THERMOSTAT_MAX,
     LD_VALUE_THERMOSTAT_MIN,
     LD_VALUE_THERMOSTAT_STEP,
     LdDeviceCategory,
 )
-from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, build_entity_dependencies, get_update_interval
+from .coordinator import (
+    LdCoordinator,
+    LdCoordinatorConfig,
+    async_get_or_create_coordinator,
+)
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
 
 _LOGGER = logging.getLogger(__name__)
 
-# HA preset mapping used when operating in 6POS mode.
-HA_PRESET_TO_6POS: Final[dict[str, str]] = {
-    PRESET_AWAY: LD_ACTION_SETPOINT_6POS_ANTIFROST,
-    PRESET_COMFORT: LD_ACTION_SETPOINT_6POS_COMFORT,
-    PRESET_ECO: LD_ACTION_SETPOINT_6POS_ECO,
+
+@dataclass(frozen=True, slots=True)
+class _PresetFamily:
+    """Preset-based thermostat property family.
+
+    Attributes:
+        prop_clsid: Property carrying the preset actions.
+        state_clsid: State reporting the active preset.
+        action_by_preset: Home Assistant preset -> action CLSID.
+        preset_by_value: Reported state value -> Home Assistant preset.
+        off_action: Action switching the device off, when the family has one.
+        off_value: State value reported when the device is off, when any.
+    """
+
+    prop_clsid: str
+    state_clsid: str
+    action_by_preset: Mapping[str, str]
+    preset_by_value: Mapping[str, str]
+    off_action: str | None = None
+    off_value: str | None = None
+
+
+PRESET_FAMILIES: Final[tuple[_PresetFamily, ...]] = (
+    _PresetFamily(
+        prop_clsid=LD_PROP_THERMOSTAT_SETPOINT_6POS,
+        state_clsid=LD_STATE_SETPOINT_6POS,
+        action_by_preset={
+            PRESET_AWAY: LD_ACTION_SETPOINT_6POS_ANTIFROST,
+            PRESET_COMFORT: LD_ACTION_SETPOINT_6POS_COMFORT,
+            PRESET_ECO: LD_ACTION_SETPOINT_6POS_ECO,
+        },
+        preset_by_value={
+            LD_VALUE_THERMOSTAT_6POS_ANTIFROST: PRESET_AWAY,
+            LD_VALUE_THERMOSTAT_6POS_COMFORT: PRESET_COMFORT,
+            LD_VALUE_THERMOSTAT_6POS_ECO: PRESET_ECO,
+        },
+        off_action=LD_ACTION_SETPOINT_6POS_STOP,
+        off_value=LD_VALUE_THERMOSTAT_6POS_STOP,
+    ),
+    # Presets follow the decreasing setpoint ladder comfort > home > eco > away.
+    _PresetFamily(
+        prop_clsid=LD_PROP_THERMOSTAT_HEATMODE,
+        state_clsid=LD_STATE_HEATMODE,
+        action_by_preset={
+            PRESET_AWAY: LD_ACTION_HEATMODE_FROST,
+            PRESET_COMFORT: LD_ACTION_HEATMODE_COMFORT,
+            PRESET_ECO: LD_ACTION_HEATMODE_ECONOMIC,
+            PRESET_HOME: LD_ACTION_HEATMODE_REDUCED,
+        },
+        preset_by_value={
+            LD_VALUE_THERMOSTAT_HEATMODE_FROST: PRESET_AWAY,
+            LD_VALUE_THERMOSTAT_HEATMODE_COMFORT: PRESET_COMFORT,
+            LD_VALUE_THERMOSTAT_HEATMODE_ECO: PRESET_ECO,
+            LD_VALUE_THERMOSTAT_HEATMODE_REDUCED: PRESET_HOME,
+        },
+    ),
+)
+PRESET_FAMILY_BY_PROP: Final[dict[str, _PresetFamily]] = {
+    family.prop_clsid: family for family in PRESET_FAMILIES
 }
-_6POS_TO_HA_PRESET: Final[dict[str, str]] = {
-    LD_VALUE_THERMOSTAT_6POS_ANTIFROST: PRESET_AWAY,
-    LD_VALUE_THERMOSTAT_6POS_COMFORT: PRESET_COMFORT,
-    LD_VALUE_THERMOSTAT_6POS_ECO: PRESET_ECO,
-    LD_VALUE_THERMOSTAT_6POS_STOP: "",  # STOP is handled as HVAC OFF
-}
+PRESET_STATE_CLSIDS: Final[frozenset[str]] = frozenset(
+    family.state_clsid for family in PRESET_FAMILIES
+)
+# Properties carrying plain ON/OFF actions that switch the regulation.
+HVAC_SWITCH_PROPS: Final[frozenset[str]] = frozenset(
+    {LD_PROP_THERMOSTAT_REGULATION_SW, LD_PROP_THERMOSTAT_STOP}
+)
 # State CLSID groups: the reported CLSIDs vary across device types,
 # so each logical value accepts several aliases.
 AMBIENT_TEMPERATURE_STATES: Final[frozenset[str]] = frozenset(
@@ -161,18 +240,20 @@ class LdClimateDevice:
     label: str
     room_label: str
 
-    # Operating mode detection flags
+    # Capabilities detected from the <actions> block
     supports_generalconst: bool
-    supports_6pos: bool
+    preset_family: _PresetFamily | None
+    on_prop_clsid: str | None
+    off_prop_clsid: str | None
 
     # Numeric state values
     current_temperature: float | None
     target_temperature: float | None
 
-    # Current preset, only for 6POS mode
+    # Raw value of the preset family state
     preset_raw: str | None
 
-    # Running state for direct setpoint and floor heating devices
+    # Running state (CLSID-STATE-THERMOSTAT or CLSID-STATE-DEVC-FLOOR-HEATING)
     is_heating: bool | None
 
     # Regulation flag and raw thermal mode for virtual thermostats
@@ -191,8 +272,20 @@ class LdClimateDevice:
 
 
 @dataclass(slots=True)
+class _LdClimateCapabilities:
+    """Mutable accumulator for capabilities parsed from the <actions> block."""
+
+    supports_generalconst: bool = False
+    preset_family: _PresetFamily | None = None
+    on_prop_clsid: str | None = None
+    off_prop_clsid: str | None = None
+    min_temp: float | None = None
+    max_temp: float | None = None
+
+
+@dataclass(slots=True)
 class _LdClimateStates:
-    """Mutable accumulator for state values parsed from a <device> element."""
+    """Mutable accumulator for state values parsed from the <states> block."""
 
     current_temperature: float | None = None
     target_temperature: float | None = None
@@ -202,9 +295,15 @@ class _LdClimateStates:
     therm_mode: str | None = None
     diagnostic_states: dict[str, bool | None] = field(default_factory=dict)
 
+
 def _parse_climate_descriptor_limits(
     descriptor_text: str | None,
 ) -> tuple[float | None, float | None]:
+    """Return the (min, max) bounds of the 'temperature' parameter of an action descriptor.
+
+    The descriptor is an HTML-escaped XML fragment; a regex fallback covers
+    fragments that do not parse. Non-numeric bounds (e.g. "null") yield None.
+    """
     if not descriptor_text:
         return None, None
     try:
@@ -212,12 +311,10 @@ def _parse_climate_descriptor_limits(
     except ET.ParseError:
         min_match = re.search(r'min="([0-9]+(?:\.[0-9]+)?)"', descriptor_text)
         max_match = re.search(r'max="([0-9]+(?:\.[0-9]+)?)"', descriptor_text)
-        try:
-            min_v = float(min_match.group(1)) if min_match else None
-            max_v = float(max_match.group(1)) if max_match else None
-        except (ValueError, AttributeError):
-            return None, None
-        return min_v, max_v
+        return (
+            float(min_match.group(1)) if min_match else None,
+            float(max_match.group(1)) if max_match else None,
+        )
 
     param = root.find(".//parameter[@name='temperature']")
     if param is None:
@@ -225,42 +322,37 @@ def _parse_climate_descriptor_limits(
     min_attr = param.get("min")
     max_attr = param.get("max")
     try:
-        return float(min_attr) if min_attr else None, float(
-            max_attr
-        ) if max_attr else None
+        return (
+            float(min_attr) if min_attr else None,
+            float(max_attr) if max_attr else None,
+        )
     except ValueError:
         return None, None
 
 
 def _parse_climate_actions_capabilities(
     api: LifedomusApi, dev_el: Element
-) -> tuple[bool, bool, float | None, float | None]:
-    supports_generalconst = False
-    supports_6pos = False
-    min_temp: float | None = None
-    max_temp: float | None = None
+) -> _LdClimateCapabilities:
+    """Extract supported properties and setpoint bounds from the <actions> block."""
+    caps = _LdClimateCapabilities()
 
     for action_el in dev_el.findall("./actions/action"):
         prop_clsid = api.txt("prop_clsid", action_el)
-        if not prop_clsid:
-            continue
+        action_clsid = api.txt("action_clsid", action_el)
 
-        if prop_clsid == LD_PROP_THERMOSTAT_SETPOINT:
-            action_clsid = api.txt("action_clsid", action_el)
-            if action_clsid == LD_ACTION_VALUE:
-                supports_generalconst = True
-                descr_el = action_el.find("descriptor")
-                if descr_el is not None and descr_el.text:
-                    dmin, dmax = _parse_climate_descriptor_limits(descr_el.text)
-                    min_temp = dmin if dmin is not None else min_temp
-                    max_temp = dmax if dmax is not None else max_temp
-            continue
+        if prop_clsid == LD_PROP_THERMOSTAT_SETPOINT and action_clsid == LD_ACTION_VALUE:
+            caps.supports_generalconst = True
+            caps.min_temp, caps.max_temp = _parse_climate_descriptor_limits(
+                api.txt_path(action_el, "descriptor")
+            )
+        elif prop_clsid in PRESET_FAMILY_BY_PROP:
+            caps.preset_family = PRESET_FAMILY_BY_PROP[prop_clsid]
+        elif prop_clsid in HVAC_SWITCH_PROPS and action_clsid == LD_ACTION_ON:
+            caps.on_prop_clsid = prop_clsid
+        elif prop_clsid in HVAC_SWITCH_PROPS and action_clsid == LD_ACTION_OFF:
+            caps.off_prop_clsid = prop_clsid
 
-        if prop_clsid == LD_PROP_THERMOSTAT_SETPOINT_6POS:
-            supports_6pos = True
-            continue
-
-    return supports_generalconst, supports_6pos, min_temp, max_temp
+    return caps
 
 
 def _parse_climate_states(api: LifedomusApi, dev_el: Element) -> _LdClimateStates:
@@ -288,7 +380,7 @@ def _parse_climate_states(api: LifedomusApi, dev_el: Element) -> _LdClimateState
         elif state_clsid in SETPOINT_TEMPERATURE_STATES:
             if states.target_temperature is None:
                 states.target_temperature = parse_number(val_txt)
-        elif state_clsid == LD_STATE_SETPOINT_6POS:
+        elif state_clsid in PRESET_STATE_CLSIDS:
             if val_txt is not None:
                 states.preset_raw = val_txt.strip().upper() or None
         elif state_clsid in HEATING_STATES:
@@ -314,9 +406,7 @@ def _parse_climate_device_element(
     if not device_key:
         return None
 
-    supports_generalconst, supports_6pos, min_temp, max_temp = (
-        _parse_climate_actions_capabilities(api, dev_el)
-    )
+    caps = _parse_climate_actions_capabilities(api, dev_el)
     states = _parse_climate_states(api, dev_el)
 
     return LdClimateDevice(
@@ -324,16 +414,18 @@ def _parse_climate_device_element(
         device_clsid=api.txt("device_clsid", dev_el),
         label=api.txt("label", dev_el) or device_key,
         room_label=api.txt("room_label", dev_el),
-        supports_generalconst=supports_generalconst,
-        supports_6pos=supports_6pos,
+        supports_generalconst=caps.supports_generalconst,
+        preset_family=caps.preset_family,
+        on_prop_clsid=caps.on_prop_clsid,
+        off_prop_clsid=caps.off_prop_clsid,
         current_temperature=states.current_temperature,
         target_temperature=states.target_temperature,
         preset_raw=states.preset_raw,
         is_heating=states.is_heating,
         regulation_on=states.regulation_on,
         therm_mode=states.therm_mode,
-        min_temp=min_temp,
-        max_temp=max_temp,
+        min_temp=caps.min_temp,
+        max_temp=caps.max_temp,
         diagnostic_states=states.diagnostic_states,
         available=True,
     )
@@ -344,7 +436,6 @@ class LifedomusClimate(ClimateEntity):
 
     _attr_should_poll = False
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
-    _attr_hvac_modes = [HVACMode.HEAT, HVACMode.OFF]
     _attr_target_temperature_step = LD_VALUE_THERMOSTAT_STEP
 
     def __init__(
@@ -356,35 +447,24 @@ class LifedomusClimate(ClimateEntity):
         """Initialize the climate entity and attach the coordinator by composition."""
         super().__init__()
         self.coordinator = coordinator
-        self._api = dependencies.api
-        self._site_key = str(dependencies.entry.data.get(CONF_SITE_KEY))
-        self._user_key = str(dependencies.entry.data.get(CONF_USER_KEY))
 
         self._attr_unique_id = device.device_key
-        self._attr_name = device.label
-
         self._attr_device_info = build_device_info(
             device_key=device.device_key,
             device_clsid=device.device_clsid,
-            label=self._attr_name,
+            label=device.label,
             room_label=device.room_label,
             via_device_id=dependencies.hub_device_id,
         )
-
-        self._supports_generalconst = False
-        self._supports_6pos = False
 
         self._apply_device_snapshot(device)
 
     def _apply_device_snapshot(self, device: LdClimateDevice) -> None:
         """Apply the coordinator snapshot to HA attributes."""
+        self._device = device
         self._attr_name = device.label
         self._attr_current_temperature = device.current_temperature
         self._attr_target_temperature = device.target_temperature
-        self._supports_generalconst = device.supports_generalconst
-        self._supports_6pos = device.supports_6pos
-
-        # Min/max allowed target temps when available.
         self._attr_min_temp = (
             device.min_temp if device.min_temp is not None else LD_VALUE_THERMOSTAT_MIN
         )
@@ -392,33 +472,30 @@ class LifedomusClimate(ClimateEntity):
             device.max_temp if device.max_temp is not None else LD_VALUE_THERMOSTAT_MAX
         )
 
-        # Compute supported features from capabilities.
-        feats = ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
-        if self._supports_generalconst:
-            feats |= ClimateEntityFeature.TARGET_TEMPERATURE
-        if self._supports_6pos:
-            feats |= ClimateEntityFeature.PRESET_MODE
-        self._attr_supported_features = feats
+        family = device.preset_family
+        # OFF is only advertised when the device exposes a way to switch off.
+        can_turn_off = device.off_prop_clsid is not None or (
+            family is not None and family.off_action is not None
+        )
+        self._attr_hvac_modes = (
+            [HVACMode.HEAT, HVACMode.OFF] if can_turn_off else [HVACMode.HEAT]
+        )
 
-        # HVAC mode inference:
-        # - 6POS: STOP -> OFF, otherwise HEAT.
-        # - Virtual thermostats: the regulation flag drives the mode.
-        # - Direct setpoint: boolean running state when reported.
-        if self._supports_6pos:
-            self._attr_hvac_mode = (
-                HVACMode.OFF
-                if device.preset_raw == LD_VALUE_THERMOSTAT_6POS_STOP
-                else HVACMode.HEAT
-            )
-        elif device.regulation_on is not None:
-            self._attr_hvac_mode = (
-                HVACMode.HEAT if device.regulation_on else HVACMode.OFF
-            )
-        elif device.is_heating is not None:
-            self._attr_hvac_mode = HVACMode.HEAT if device.is_heating else HVACMode.OFF
-        else:
-            # Fallback when no explicit boolean state is provided
-            self._attr_hvac_mode = HVACMode.HEAT
+        features = ClimateEntityFeature(0)
+        if can_turn_off:
+            features |= ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF
+        if device.supports_generalconst:
+            features |= ClimateEntityFeature.TARGET_TEMPERATURE
+        if family is not None:
+            features |= ClimateEntityFeature.PRESET_MODE
+        self._attr_supported_features = features
+
+        # The inferred mode is constrained to the advertised modes: a heat-only
+        # device reporting an idle flag stays in HEAT.
+        hvac_mode = self._infer_hvac_mode(device)
+        self._attr_hvac_mode = (
+            hvac_mode if hvac_mode in self._attr_hvac_modes else HVACMode.HEAT
+        )
 
         # HVAC action is only known when both the regulation flag and the
         # heating demand flag are reported (virtual thermostats).
@@ -426,18 +503,36 @@ class LifedomusClimate(ClimateEntity):
             self._attr_hvac_action = None
         elif not device.regulation_on:
             self._attr_hvac_action = HVACAction.OFF
-        elif device.is_heating:
-            self._attr_hvac_action = HVACAction.HEATING
         else:
-            self._attr_hvac_action = HVACAction.IDLE
+            self._attr_hvac_action = (
+                HVACAction.HEATING if device.is_heating else HVACAction.IDLE
+            )
 
-        # Preset mode mapping for 6POS devices.
-        if self._supports_6pos and device.preset_raw:
-            self._attr_preset_mode = _6POS_TO_HA_PRESET.get(device.preset_raw) or None
-            self._attr_preset_modes = [PRESET_AWAY, PRESET_COMFORT, PRESET_ECO]
-        else:
-            self._attr_preset_mode = None
+        if family is None:
             self._attr_preset_modes = None
+            self._attr_preset_mode = None
+        else:
+            self._attr_preset_modes = list(family.action_by_preset)
+            self._attr_preset_mode = (
+                family.preset_by_value.get(device.preset_raw)
+                if device.preset_raw
+                else None
+            )
+
+    @staticmethod
+    def _infer_hvac_mode(device: LdClimateDevice) -> HVACMode:
+        """Infer the HVAC mode from the preset family, the regulation flag or the running state."""
+        if (family := device.preset_family) is not None:
+            return (
+                HVACMode.OFF
+                if family.off_value is not None and device.preset_raw == family.off_value
+                else HVACMode.HEAT
+            )
+        if device.regulation_on is not None:
+            return HVACMode.HEAT if device.regulation_on else HVACMode.OFF
+        if device.is_heating is not None:
+            return HVACMode.HEAT if device.is_heating else HVACMode.OFF
+        return HVACMode.HEAT
 
     @property
     def _dev(self) -> LdClimateDevice | None:
@@ -449,23 +544,19 @@ class LifedomusClimate(ClimateEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle state update from the coordinator."""
-        if self._dev is not None:
-            self._apply_device_snapshot(self._dev)
+        if (device := self._dev) is not None:
+            self._apply_device_snapshot(device)
         self.async_write_ha_state()
 
     @property
     def extra_state_attributes(self) -> dict[str, bool | str | None]:
         """Expose diagnostic FLAG/FAULT states and the raw thermal mode."""
-        device = self._dev
-        if device is None:
-            return {}
-
         result: dict[str, bool | str | None] = {
             clsid.removeprefix("CLSID-STATE-").lower().replace("-", "_"): value
-            for clsid, value in device.diagnostic_states.items()
+            for clsid, value in self._device.diagnostic_states.items()
         }
-        if device.therm_mode is not None:
-            result["therm_mode"] = device.therm_mode
+        if self._device.therm_mode is not None:
+            result["therm_mode"] = self._device.therm_mode
         return result
 
     async def async_added_to_hass(self) -> None:
@@ -474,148 +565,122 @@ class LifedomusClimate(ClimateEntity):
         self.async_on_remove(
             self.coordinator.async_add_listener(self._handle_coordinator_update)
         )
-        if self._dev is not None:
-            self._apply_device_snapshot(self._dev)
-        self.async_write_ha_state()
+        self._handle_coordinator_update()
 
-    async def _async_send_setpoint(self, temp: float, *, set_hvac_heat: bool) -> None:
-        """Send the GENERALCONST setpoint via a single ExecuteOneAction call.
+    async def _async_execute_action(
+        self, prop_clsid: str, action_clsid: str, descriptor: str | None = None
+    ) -> None:
+        """Execute a device action; on failure, revert to the last confirmed snapshot.
 
-        This method centralizes:
-         - clamping and stepping,
-         - optimistic HA state update (target temp and optional HVAC HEAT),
-         - ExecuteOneAction call with VALUE on GENERALCONST,
-         - instant state refresh.
+        Callers publish an optimistic state before the call, so a failed
+        request restores the attributes from the coordinator data instead of
+        leaving a state the device never reached.
         """
-        if not self._supports_generalconst or self._attr_unique_id is None:
+        if self._attr_unique_id is None:
             return
-
-        # Optimistic update
-        # Clamp to allowed range and step to allowed increments
-        self._attr_target_temperature = max(
-            self.min_temp,
-            min(self.max_temp, round(temp * 2) / 2),  # step of 0.5
-        )
-        if set_hvac_heat:
-            self._attr_hvac_mode = HVACMode.HEAT
-        self.async_write_ha_state()
-
         try:
             await self.coordinator.api.async_execute_one_action(
                 target_key=self._attr_unique_id,
-                prop_clsid=LD_PROP_THERMOSTAT_SETPOINT,
-                action_clsid=LD_ACTION_VALUE,
-                descriptor=build_action_descriptor(
-                    {"temperature": self._attr_target_temperature}
-                ),
+                prop_clsid=prop_clsid,
+                action_clsid=action_clsid,
+                descriptor=descriptor,
             )
         except LifedomusApiError as err:
             _LOGGER.warning(
-                "Failed to set temperature for %s: %s", self._attr_unique_id, err
+                "Failed to execute %s on %s for %s: %s",
+                action_clsid,
+                prop_clsid,
+                self._attr_unique_id,
+                err,
             )
+            if (device := self._dev) is not None:
+                self._apply_device_snapshot(device)
+                self.async_write_ha_state()
+
+    async def _async_send_setpoint(self, temp: float) -> None:
+        """Clamp and step the setpoint, publish it optimistically and send it on GENERALCONST."""
+        self._attr_target_temperature = max(
+            self.min_temp,
+            min(
+                self.max_temp,
+                round(temp / LD_VALUE_THERMOSTAT_STEP) * LD_VALUE_THERMOSTAT_STEP,
+            ),
+        )
+        self.async_write_ha_state()
+        await self._async_execute_action(
+            LD_PROP_THERMOSTAT_SETPOINT,
+            LD_ACTION_VALUE,
+            build_action_descriptor({"temperature": self._attr_target_temperature}),
+        )
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
-        """Set target temperature for general-const capable devices."""
-        if not self._supports_generalconst:
-            return
-
-        temperature = kwargs.get("temperature")
-        if temperature is None:
-            return
-
-        try:
-            temp = float(temperature)
-        except (TypeError, ValueError):
-            return
-
-        await self._async_send_setpoint(temp, set_hvac_heat=True)
+        """Set the target temperature on direct setpoint devices."""
+        if (
+            self._device.supports_generalconst
+            and (temperature := kwargs.get(ATTR_TEMPERATURE)) is not None
+        ):
+            await self._async_send_setpoint(float(temperature))
 
     async def async_turn_on(self) -> None:
-        """Handle climate.turn_on by switching HVAC to HEAT using the same path as the UI."""
+        """Handle climate.turn_on by switching HVAC to HEAT."""
         await self.async_set_hvac_mode(HVACMode.HEAT)
 
     async def async_turn_off(self) -> None:
-        """Handle climate.turn_off by switching HVAC to OFF using the same path as the UI."""
+        """Handle climate.turn_off by switching HVAC to OFF."""
         await self.async_set_hvac_mode(HVACMode.OFF)
 
     async def async_set_preset_mode(self, preset_mode: str) -> None:
-        """Set a preset in 6POS mode."""
-        if not self._supports_6pos or self._attr_unique_id is None:
+        """Select a preset through the preset family of the device."""
+        if (family := self._device.preset_family) is None or (
+            action := family.action_by_preset.get(preset_mode)
+        ) is None:
             return
 
-        # STOP is not a preset; handled via HVAC OFF.
-        action = HA_PRESET_TO_6POS.get(preset_mode)
-        if not action:
-            return
-
-        # Optimistic update
         self._attr_preset_mode = preset_mode
         self._attr_hvac_mode = HVACMode.HEAT
         self.async_write_ha_state()
-
-        try:
-            await self.coordinator.api.async_execute_one_action(
-                target_key=self._attr_unique_id,
-                prop_clsid=LD_PROP_THERMOSTAT_SETPOINT_6POS,
-                action_clsid=action,
-            )
-        except LifedomusApiError as err:
-            _LOGGER.warning(
-                "Failed to set preset for %s: %s", self._attr_unique_id, err
-            )
+        await self._async_execute_action(family.prop_clsid, action)
 
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
-        """Set HVAC mode using STOP or by re-sending the setpoint value on direct setpoint devices."""
-        if self._attr_unique_id is None:
+        """Set the HVAC mode through the most specific capability of the device.
+
+        OFF uses the preset family off action or the switch property. HEAT uses
+        the switch property, then falls back to the comfort preset, then to
+        re-sending the current setpoint on direct setpoint devices.
+        """
+        if HVACMode.OFF not in self._attr_hvac_modes:
+            # Heat-only device: there is nothing to switch.
             return
+
+        device = self._device
+        family = device.preset_family
 
         if hvac_mode == HVACMode.OFF:
-            # Prefer 6POS STOP when available; otherwise use STOP property.
-            try:
-                if self._supports_6pos:
-                    await self.coordinator.api.async_execute_one_action(
-                        target_key=self._attr_unique_id,
-                        prop_clsid=LD_PROP_THERMOSTAT_SETPOINT_6POS,
-                        action_clsid=LD_ACTION_SETPOINT_6POS_STOP,
-                    )
-                else:
-                    await self.coordinator.api.async_execute_one_action(
-                        target_key=self._attr_unique_id,
-                        prop_clsid=LD_PROP_THERMOSTAT_STOP,
-                        prop_numr=0,
-                        action_clsid=LD_ACTION_OFF,
-                    )
-            except LifedomusApiError as err:
-                _LOGGER.warning(
-                    "Failed to set HVAC OFF for %s: %s", self._attr_unique_id, err
-                )
-
-            # Optimistic state change
+            if family is not None and family.off_action is not None:
+                prop_clsid, action_clsid = family.prop_clsid, family.off_action
+            elif device.off_prop_clsid is not None:
+                prop_clsid, action_clsid = device.off_prop_clsid, LD_ACTION_OFF
+            else:
+                return
             self._attr_hvac_mode = HVACMode.OFF
             self.async_write_ha_state()
+            await self._async_execute_action(prop_clsid, action_clsid)
             return
 
-        if hvac_mode == HVACMode.HEAT:
-            if self._supports_6pos:
-                # For 6POS devices, use COMFORT as default when turning on.
-                await self.async_set_preset_mode(PRESET_COMFORT)
-                return
-
-            if self._supports_generalconst:
-                # Use current known target or clamp a fallback value.
-                temp = (
-                    self._attr_target_temperature
-                    if self._attr_target_temperature is not None
-                    else (self._dev.target_temperature if self._dev else None)
-                )
-                if temp is None:
-                    temp = self.min_temp
-
-                await self._async_send_setpoint(float(temp), set_hvac_heat=True)
-                return
-
-            # If neither 6POS nor GENERALCONST are supported, nothing to do.
-            return
+        if device.on_prop_clsid is not None:
+            self._attr_hvac_mode = HVACMode.HEAT
+            self.async_write_ha_state()
+            await self._async_execute_action(device.on_prop_clsid, LD_ACTION_ON)
+        elif family is not None:
+            await self.async_set_preset_mode(PRESET_COMFORT)
+        elif device.supports_generalconst:
+            # Re-sending the setpoint is the only way to resume heating.
+            self._attr_hvac_mode = HVACMode.HEAT
+            await self._async_send_setpoint(
+                self._attr_target_temperature
+                if self._attr_target_temperature is not None
+                else self.min_temp
+            )
 
 
 async def get_or_create_climate_coordinator(
@@ -626,23 +691,20 @@ async def get_or_create_climate_coordinator(
     The coordinator covers the whole climate control category, including heat
     demand indicators which are exposed by the binary_sensor platform.
     """
-    shared = hass.data.setdefault(DOMAIN, {})
-    if isinstance(coord := shared.get("climate_coordinator"), LdCoordinator):
-        return coord
-
-    coordinator = LdCoordinator(
+    return await async_get_or_create_coordinator(
         hass,
-        api,
-        LdCoordinatorConfig[LdClimateDevice](
-            name="Lifedomus climate coordinator",
-            update_interval=get_update_interval(entry),
-            category_clsid=LdDeviceCategory.ACTUATOR_CLIMATECONTROL,
-            parse_device=_parse_climate_device_element,
+        "climate_coordinator",
+        lambda: LdCoordinator(
+            hass,
+            api,
+            LdCoordinatorConfig[LdClimateDevice](
+                name="Lifedomus climate coordinator",
+                entry=entry,
+                category_clsid=LdDeviceCategory.ACTUATOR_CLIMATECONTROL,
+                parse_device=_parse_climate_device_element,
+            ),
         ),
     )
-    await coordinator.async_config_entry_first_refresh()
-    shared["climate_coordinator"] = coordinator
-    return coordinator
 
 
 async def async_setup_entry(

@@ -54,9 +54,13 @@ from .const import (
     MODEL,
     LdDeviceCategory,
 )
-from .coordinator import LdCoordinator, LdCoordinatorConfig
+from .coordinator import (
+    LdCoordinator,
+    LdCoordinatorConfig,
+    async_get_or_create_coordinator,
+)
 from .energy import LdEnergyMeter, get_or_create_energy_coordinator
-from .helpers import EntityDependencies, build_device_info, build_entity_dependencies, get_update_interval
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -136,25 +140,23 @@ async def get_or_create_sensor_coordinator(
 ) -> LdCoordinator[_LdRawSensor]:
     """Return the shared raw sensor coordinator, creating and refreshing it if missing.
 
-    The raw sensor coordinator manages devices from the "environment measurement"
-    category and is shared across platforms to support targeted refreshes triggered
-    by the SSH monitor.
+    The coordinator is shared across platforms so that targeted refreshes
+    triggered by the SSH monitor reach every entity of the category.
     """
-    shared = hass.data.setdefault(DOMAIN, {})
-    coord = shared.get("sensor_coordinator")
-    if isinstance(coord, LdCoordinator):
-        return coord
-
-    cfg = LdCoordinatorConfig[_LdRawSensor](
-        name="Lifedomus sensor coordinator",
-        update_interval=get_update_interval(entry),
-        category_clsid=LdDeviceCategory.MEASURE_SENSOR,
-        parse_device=_parse_raw_sensor_device_element,
+    return await async_get_or_create_coordinator(
+        hass,
+        "sensor_coordinator",
+        lambda: LdCoordinator(
+            hass,
+            api,
+            LdCoordinatorConfig[_LdRawSensor](
+                name="Lifedomus sensor coordinator",
+                entry=entry,
+                category_clsid=LdDeviceCategory.MEASURE_SENSOR,
+                parse_device=_parse_raw_sensor_device_element,
+            ),
+        ),
     )
-    coord: LdCoordinator[_LdRawSensor] = LdCoordinator(hass, api, cfg)
-    await coord.async_config_entry_first_refresh()
-    shared["sensor_coordinator"] = coord
-    return coord
 
 
 class LifedomusRawSensor(SensorEntity):
@@ -477,13 +479,8 @@ async def async_setup_entry(
     uuid = str(shared.get("uuid", ""))
 
     sensor_coordinator = await get_or_create_sensor_coordinator(hass, api, entry)
-    shared["sensor_coordinator"] = sensor_coordinator
-
     alarm_coordinator = await get_or_create_alarm_coordinator(hass, api, entry)
-    shared["alarm_coordinator"] = alarm_coordinator
-
     energy_coordinator = await get_or_create_energy_coordinator(hass, api, entry)
-    shared["energy_coordinator"] = energy_coordinator
 
     dependencies = build_entity_dependencies(hass, api, entry)
 

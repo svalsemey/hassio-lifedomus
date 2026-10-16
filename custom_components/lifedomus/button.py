@@ -35,7 +35,7 @@ from .const import (
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, build_entity_dependencies, get_update_interval
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -242,7 +242,7 @@ async def async_setup_entry(
 
     cfg = LdCoordinatorConfig[_LdPushButtonDevice](
         name="Lifedomus push button coordinator",
-        update_interval=get_update_interval(entry),
+        entry=entry,
         category_clsid=LdDeviceCategory.ACTUATOR_REMOTE_CONTROL,
         parse_device=_parse_push_button_device_element,
     )
@@ -252,8 +252,6 @@ async def async_setup_entry(
     shared["button_coordinator"] = button_coordinator
 
     alarm_coordinator = await get_or_create_alarm_coordinator(hass, api, entry)
-    shared["alarm_coordinator"] = alarm_coordinator
-    shared["button_coordinator"] = button_coordinator
 
     dependencies = build_entity_dependencies(hass, api, entry)
 

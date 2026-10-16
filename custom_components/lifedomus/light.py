@@ -62,7 +62,6 @@ from .helpers import (
     EntityDependencies,
     build_device_info,
     build_entity_dependencies,
-    get_update_interval,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -491,7 +490,7 @@ async def async_setup_entry(
 
     cfg = LdCoordinatorConfig[_LdLightDevice](
         name="Lifedomus light coordinator",
-        update_interval=get_update_interval(entry),
+        entry=entry,
         category_clsid=LdDeviceCategory.ACTUATOR_LIGHT,
         parse_device=_parse_light_device_element,
     )

@@ -20,7 +20,7 @@ It offers zero-configuration discovery, secure local communication, efficient co
 - Supported platforms:
   - Binary Sensor: detectors, heat demand indicators, plus alarm boolean states with icon and fault attributes
   - Button: native push buttons and alarm action buttons (Full arming, Stop, Acknowledge events)
-  - Climate: thermostats (direct setpoint and 6-position presets)
+  Climate: thermostats (direct setpoint, 6-position and heat mode presets, on/off regulation)
   - Cover: motors (shutters) with UP/DOWN/STOP and exact position
   - Light: RGBWW LED strips, dimmable and on/off devices
   - Sensor: raw measurement devices and alarm “Operating mode” sensors
@@ -30,8 +30,8 @@ It offers zero-configuration discovery, secure local communication, efficient co
 
 ## Requirements
 
-- Home Assistant 2024.1+ (recommended)
-- Python 3.11+
+- Home Assistant 2025.1+
+- Python 3.13+
 - Lifedomus gateway (reachable on your LAN for discovery)
 - asyncssh >= 2.14.2,<3.0.0 (installed automatically by Home Assistant)
 
@@ -94,12 +94,13 @@ Abort and error cases are clearly reported (invalid UUID/version, no site/user c
     - Acknowledge events: `CLSID-ACTION-ALARM-ACKNOWLEDGE-EVENTS`
 
 - Climate (Thermostats)
-  - Direct setpoint:
-    - States: AMBIANT TEMPERATURE, SETPOINT TEMPERATURE
-    - Limits read from action descriptor of GENERALCONST (step: 0.5°C)
-  - 6-position preset:
-    - Presets mapped to Home Assistant presets (Away, Comfort, Eco)
-    - STOP translates to HVAC OFF; others to HEAT
+  - Capabilities are detected per device from its actions:
+    - Direct setpoint: `CLSID-ACTION-VALUE` on `…-VA-GENERALCONST`, limits read from the action descriptor (step: 0.5°C)
+    - 6-position presets (`…-VA-SETPOINT-6POS`): Away / Comfort / Eco; STOP translates to HVAC OFF
+    - Heat mode presets (`…-VA-HEATMODE`, KNX room thermostats): Away (frost) / Home (reduced) / Eco / Comfort; no off position
+    - On/off switch (`CLSID-DEVC-PROP-THERMOSTAT-REGULATION-SW` on virtual thermostats, `…-ENVIRONMENTTHERMOSTAT-STOP` on direct setpoint devices)
+  - HVAC OFF and `turn_on`/`turn_off` are only offered when the device can actually be switched off; otherwise the entity is heat-only
+  - On preset-based devices the reported setpoint is the one of the active preset and changes when the preset changes
   - Heat demand indicators (CLSID-DEVC-A-CC15) are not climate entities; see Binary Sensor
 
 - Cover (Shutters/Motors)

@@ -61,7 +61,7 @@ from .const import (
     LdDeviceCategory,
 )
 from .coordinator import LdCoordinator, LdCoordinatorConfig
-from .helpers import EntityDependencies, build_device_info, build_entity_dependencies, get_update_interval
+from .helpers import EntityDependencies, build_device_info, build_entity_dependencies
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -751,7 +751,7 @@ async def async_setup_entry(
     # Detectors coordinator
     cfg = LdCoordinatorConfig[_LdBinarySensor](
         name="Lifedomus binary sensor coordinator",
-        update_interval=get_update_interval(entry),
+        entry=entry,
         category_clsid=LdDeviceCategory.SURVEILLANCE_DETECTOR,
         parse_device=_parse_binary_sensor_device_element,
     )
