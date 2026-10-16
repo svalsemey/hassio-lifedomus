@@ -5,6 +5,10 @@ category (CLSID-DEVC-S-DT) and exposes them as Home Assistant binary_sensor enti
 It also exposes alarm boolean states for devices in "alarm" category (CLSID-DEVC-S-PR)
 as binary sensors attached to the alarm device.
 
+Heat demand indicators (CLSID-DEVC-A-CC15) from the climate control category
+are exposed as read-only binary sensors fed by the shared climate coordinator,
+since they only report CLSID-STATE-DEVC-FLOOR-HEATING and have no actuator.
+
 State handling:
 
  - The state with state_clsid 'CLSID-STATE-TRIGGERRED' (Note: spelling as returned by Lifedomus
@@ -42,12 +46,14 @@ from .alarm import (
     get_or_create_alarm_coordinator,
 )
 from .api import LifedomusApi, LifedomusApiError
+from .climate import LdClimateDevice, get_or_create_climate_coordinator
 from .const import (
     CONF_ALARM_CODE,
     CONF_SITE_KEY,
     DOMAIN,
     LD_CLSID_SYSTEM_VARIABLES,
     LD_DEFAULT_ITEMS_LIMIT,
+    LD_DEVICE_TYPE_FLOOR_HEATING,
     LD_STATE_ALARM_WARN_EVENTS_UNACKNOWLEDGED,
     LD_STATE_TRIGGERED,
     LD_SYSTEM_VAR_WEB_STATUS,
@@ -320,6 +326,56 @@ class LifedomusBinarySensor(BinarySensorEntity):
         if device is not None:
             self._apply_device_snapshot(device)
         self.async_write_ha_state()
+
+
+class LifedomusHeatingDemandBinarySensor(BinarySensorEntity):
+    """Heat demand indicator of a heating channel (CLSID-DEVC-A-CC15).
+
+    The device only reports the boolean state CLSID-STATE-DEVC-FLOOR-HEATING
+    and exposes no actuator, so it is read through the shared climate
+    coordinator and exposed as a single entity named after the device.
+    """
+
+    _attr_should_poll = False
+    _attr_has_entity_name = True
+    _attr_name = None
+    _attr_device_class = BinarySensorDeviceClass.HEAT
+
+    def __init__(
+        self,
+        coordinator: LdCoordinator[LdClimateDevice],
+        dependencies: EntityDependencies,
+        device: LdClimateDevice,
+    ) -> None:
+        """Initialize the entity and attach the coordinator by composition."""
+        super().__init__()
+        self.coordinator = coordinator
+        self._device_key = device.device_key
+
+        self._attr_unique_id = device.device_key
+        self._attr_is_on = device.is_heating
+        self._attr_device_info = build_device_info(
+            device_key=device.device_key,
+            device_clsid=device.device_clsid,
+            label=device.label,
+            room_label=device.room_label,
+            via_device_id=dependencies.hub_device_id,
+        )
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Refresh the heat demand flag from the coordinator snapshot."""
+        if (device := self.coordinator.data.get(self._device_key)) is not None:
+            self._attr_is_on = device.is_heating
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Register coordinator update listener and publish initial state."""
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            self.coordinator.async_add_listener(self._handle_coordinator_update)
+        )
+        self._handle_coordinator_update()
 
 
 class LifedomusAlarmBinarySensor(BinarySensorEntity):
@@ -690,6 +746,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up the Lifedomus binary_sensor platform from a config entry."""
     api: LifedomusApi = entry.runtime_data
+    shared = hass.data.setdefault(DOMAIN, {})
 
     # Detectors coordinator
     cfg = LdCoordinatorConfig[_LdBinarySensor](
@@ -700,51 +757,43 @@ async def async_setup_entry(
     )
     binary_sensor_coordinator = LdCoordinator(hass, api, cfg)
     await binary_sensor_coordinator.async_config_entry_first_refresh()
-    shared = hass.data.setdefault(DOMAIN, {})
     shared["binary_sensor_coordinator"] = binary_sensor_coordinator
 
-    # Shared alarm coordinator (create or reuse)
-    alarm_coordinator: LdCoordinator
-    shared = hass.data.setdefault(DOMAIN, {})
+    # Shared coordinators (created on first use, reused afterwards)
     alarm_coordinator = await get_or_create_alarm_coordinator(hass, api, entry)
-    shared["alarm_coordinator"] = alarm_coordinator
+    climate_coordinator = await get_or_create_climate_coordinator(hass, api, entry)
 
     dependencies = build_entity_dependencies(hass, api, entry)
 
-    # Build detector entities via list comprehension.
-    detector_entities = [
-        LifedomusBinarySensor(binary_sensor_coordinator, dependencies, device)
-        for device in binary_sensor_coordinator.data.values()
-    ]
-
-    # Build alarm boolean entities via list comprehension.
-    alarm_entities = [
-        LifedomusAlarmBinarySensor(
-            alarm_coordinator, dependencies, dev, stid, definition
-        )
-        for dev in alarm_coordinator.data.values()
-        for stid, definition in ALARM_BOOL_STATES.items()
-        if stid in dev.bool_states
-    ]
-
-    # Build system variable binary sensor (web status)
+    # System variable binary sensor (web status), referenced for push updates
     web_status_sensor = LifedomusSystemVariableBinarySensor(
         hass,
         api,
         str(entry.data.get(CONF_SITE_KEY, "")),
-        str(hass.data.setdefault(DOMAIN, {}).get("uuid", "")),
+        str(shared.get("uuid", "")),
         LD_SYSTEM_VAR_WEB_STATUS,
     )
+    shared.setdefault("system_binary_sensors", {})[LD_SYSTEM_VAR_WEB_STATUS] = (
+        web_status_sensor
+    )
 
-    # Store reference for push updates
-    shared = hass.data.setdefault(DOMAIN, {})
-    system_binary_sensors = shared.setdefault("system_binary_sensors", {})
-    system_binary_sensors[LD_SYSTEM_VAR_WEB_STATUS] = web_status_sensor
-
-    # Merge into a single list while preserving BinarySensorEntity typing.
-    entities: list[BinarySensorEntity] = []
-    entities.extend(detector_entities)
-    entities.extend(alarm_entities)
+    entities: list[BinarySensorEntity] = [
+        LifedomusBinarySensor(binary_sensor_coordinator, dependencies, device)
+        for device in binary_sensor_coordinator.data.values()
+    ]
+    entities.extend(
+        LifedomusAlarmBinarySensor(
+            alarm_coordinator, dependencies, device, state_clsid, definition
+        )
+        for device in alarm_coordinator.data.values()
+        for state_clsid, definition in ALARM_BOOL_STATES.items()
+        if state_clsid in device.bool_states
+    )
+    entities.extend(
+        LifedomusHeatingDemandBinarySensor(climate_coordinator, dependencies, device)
+        for device in climate_coordinator.data.values()
+        if device.device_clsid == LD_DEVICE_TYPE_FLOOR_HEATING
+    )
     entities.append(web_status_sensor)
 
     async_add_entities(entities)

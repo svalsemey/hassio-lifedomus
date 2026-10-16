@@ -368,6 +368,14 @@ LD_CLSID_DEVICE_CATEGORIES: Final[dict[LdDeviceCategory, dict[str, str]]] = {
     },
 }
 
+# Device type CLSIDs requiring platform-specific handling.
+LD_DEVICE_TYPE_FLOOR_HEATING: Final[str] = (
+    # Heat demand indicator of a heating channel: only reports the boolean state
+    # CLSID-STATE-DEVC-FLOOR-HEATING and exposes no actuator, so it is exposed
+    # as a binary sensor rather than a climate entity
+    "CLSID-DEVC-A-CC15"
+)
+
 # Labels for various alarm faults. Some are probably missing (not found in tested devices).
 LD_LABEL_FAULT_BATTERY: Final[str] = "{CLSID-LBL-XXD-FAULTS-BATTERY-CELL}"
 LD_LABEL_FAULT_INHIBITION: Final[str] = "{CLSID-LBL-XXD-FAULTS-INHIBITION}"

@@ -20,7 +20,8 @@ Two operating modes:
     - STOP maps to HVAC OFF; others map to HVAC HEAT and HW presets.
 Device specifics:
  - Floor heating devices (CLSID-DEVC-A-CC15) only report the boolean state
-   CLSID-STATE-DEVC-FLOOR-HEATING, which drives the HVAC mode.
+   CLSID-STATE-DEVC-FLOOR-HEATING and expose no actuator; they are parsed by
+   the shared climate coordinator but exposed by the binary_sensor platform.
  - Virtual thermostats (CLSID-DEVC-A-CC16) additionally report
    CLSID-STATE-REGULATION-ON (drives the HVAC mode), CLSID-STATE-THERMOSTAT
    (drives the HVAC action) and CLSID-STATE-THERMOSTAT-THERM-MODE (exposed as
@@ -52,8 +53,9 @@ from homeassistant.components.climate import (
     HVACMode,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import UnitOfTemperature
+from homeassistant.const import Platform, UnitOfTemperature
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 
 from .api import (
     LifedomusApi,
@@ -72,6 +74,7 @@ from .const import (
     LD_ACTION_SETPOINT_6POS_ECO,
     LD_ACTION_SETPOINT_6POS_STOP,
     LD_ACTION_VALUE,
+    LD_DEVICE_TYPE_FLOOR_HEATING,
     LD_PROP_THERMOSTAT_SETPOINT,
     LD_PROP_THERMOSTAT_SETPOINT_6POS,
     LD_PROP_THERMOSTAT_STOP,
@@ -150,7 +153,7 @@ THERMOSTAT_DIAGNOSTIC_STATES: Final[frozenset[str]] = frozenset(
 
 
 @dataclass(slots=True)
-class _LdClimateDevice:
+class LdClimateDevice:
     """Container for a parsed Lifedomus climate device."""
 
     device_key: str
@@ -305,7 +308,7 @@ def _parse_climate_states(api: LifedomusApi, dev_el: Element) -> _LdClimateState
 
 def _parse_climate_device_element(
     api: LifedomusApi, dev_el: Element
-) -> _LdClimateDevice | None:
+) -> LdClimateDevice | None:
     """Parse a <device> element returned by GetDevicesFromCatg into a snapshot."""
     device_key = api.txt("device_key", dev_el)
     if not device_key:
@@ -316,7 +319,7 @@ def _parse_climate_device_element(
     )
     states = _parse_climate_states(api, dev_el)
 
-    return _LdClimateDevice(
+    return LdClimateDevice(
         device_key=device_key,
         device_clsid=api.txt("device_clsid", dev_el),
         label=api.txt("label", dev_el) or device_key,
@@ -346,8 +349,8 @@ class LifedomusClimate(ClimateEntity):
 
     def __init__(
         self,
-        coordinator: LdCoordinator[_LdClimateDevice],
-        device: _LdClimateDevice,
+        coordinator: LdCoordinator[LdClimateDevice],
+        device: LdClimateDevice,
         dependencies: EntityDependencies,
     ) -> None:
         """Initialize the climate entity and attach the coordinator by composition."""
@@ -373,7 +376,7 @@ class LifedomusClimate(ClimateEntity):
 
         self._apply_device_snapshot(device)
 
-    def _apply_device_snapshot(self, device: _LdClimateDevice) -> None:
+    def _apply_device_snapshot(self, device: LdClimateDevice) -> None:
         """Apply the coordinator snapshot to HA attributes."""
         self._attr_name = device.label
         self._attr_current_temperature = device.current_temperature
@@ -400,7 +403,7 @@ class LifedomusClimate(ClimateEntity):
         # HVAC mode inference:
         # - 6POS: STOP -> OFF, otherwise HEAT.
         # - Virtual thermostats: the regulation flag drives the mode.
-        # - Direct setpoint / floor heating: boolean running state.
+        # - Direct setpoint: boolean running state when reported.
         if self._supports_6pos:
             self._attr_hvac_mode = (
                 HVACMode.OFF
@@ -437,7 +440,7 @@ class LifedomusClimate(ClimateEntity):
             self._attr_preset_modes = None
 
     @property
-    def _dev(self) -> _LdClimateDevice | None:
+    def _dev(self) -> LdClimateDevice | None:
         """Return the current device snapshot from the coordinator."""
         if self._attr_unique_id is None:
             return None
@@ -615,32 +618,56 @@ class LifedomusClimate(ClimateEntity):
             return
 
 
+async def get_or_create_climate_coordinator(
+    hass: HomeAssistant, api: LifedomusApi, entry: ConfigEntry
+) -> LdCoordinator[LdClimateDevice]:
+    """Return the shared climate coordinator, creating and refreshing it if missing.
+
+    The coordinator covers the whole climate control category, including heat
+    demand indicators which are exposed by the binary_sensor platform.
+    """
+    shared = hass.data.setdefault(DOMAIN, {})
+    if isinstance(coord := shared.get("climate_coordinator"), LdCoordinator):
+        return coord
+
+    coordinator = LdCoordinator(
+        hass,
+        api,
+        LdCoordinatorConfig[LdClimateDevice](
+            name="Lifedomus climate coordinator",
+            update_interval=get_update_interval(entry),
+            category_clsid=LdDeviceCategory.ACTUATOR_CLIMATECONTROL,
+            parse_device=_parse_climate_device_element,
+        ),
+    )
+    await coordinator.async_config_entry_first_refresh()
+    shared["climate_coordinator"] = coordinator
+    return coordinator
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
     async_add_entities: Callable[[list[ClimateEntity]], None],
 ) -> None:
-    """Set up the Lifedomus climate platform from a config entry."""
+    """Set up the Lifedomus climate platform from a config entry.
 
+    Heat demand indicators (CLSID-DEVC-A-CC15) are exposed by the binary_sensor
+    platform; any climate entity previously registered for them is removed from
+    the entity registry so no orphan remains after an upgrade.
+    """
     api: LifedomusApi = entry.runtime_data
-
-    cfg = LdCoordinatorConfig[_LdClimateDevice](
-        name="Lifedomus climate coordinator",
-        update_interval=get_update_interval(entry),
-        category_clsid=LdDeviceCategory.ACTUATOR_CLIMATECONTROL,
-        parse_device=_parse_climate_device_element,
-    )
-    coordinator = LdCoordinator(hass, api, cfg)
-    await coordinator.async_config_entry_first_refresh()
-
-    # Share the coordinator for potential reuse if needed.
-    hass.data.setdefault(DOMAIN, {})["climate_coordinator"] = coordinator
-
+    coordinator = await get_or_create_climate_coordinator(hass, api, entry)
     dependencies = build_entity_dependencies(hass, api, entry)
+    registry = er.async_get(hass)
 
-    entities: list[ClimateEntity] = [
-        LifedomusClimate(coordinator, dev, dependencies)
-        for dev in coordinator.data.values()
-    ]
+    entities: list[ClimateEntity] = []
+    for device in coordinator.data.values():
+        if device.device_clsid != LD_DEVICE_TYPE_FLOOR_HEATING:
+            entities.append(LifedomusClimate(coordinator, device, dependencies))
+        elif entity_id := registry.async_get_entity_id(
+            Platform.CLIMATE, DOMAIN, device.device_key
+        ):
+            registry.async_remove(entity_id)
 
     async_add_entities(entities)

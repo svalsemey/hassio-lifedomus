@@ -18,7 +18,7 @@ It offers zero-configuration discovery, secure local communication, efficient co
 - Optional 6-digit alarm access code management (with verification and reconfigure flow)
 - Local push (SSH tunnel + XML dispatcher) to minimize polling where possible
 - Supported platforms:
-  - Binary Sensor: detectors, plus alarm boolean states with icon and fault attributes
+  - Binary Sensor: detectors, heat demand indicators, plus alarm boolean states with icon and fault attributes
   - Button: native push buttons and alarm action buttons (Full arming, Stop, Acknowledge events)
   - Climate: thermostats (direct setpoint and 6-position presets)
   - Cover: motors (shutters) with UP/DOWN/STOP and exact position
@@ -30,7 +30,7 @@ It offers zero-configuration discovery, secure local communication, efficient co
 
 ## Requirements
 
-- Home Assistant 2023.11+ (recommended)
+- Home Assistant 2024.1+ (recommended)
 - Python 3.11+
 - Lifedomus gateway (reachable on your LAN for discovery)
 - asyncssh >= 2.14.2,<3.0.0 (installed automatically by Home Assistant)
@@ -83,6 +83,7 @@ Abort and error cases are clearly reported (invalid UUID/version, no site/user c
 
 - Binary Sensor
   - Detectors (category CLSID-DEVC-S-DT) with robust boolean parsing
+  - Heat demand indicators (CLSID-DEVC-A-CC15): read-only `heat` binary sensor fed by the shared climate coordinator
   - Alarm boolean states (mapping from CLSID states), with icons and extra attributes (fault objects) when authorized
 
 - Button
@@ -99,6 +100,7 @@ Abort and error cases are clearly reported (invalid UUID/version, no site/user c
   - 6-position preset:
     - Presets mapped to Home Assistant presets (Away, Comfort, Eco)
     - STOP translates to HVAC OFF; others to HEAT
+  - Heat demand indicators (CLSID-DEVC-A-CC15) are not climate entities; see Binary Sensor
 
 - Cover (Shutters/Motors)
   - UP/DOWN/STOP and exact position
