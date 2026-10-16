@@ -106,6 +106,7 @@ Abort and error cases are clearly reported (invalid UUID/version, no site/user c
 
 - Light
   - RGBWW LED strips: switch on `CLSID-DEVC-PROP-LEDRGB-SW`, per-channel levels (R/G/B/CW/WW) via `CLSID-ACTION-VALUE` on `CLSID-DEVC-PROP-LEDRGB-VA-*`
+    - The warm-white channel is never written at 0 (floored to 1): the gateway treats a zero warm-white level as a switch-off command, which saturated colours from the Home Assistant colour picker would otherwise trigger
   - Dimmable: value action on `CLSID-DEVC-PROP-DIMMER-VA-POS`
   - On/off: TOR switch on `CLSID-DEVC-PROP-TOR-SW`
 

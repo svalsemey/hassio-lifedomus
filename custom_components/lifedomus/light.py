@@ -96,6 +96,11 @@ RGBWW_CHANNEL_PROPS: Final[tuple[str, str, str, str, str]] = (
 # Neutral color used when a channel command must be built without any known color.
 RGBWW_FALLBACK_COLOR: Final[RgbwwColor] = (255, 255, 255, 255, 255)
 
+# Minimum raw warm-white level written to the strip. The gateway treats a zero
+# warm-white level as a switch-off command, which saturated colors coming from the
+# Home Assistant color picker would otherwise trigger; one unit is enough to keep
+# the strip on and is visually negligible.
+RGBWW_WARM_WHITE_MIN: Final[int] = 1
 
 def _scale_rgbww(color: RgbwwColor, numerator: int, denominator: int) -> RgbwwColor:
     """Scale each channel by numerator/denominator, clamped to the 0-255 range."""
@@ -414,8 +419,18 @@ class LifedomusRgbLight(_LdBaseLight):
         )
 
     async def _async_write_channels(self, raw: RgbwwColor) -> None:
-        """Write one raw 0-255 level per LED channel through VALUE actions."""
-        for prop_clsid, level in zip(RGBWW_CHANNEL_PROPS, raw, strict=True):
+        """Write one raw 0-255 level per LED channel through VALUE actions.
+
+        The warm-white level is floored to RGBWW_WARM_WHITE_MIN after brightness
+        scaling, because the gateway interprets a zero warm-white level as a
+        switch-off command regardless of the other channels.
+        """
+        red, green, blue, cold_white, warm_white = raw
+        for prop_clsid, level in zip(
+            RGBWW_CHANNEL_PROPS,
+            (red, green, blue, cold_white, max(RGBWW_WARM_WHITE_MIN, warm_white)),
+            strict=True,
+        ):
             await self._async_execute_action(
                 prop_clsid,
                 LD_ACTION_VALUE,
@@ -429,8 +444,10 @@ class LifedomusRgbLight(_LdBaseLight):
         channel levels are computed by scaling the requested (or current) color
         by the requested (or current) brightness, then written channel by
         channel. The switch-on action is sent first when the strip is not known
-        to be on; the gateway forces the warm-white channel to 255 on switch-on,
-        which the subsequent channel writes deterministically override.
+        to be on; the gateway forces the warm-white channel on switch-on, which
+        the subsequent channel writes deterministically override. The warm-white
+        level is never written at zero since the gateway would switch the strip
+        off (see _async_write_channels).
         """
         rgbww: RgbwwColor | None = kwargs.get(ATTR_RGBWW_COLOR)
         brightness: int | None = kwargs.get(ATTR_BRIGHTNESS)
