@@ -35,6 +35,9 @@ from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .data import LifedomusConfigEntry, LifedomusRuntimeData
 from .entity import LifedomusEntity
 
+# Actions are serialized per platform to keep the load on the gateway moderate.
+PARALLEL_UPDATES = 1
+
 
 @dataclass(slots=True)
 class LdPushButtonDevice:
@@ -119,6 +122,8 @@ PUSH_BUTTON_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdPushButtonDevice]] =
 class LifedomusPushButton(LifedomusEntity[LdPushButtonDevice], ButtonEntity):
     """Lifedomus native push button entity."""
 
+    _attr_name = None
+
     def __init__(
         self,
         coordinator: LdCoordinator[LdPushButtonDevice],
@@ -128,7 +133,6 @@ class LifedomusPushButton(LifedomusEntity[LdPushButtonDevice], ButtonEntity):
         """Initialize the push button entity."""
         super().__init__(coordinator, device, runtime)
         self._attr_unique_id = device.device_key
-        self._attr_name = device.label
 
     @property
     def _push_prop_clsid(self) -> str | None:
@@ -148,8 +152,6 @@ class LifedomusPushButton(LifedomusEntity[LdPushButtonDevice], ButtonEntity):
 
 class LifedomusAlarmActionButton(LifedomusEntity[LdAlarmDevice], ButtonEntity):
     """Alarm action button (Full arming, Stop, Acknowledge events)."""
-
-    _attr_has_entity_name = True
 
     def __init__(
         self,

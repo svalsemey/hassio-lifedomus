@@ -7,6 +7,9 @@
         "description": "Välj en gateway eller ange en värd manuellt.",
         "data": {
           "host": "Gateway"
+        },
+        "data_description": {
+          "host": "Gateway som hittats i det lokala nätverket, eller alternativet för manuell inmatning."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Ange värden (IP-adress eller värdnamn) för din Lifedomus-gateway.",
         "data": {
           "host": "Värd"
+        },
+        "data_description": {
+          "host": "Gatewayens IP-adress eller värdnamn; port 8443 används."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Välj platsen som ska konfigureras på denna gateway.",
         "data": {
           "site_key": "Plats"
+        },
+        "data_description": {
+          "site_key": "Installation konfigurerad på gatewayen; varje plats blir en post."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Välj användaren för denna plats.",
         "data": {
           "user_key": "Användare"
+        },
+        "data_description": {
+          "user_key": "Gateway-användare vars rättigheter Home Assistant kommer att använda."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Ange lösenordet för den valda användaren.",
         "data": {
           "password": "Lösenord"
+        },
+        "data_description": {
+          "password": "Användarens lösenord enligt definitionen i Lifedomus-konfigurationen."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Larmkod",
           "clear_alarm_code": "Rensa sparad larmkod"
+        },
+        "data_description": {
+          "alarm_code": "Sexsiffrig kod som ger användaren åtkomst till larmcentralen; krävs för aktivering, stopp, kvittering av händelser och byte av zoner.",
+          "clear_alarm_code": "Glöm den sparade koden; larmåtgärder blir otillgängliga."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "Gatewayen på {host} avvisade det sparade lösenordet. Ange det aktuella lösenordet för den konfigurerade användaren.",
         "data": {
           "password": "Lösenord"
+        },
+        "data_description": {
+          "password": "Aktuellt lösenord för användaren som är konfigurerad för denna post."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Ange gatewayens aktuella värd (IP-adress eller värdnamn). Larmkoden kan granskas i nästa steg.",
         "data": {
           "host": "Värd"
+        },
+        "data_description": {
+          "host": "Ny IP-adress eller nytt värdnamn; måste leda till samma gateway och plats."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Omkonfiguration slutförd. Posten uppdaterades.",
       "unique_id_mismatch": "Värden leder inte till gatewayen och platsen för denna post.",
       "unknown": "Okänt fel."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Lifedomus-alternativ",
-        "description": "Globala inställningar för Lifedomus-integrationen.",
-        "data": {
-          "update_interval": "Uppdateringsintervall (s)"
-        }
-      }
     }
   },
   "exceptions": {

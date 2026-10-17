@@ -29,8 +29,6 @@ from .const import (
     LD_PORT,
     MANUFACTURER,
     MODEL,
-    OPTION_UPDATE_INTERVAL,
-    OPTION_UPDATE_INTERVAL_DEFAULT,
 )
 from .coordinator import LdCoordinator
 from .cover import COVER_COORDINATOR_CONFIG
@@ -62,14 +60,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: LifedomusConfigEntry) -> bool:
     """Set up Lifedomus from a config entry."""
     host: str = entry.data[CONF_HOST]
-    api = LifedomusApi(
-        hass,
-        host=host,
-        verify_ssl=False,
-        request_timeout=int(
-            entry.options.get(OPTION_UPDATE_INTERVAL, OPTION_UPDATE_INTERVAL_DEFAULT)
-        ),
-    )
+    api = LifedomusApi(hass, host)
 
     # Validate connectivity and retrieve the UUID for stable device identification.
     try:

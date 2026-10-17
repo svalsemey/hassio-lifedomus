@@ -7,6 +7,9 @@
         "description": "Vælg en gateway eller indtast en vært manuelt.",
         "data": {
           "host": "Gateway"
+        },
+        "data_description": {
+          "host": "Gateway fundet på det lokale netværk eller indstillingen til manuel indtastning."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Angiv værten (IP-adresse eller værtsnavn) for din Lifedomus-gateway.",
         "data": {
           "host": "Vært"
+        },
+        "data_description": {
+          "host": "IP-adresse eller værtsnavn for gatewayen; port 8443 bruges."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Vælg det site, der skal konfigureres på denne gateway.",
         "data": {
           "site_key": "Site"
+        },
+        "data_description": {
+          "site_key": "Installation konfigureret på gatewayen; hvert site bliver til én post."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Vælg brugeren til dette site.",
         "data": {
           "user_key": "Bruger"
+        },
+        "data_description": {
+          "user_key": "Gateway-bruger, hvis rettigheder Home Assistant vil bruge."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Indtast adgangskoden for den valgte bruger.",
         "data": {
           "password": "Adgangskode"
+        },
+        "data_description": {
+          "password": "Brugerens adgangskode som defineret i Lifedomus-konfigurationen."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Alarmkode",
           "clear_alarm_code": "Ryd gemt alarmkode"
+        },
+        "data_description": {
+          "alarm_code": "6-cifret kode, der giver brugeren adgang til panelet; kræves for at aktivere, stoppe, kvittere hændelser og skifte zoner.",
+          "clear_alarm_code": "Glem den gemte kode; alarmhandlinger bliver utilgængelige."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "Gatewayen på {host} afviste den gemte adgangskode. Indtast den aktuelle adgangskode for den konfigurerede bruger.",
         "data": {
           "password": "Adgangskode"
+        },
+        "data_description": {
+          "password": "Aktuel adgangskode for den bruger, der er konfigureret for denne post."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Indtast den aktuelle vært (IP-adresse eller værtsnavn) for gatewayen. Alarmkoden kan gennemgås i næste trin.",
         "data": {
           "host": "Vært"
+        },
+        "data_description": {
+          "host": "Ny IP-adresse eller nyt værtsnavn; den skal føre til den samme gateway og det samme site."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Rekonfiguration fuldført. Posten blev opdateret.",
       "unique_id_mismatch": "Værten fører ikke til gatewayen og sitet for denne post.",
       "unknown": "Ukendt fejl."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Lifedomus-indstillinger",
-        "description": "Globale indstillinger for Lifedomus-integrationen.",
-        "data": {
-          "update_interval": "Opdateringsinterval (s)"
-        }
-      }
     }
   },
   "exceptions": {

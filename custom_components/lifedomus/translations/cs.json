@@ -7,6 +7,9 @@
         "description": "Vyberte bránu nebo zadejte hostitele ručně.",
         "data": {
           "host": "Brána"
+        },
+        "data_description": {
+          "host": "Brána nalezená v místní síti nebo možnost ručního zadání."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Zadejte hostitele (IP adresu nebo název) vaší brány Lifedomus.",
         "data": {
           "host": "Hostitel"
+        },
+        "data_description": {
+          "host": "IP adresa nebo název hostitele brány; používá se port 8443."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Zvolte lokalitu, kterou chcete na této bráně nakonfigurovat.",
         "data": {
           "site_key": "Lokalita"
+        },
+        "data_description": {
+          "site_key": "Instalace nakonfigurovaná na bráně; každá lokalita se stane jednou položkou."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Zvolte uživatele pro tuto lokalitu.",
         "data": {
           "user_key": "Uživatel"
+        },
+        "data_description": {
+          "user_key": "Uživatel brány, jehož oprávnění bude Home Assistant používat."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Zadejte heslo vybraného uživatele.",
         "data": {
           "password": "Heslo"
+        },
+        "data_description": {
+          "password": "Heslo uživatele podle definice v konfiguraci Lifedomus."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Kód alarmu",
           "clear_alarm_code": "Vymazat uložený kód alarmu"
+        },
+        "data_description": {
+          "alarm_code": "6místný kód, který uživateli umožňuje přístup k panelu; vyžadován pro zajištění, zastavení, potvrzování událostí a přepínání zón.",
+          "clear_alarm_code": "Zapomenout uložený kód; akce alarmu se stanou nedostupnými."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "Brána na {host} odmítla uložené heslo. Zadejte aktuální heslo nakonfigurovaného uživatele.",
         "data": {
           "password": "Heslo"
+        },
+        "data_description": {
+          "password": "Aktuální heslo uživatele nakonfigurovaného pro tuto položku."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Zadejte aktuálního hostitele (IP adresu nebo název) brány. Kód alarmu můžete zkontrolovat v dalším kroku.",
         "data": {
           "host": "Hostitel"
+        },
+        "data_description": {
+          "host": "Nová IP adresa nebo název hostitele; musí vést ke stejné bráně a lokalitě."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Překonfigurování dokončeno. Položka byla aktualizována.",
       "unique_id_mismatch": "Hostitel nevede k bráně a lokalitě tohoto záznamu.",
       "unknown": "Neznámá chyba."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Možnosti Lifedomus",
-        "description": "Globální nastavení integrace Lifedomus.",
-        "data": {
-          "update_interval": "Interval aktualizace (s)"
-        }
-      }
     }
   },
   "exceptions": {

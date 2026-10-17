@@ -7,6 +7,9 @@
         "description": "ゲートウェイを選択するか、ホストを手動で入力してください。",
         "data": {
           "host": "ゲートウェイ"
+        },
+        "data_description": {
+          "host": "ローカルネットワークで見つかったゲートウェイ、または手動入力のオプション。"
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Lifedomus ゲートウェイのホスト（IP アドレスまたはホスト名）を入力してください。",
         "data": {
           "host": "ホスト"
+        },
+        "data_description": {
+          "host": "ゲートウェイの IP アドレスまたはホスト名。ポート 8443 が使用されます。"
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "このゲートウェイで設定するサイトを選択してください。",
         "data": {
           "site_key": "サイト"
+        },
+        "data_description": {
+          "site_key": "ゲートウェイに設定されているインストール。各サイトが 1 つのエントリになります。"
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "このサイトのユーザーを選択してください。",
         "data": {
           "user_key": "ユーザー"
+        },
+        "data_description": {
+          "user_key": "Home Assistant が権限を使用するゲートウェイのユーザー。"
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "選択したユーザーのパスワードを入力してください。",
         "data": {
           "password": "パスワード"
+        },
+        "data_description": {
+          "password": "Lifedomus の設定で定義されているユーザーのパスワード。"
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "アラームコード",
           "clear_alarm_code": "保存されたアラームコードを消去"
+        },
+        "data_description": {
+          "alarm_code": "ユーザーにパネルへのアクセスを許可する 6 桁のコード。有効化、停止、イベントの確認、ゾーンの切り替えに必要です。",
+          "clear_alarm_code": "保存されたコードを破棄します。アラーム操作は利用できなくなります。"
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "{host} のゲートウェイが保存されたパスワードを拒否しました。設定済みユーザーの現在のパスワードを入力してください。",
         "data": {
           "password": "パスワード"
+        },
+        "data_description": {
+          "password": "このエントリに設定されているユーザーの現在のパスワード。"
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "ゲートウェイの現在のホスト（IP アドレスまたはホスト名）を入力してください。アラームコードは次のステップで確認できます。",
         "data": {
           "host": "ホスト"
+        },
+        "data_description": {
+          "host": "新しい IP アドレスまたはホスト名。同じゲートウェイとサイトに到達できる必要があります。"
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "再設定が完了しました。エントリが更新されました。",
       "unique_id_mismatch": "このホストは、このエントリのゲートウェイおよびサイトに対応していません。",
       "unknown": "不明なエラー。"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Lifedomus オプション",
-        "description": "Lifedomus 連携のグローバル設定。",
-        "data": {
-          "update_interval": "更新間隔（秒）"
-        }
-      }
     }
   },
   "exceptions": {

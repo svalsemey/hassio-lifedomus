@@ -16,10 +16,11 @@ from xml.etree.ElementTree import Element
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import LifedomusApi, LifedomusApiError
-from .const import OPTION_UPDATE_INTERVAL, OPTION_UPDATE_INTERVAL_DEFAULT
+from .api import LifedomusApi, LifedomusApiError, LifedomusAuthError
+from .const import LD_POLL_INTERVAL_S
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,17 +61,6 @@ class LdCoordinatorConfig[TDev: LdDeviceSnapshot]:
     state_action: str = "GetDeviceState"
 
 
-def _get_update_interval(entry: ConfigEntry) -> timedelta:
-    """Return the polling interval from the entry options, clamped to 5 s - 1 h."""
-    try:
-        seconds = int(
-            entry.options.get(OPTION_UPDATE_INTERVAL, OPTION_UPDATE_INTERVAL_DEFAULT)
-        )
-    except (TypeError, ValueError):
-        seconds = OPTION_UPDATE_INTERVAL_DEFAULT
-    return timedelta(seconds=max(5, min(3600, seconds)))
-
-
 class LdCoordinator[TDev: LdDeviceSnapshot](DataUpdateCoordinator[dict[str, TDev]]):
     """Generic DataUpdateCoordinator for one Lifedomus device category."""
 
@@ -87,7 +77,7 @@ class LdCoordinator[TDev: LdDeviceSnapshot](DataUpdateCoordinator[dict[str, TDev
             logger=_LOGGER,
             name=config.name,
             config_entry=entry,
-            update_interval=_get_update_interval(entry),
+            update_interval=timedelta(seconds=LD_POLL_INTERVAL_S),
         )
         self.api = api
         self._cfg = config
@@ -120,6 +110,8 @@ class LdCoordinator[TDev: LdDeviceSnapshot](DataUpdateCoordinator[dict[str, TDev
                 action=self._cfg.list_action,
                 params={"category_clsid": self._cfg.category_clsid},
             )
+        except LifedomusAuthError as err:
+            raise ConfigEntryAuthFailed(err) from err
         except LifedomusApiError as err:
             raise UpdateFailed(
                 f"Failed to fetch Lifedomus category {self._cfg.category_clsid}: {err}"

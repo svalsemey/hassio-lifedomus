@@ -52,6 +52,8 @@ from .data import LifedomusConfigEntry, LifedomusRuntimeData
 from .energy import LdEnergyMeter
 from .entity import LifedomusEntity, LifedomusSystemVariableEntity
 
+# Read-only entities fed by shared coordinators
+PARALLEL_UPDATES = 0
 
 def normalize_operating_mode_value(mode: str | None) -> str | None:
     """Normalize raw operating mode values to translation state keys.
@@ -146,6 +148,7 @@ def _device_class_for_unit(unit: str | None) -> SensorDeviceClass | None:
 class LifedomusRawSensor(LifedomusEntity[LdRawSensor], SensorEntity):
     """Lifedomus raw measurement sensor."""
 
+    _attr_name = None
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
@@ -161,7 +164,6 @@ class LifedomusRawSensor(LifedomusEntity[LdRawSensor], SensorEntity):
 
     def _apply_device_snapshot(self, device: LdRawSensor) -> None:
         """Copy the value and unit, deriving the device class from the unit."""
-        self._attr_name = device.label
         self._attr_native_value = device.value
         self._attr_native_unit_of_measurement = device.unit
         self._attr_device_class = _device_class_for_unit(device.unit)
@@ -170,7 +172,6 @@ class LifedomusRawSensor(LifedomusEntity[LdRawSensor], SensorEntity):
 class LifedomusAlarmOperatingModeSensor(LifedomusEntity[LdAlarmDevice], SensorEntity):
     """Alarm 'Operating mode' sensor (text) with mode-specific icon."""
 
-    _attr_has_entity_name = True
     _attr_translation_key = "operating_mode"
 
     def __init__(
@@ -195,6 +196,7 @@ class LifedomusAlarmOperatingModeSensor(LifedomusEntity[LdAlarmDevice], SensorEn
 class LifedomusEnergyMeterSensor(LifedomusEntity[LdEnergyMeter], SensorEntity):
     """Energy meter sensor exposing total consumption."""
 
+    _attr_name = None
     _attr_state_class = SensorStateClass.TOTAL_INCREASING
     _attr_device_class = SensorDeviceClass.ENERGY
     _attr_native_unit_of_measurement = UnitOfEnergy.WATT_HOUR
@@ -212,7 +214,6 @@ class LifedomusEnergyMeterSensor(LifedomusEntity[LdEnergyMeter], SensorEntity):
 
     def _apply_device_snapshot(self, device: LdEnergyMeter) -> None:
         """Copy the total and expose the reset values as attributes."""
-        self._attr_name = device.label
         self._attr_native_value = device.total_value
         self._attr_extra_state_attributes = {
             "value_reset": device.total_value_reset,

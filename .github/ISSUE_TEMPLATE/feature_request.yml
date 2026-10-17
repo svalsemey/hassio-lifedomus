@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest a device, capability or improvement.
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What would you like to achieve?
+      description: Describe the use case rather than the implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: device
+    attributes:
+      label: Device or capability involved
+      description: Device model and its `device_clsid`, as shown in the diagnostics file under `raw_devices_by_category`.
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics file
+      description: |
+        For unsupported devices, attach the diagnostics file (Settings → Devices & services → Lifedomus → ⋮ → **Download diagnostics**). It contains the raw XML of every device category, which is what is needed to add support.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context

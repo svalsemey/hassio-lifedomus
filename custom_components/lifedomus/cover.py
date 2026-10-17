@@ -44,6 +44,9 @@ from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .data import LifedomusConfigEntry, LifedomusRuntimeData
 from .entity import LifedomusEntity
 
+# Actions are serialized per platform to keep the load on the gateway moderate.
+PARALLEL_UPDATES = 1
+
 
 @dataclass(slots=True)
 class LdCoverDevice:
@@ -116,6 +119,7 @@ COVER_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdCoverDevice]] = (
 class LifedomusCover(LifedomusEntity[LdCoverDevice], CoverEntity):
     """Lifedomus shutter/cover entity."""
 
+    _attr_name = None
     _attr_supported_features = (
         CoverEntityFeature.OPEN
         | CoverEntityFeature.CLOSE
@@ -137,7 +141,6 @@ class LifedomusCover(LifedomusEntity[LdCoverDevice], CoverEntity):
 
     def _apply_device_snapshot(self, device: LdCoverDevice) -> None:
         """Apply the position; an unknown position keeps the entity in assumed mode."""
-        self._attr_name = device.label
         self._attr_current_cover_position = device.position_ha
         self._attr_is_closed = (
             None if device.position_ha is None else device.position_ha == 0

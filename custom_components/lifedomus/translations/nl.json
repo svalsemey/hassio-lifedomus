@@ -7,6 +7,9 @@
         "description": "Selecteer een gateway of voer handmatig een host in.",
         "data": {
           "host": "Gateway"
+        },
+        "data_description": {
+          "host": "Gateway gevonden op het lokale netwerk, of de optie voor handmatige invoer."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Voer de host (IP-adres of hostnaam) van uw Lifedomus-gateway in.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "IP-adres of hostnaam van de gateway; poort 8443 wordt gebruikt."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Kies de site die u op deze gateway wilt configureren.",
         "data": {
           "site_key": "Site"
+        },
+        "data_description": {
+          "site_key": "Installatie die op de gateway is geconfigureerd; elke site wordt één invoer."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Kies de gebruiker voor deze site.",
         "data": {
           "user_key": "Gebruiker"
+        },
+        "data_description": {
+          "user_key": "Gatewaygebruiker wiens rechten Home Assistant zal gebruiken."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Voer het wachtwoord in voor de geselecteerde gebruiker.",
         "data": {
           "password": "Wachtwoord"
+        },
+        "data_description": {
+          "password": "Wachtwoord van de gebruiker zoals gedefinieerd in de Lifedomus-configuratie."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Alarmcode",
           "clear_alarm_code": "Opgeslagen alarmcode wissen"
+        },
+        "data_description": {
+          "alarm_code": "Code van 6 cijfers die de gebruiker toegang geeft tot het paneel; vereist voor inschakelen, stoppen, bevestigen van gebeurtenissen en omschakelen van zones.",
+          "clear_alarm_code": "Vergeet de opgeslagen code; alarmacties worden niet meer beschikbaar."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "De gateway op {host} heeft het opgeslagen wachtwoord geweigerd. Voer het huidige wachtwoord van de geconfigureerde gebruiker in.",
         "data": {
           "password": "Wachtwoord"
+        },
+        "data_description": {
+          "password": "Huidig wachtwoord van de gebruiker die voor deze invoer is geconfigureerd."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Voer de huidige host (IP-adres of hostnaam) van de gateway in. De alarmcode kan in de volgende stap worden bekeken.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Nieuw IP-adres of nieuwe hostnaam; moet naar dezelfde gateway en site leiden."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Herconfiguratie voltooid. De invoer is bijgewerkt.",
       "unique_id_mismatch": "De host leidt niet naar de gateway en site van deze invoer.",
       "unknown": "Onbekende fout."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Lifedomus-opties",
-        "description": "Algemene instellingen voor de Lifedomus-integratie.",
-        "data": {
-          "update_interval": "Update-interval (s)"
-        }
-      }
     }
   },
   "exceptions": {

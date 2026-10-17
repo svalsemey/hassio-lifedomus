@@ -10,6 +10,7 @@ Thank you for your interest in improving Lifedomus for Home Assistant.
 - Keep comments and docs in English.
 - Avoid home-grown abstractions where Home Assistant helpers exist (e.g., DataUpdateCoordinator).
 - Keep platform code lean and delegate parsing/transport to shared modules.
+- Keep `quality_scale.yaml` in sync: update the status of a rule in the same PR that implements it.
 
 ## Static checks and linters
 

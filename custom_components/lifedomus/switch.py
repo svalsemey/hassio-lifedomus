@@ -22,6 +22,9 @@ from .coordinator import LdCoordinator
 from .data import LifedomusConfigEntry, LifedomusRuntimeData
 from .entity import LifedomusEntity
 
+# Actions are serialized per platform to keep the load on the gateway moderate.
+PARALLEL_UPDATES = 1
+
 
 class LifedomusAlarmZoneSwitch(LifedomusEntity[LdAlarmDevice], SwitchEntity):
     """Switch controlling a single alarm zone."""
@@ -38,7 +41,7 @@ class LifedomusAlarmZoneSwitch(LifedomusEntity[LdAlarmDevice], SwitchEntity):
         self._zone_index = zone.index
         self._alarm_code = runtime.alarm_code
         self._attr_unique_id = f"{device.device_key}::zone::{zone.index}"
-        self._attr_name = f"{device.label} {zone.label}"
+        self._attr_name = zone.label
         self._apply_device_snapshot(device)
 
     def _apply_device_snapshot(self, device: LdAlarmDevice) -> None:

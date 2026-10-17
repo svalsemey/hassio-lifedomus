@@ -56,6 +56,9 @@ from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .data import LifedomusConfigEntry, LifedomusRuntimeData
 from .entity import LifedomusEntity
 
+# Actions are serialized per platform to keep the load on the gateway moderate.
+PARALLEL_UPDATES = 1
+
 # Raw RGBWW channel levels ordered as the HA rgbww_color tuple (R, G, B, CW, WW).
 RgbwwColor = tuple[int, int, int, int, int]
 
@@ -217,6 +220,7 @@ def _parse_light_device_element(
 class _LdBaseLight(LifedomusEntity[LdLightDevice], LightEntity):
     """Base HA light for Lifedomus."""
 
+    _attr_name = None
     # Property CLSID carrying the plain ON/OFF actions; defined by each subclass.
     _switch_prop_clsid: str
 
@@ -233,7 +237,6 @@ class _LdBaseLight(LifedomusEntity[LdLightDevice], LightEntity):
 
     def _apply_device_snapshot(self, device: LdLightDevice) -> None:
         """Apply the coordinator snapshot to HA attributes."""
-        self._attr_name = device.label
         # is_on must always be bool for HA. When unknown, default to False and mark as assumed
         if device.is_on is None:
             self._attr_is_on = False

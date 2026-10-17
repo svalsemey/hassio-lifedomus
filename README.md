@@ -37,6 +37,7 @@ It offers zero-configuration discovery, secure local communication, efficient co
 - Python 3.13+
 - Lifedomus gateway (reachable on your LAN for discovery)
 - asyncssh >=2.14.2, <3.0.0 (installed automatically by Home Assistant)
+- defusedxml >=0.7.1 (installed automatically by Home Assistant)
 
 ## Installation
 
@@ -84,9 +85,26 @@ Afterwards:
 - **Download diagnostics**: available on the integration entry and on each device; secrets are redacted, including inside the raw XML.
 - **Delete device**: available for devices the gateway no longer reports.
 
-## Options
+## Data updates
 
-- Update interval (seconds): global polling interval used by coordinators (default: 60).
+- The push monitor (see below) delivers device changes in near real time.
+- Each device category is additionally polled every 60 seconds as a fallback.
+- Following Home Assistant guidelines, the polling interval is not configurable. To use a
+  different rhythm, disable polling in the system options of the entry
+  (Settings → Devices & services → Lifedomus → ⋮ → System options → *Enable polling for updates*)
+  and create an automation calling `homeassistant.update_entity` on the entities of interest:
+
+```yaml
+automation:
+  - alias: "Lifedomus refresh"
+    triggers:
+      - trigger: time_pattern
+        minutes: "/5"
+    actions:
+      - action: homeassistant.update_entity
+        target:
+          entity_id: climate.living_room
+```
 
 ## Entities and Capabilities
 
@@ -136,6 +154,22 @@ Afterwards:
 - Validates and throttles notifications, then triggers targeted per-device coordinator refreshes.
 - This reduces latency and polling overhead for supported states.
 
+## Known limitations
+
+- Entities are created when the integration starts; devices added to the gateway afterwards appear after a reload of the entry.
+- Alarm actions (arming, stop, acknowledge, zone switches) require the 6-digit access code to be stored; without it they fail with an error.
+- Partial arming is not exposed.
+- The push monitor needs TCP port 51023 of the gateway to be reachable; when it is not, updates rely on polling only.
+- The gateway uses a self-signed TLS certificate; certificate verification is disabled.
+- Audio/video, ventilation, water treatment, generic actuators and scene devices are not exposed.
+
+## Removing the integration
+
+1. Go to Settings → Devices & services → Lifedomus.
+2. Open the ⋮ menu of the entry and select *Delete*.
+
+All devices and entities of the entry are removed. Nothing is changed on the gateway; the session opened by Home Assistant simply expires.
+
 ## Security and Privacy
 
 - Communication stays within your LAN; no third-party cloud involved.
@@ -156,6 +190,8 @@ Afterwards:
   - The gateway must grant USER-level access for the provided code.
 - Logs:
   - Enable debug logging for the integration to assist diagnosis.
+- Reporting a problem:
+  - Download the diagnostics (Settings → Devices & services → Lifedomus → ⋮ → *Download diagnostics*, or from a device page) and attach the file to the issue; secrets are redacted, including inside the raw XML.
 
 Example logger configuration in Home Assistant:
 ```yaml
@@ -172,7 +208,6 @@ Includes English, French, and many additional locales. Key UI strings cover:
 - Site and user selection
 - Authentication
 - Alarm code with verification and reconfigure semantics
-- Options (update interval)
 - Entity names and states (including alarm operating modes and booleans)
 
 ## Acknowledgments

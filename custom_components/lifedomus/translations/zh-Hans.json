@@ -7,6 +7,9 @@
         "description": "选择一个网关，或手动输入主机。",
         "data": {
           "host": "网关"
+        },
+        "data_description": {
+          "host": "在本地网络中找到的网关，或手动输入选项。"
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "输入 Lifedomus 网关的主机（IP 地址或主机名）。",
         "data": {
           "host": "主机"
+        },
+        "data_description": {
+          "host": "网关的 IP 地址或主机名；使用端口 8443。"
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "选择要在此网关上配置的站点。",
         "data": {
           "site_key": "站点"
+        },
+        "data_description": {
+          "site_key": "在网关上配置的安装；每个站点将成为一个条目。"
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "为此站点选择用户。",
         "data": {
           "user_key": "用户"
+        },
+        "data_description": {
+          "user_key": "Home Assistant 将使用其权限的网关用户。"
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "输入所选用户的密码。",
         "data": {
           "password": "密码"
+        },
+        "data_description": {
+          "password": "用户的密码，与 Lifedomus 配置中定义的一致。"
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "报警代码",
           "clear_alarm_code": "清除已保存的报警代码"
+        },
+        "data_description": {
+          "alarm_code": "授予用户访问面板权限的 6 位代码；启用、停止、确认事件和切换区域时需要。",
+          "clear_alarm_code": "忘记已保存的代码；报警操作将不可用。"
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "位于 {host} 的网关拒绝了已保存的密码。请输入已配置用户的当前密码。",
         "data": {
           "password": "密码"
+        },
+        "data_description": {
+          "password": "为此条目配置的用户的当前密码。"
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "输入网关当前的主机（IP 地址或主机名）。报警代码可在下一步中查看。",
         "data": {
           "host": "主机"
+        },
+        "data_description": {
+          "host": "新的 IP 地址或主机名；必须指向同一网关和站点。"
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "重新配置完成。条目已更新。",
       "unique_id_mismatch": "该主机无法连接到此条目的网关和站点。",
       "unknown": "未知错误。"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Lifedomus 选项",
-        "description": "Lifedomus 集成的全局设置。",
-        "data": {
-          "update_interval": "更新间隔（秒）"
-        }
-      }
     }
   },
   "exceptions": {

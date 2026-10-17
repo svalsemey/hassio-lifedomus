@@ -7,6 +7,9 @@
         "description": "Válasszon egy átjárót, vagy adja meg a hostot manuálisan.",
         "data": {
           "host": "Átjáró"
+        },
+        "data_description": {
+          "host": "A helyi hálózaton talált átjáró, vagy a kézi megadás lehetősége."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Adja meg a Lifedomus átjáró hostját (IP-cím vagy hostnév).",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Az átjáró IP-címe vagy hostneve; a 8443-as portot használja."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Válassza ki a helyszínt, amelyet ezen az átjárón konfigurálni szeretne.",
         "data": {
           "site_key": "Helyszín"
+        },
+        "data_description": {
+          "site_key": "Az átjárón konfigurált telepítés; minden helyszín egy bejegyzés lesz."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Válassza ki a felhasználót ehhez a helyszínhez.",
         "data": {
           "user_key": "Felhasználó"
+        },
+        "data_description": {
+          "user_key": "Az átjáró felhasználója, akinek a jogosultságait a Home Assistant használni fogja."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Adja meg a kiválasztott felhasználó jelszavát.",
         "data": {
           "password": "Jelszó"
+        },
+        "data_description": {
+          "password": "A felhasználó jelszava a Lifedomus konfigurációjában megadottak szerint."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Riasztókód",
           "clear_alarm_code": "Mentett riasztókód törlése"
+        },
+        "data_description": {
+          "alarm_code": "6 jegyű kód, amely hozzáférést ad a felhasználónak a panelhez; szükséges az élesítéshez, leállításhoz, események nyugtázásához és zónák váltásához.",
+          "clear_alarm_code": "A mentett kód elfelejtése; a riasztási műveletek elérhetetlenné válnak."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "A(z) {host} címen lévő átjáró elutasította a mentett jelszót. Adja meg a konfigurált felhasználó jelenlegi jelszavát.",
         "data": {
           "password": "Jelszó"
+        },
+        "data_description": {
+          "password": "A bejegyzéshez konfigurált felhasználó jelenlegi jelszava."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Adja meg az átjáró jelenlegi hostját (IP-cím vagy hostnév). A riasztókód a következő lépésben tekinthető át.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Új IP-cím vagy hostnév; ugyanahhoz az átjáróhoz és helyszínhez kell vezetnie."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Újrakonfigurálás befejeződött. A bejegyzés frissítve lett.",
       "unique_id_mismatch": "A host nem ehhez a bejegyzéshez tartozó átjáróhoz és helyszínhez vezet.",
       "unknown": "Ismeretlen hiba."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Lifedomus beállítások",
-        "description": "A Lifedomus integráció globális beállításai.",
-        "data": {
-          "update_interval": "Frissítési időköz (mp)"
-        }
-      }
     }
   },
   "exceptions": {

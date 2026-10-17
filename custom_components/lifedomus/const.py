@@ -42,9 +42,12 @@ CONF_UUID: Final = "uuid"
 CONF_VERSION: Final = "version"
 CONF_ALARM_CODE: Final = "alarm_code"
 
-# Global option keys.
-OPTION_UPDATE_INTERVAL: Final = "update_interval"
-OPTION_UPDATE_INTERVAL_DEFAULT: Final = 60  # seconds
+# Gateway request timeout, independent of the polling interval.
+LD_REQUEST_TIMEOUT_S: Final[float] = 10.0
+# Polling interval of the device coordinators. Polling backs up the push
+# monitor and is not user-configurable: polling can be disabled per entry from
+# the system options and driven through homeassistant.update_entity instead.
+LD_POLL_INTERVAL_S: Final[int] = 60
 
 LD_HTTP_HEADERS: Final = {
     "Accept": "*/*",

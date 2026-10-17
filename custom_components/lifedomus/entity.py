@@ -28,6 +28,8 @@ class LifedomusEntity[TDev: LdDeviceSnapshot](CoordinatorEntity[LdCoordinator[TD
     and it runs again on every coordinator update.
     """
 
+    _attr_has_entity_name = True
+
     def __init__(
         self,
         coordinator: LdCoordinator[TDev],

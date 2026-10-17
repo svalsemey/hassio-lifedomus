@@ -27,7 +27,7 @@ from .const import (
     LD_MONTH_MAPPING,
     LD_PORT,
     LD_STATE_VALUE,
-    OPTION_UPDATE_INTERVAL_DEFAULT,
+    LD_REQUEST_TIMEOUT_S,
     PATTERN_DEVICE_KEY,
     PATTERN_SESSION_KEY,
     PATTERN_SITE_KEY,
@@ -36,7 +36,8 @@ from .const import (
 )
 
 HTTP_RESPONSE_OK: Final = 200
-
+# HTTP statuses the gateway returns when a session key is no longer accepted.
+SESSION_RETRY_STATUSES: Final[frozenset[int]] = frozenset({401, 403, 500})
 
 @dataclass(slots=True)
 class SiteInfo:
@@ -65,7 +66,7 @@ class LifedomusApiError(Exception):
 
 
 class LifedomusAuthError(LifedomusApiError):
-    """Authentication or authorization error."""
+   """Authentication refused by the gateway."""
 
 
 type SystemVariableValue = bool | date | datetime | int | float | str | None
@@ -144,7 +145,7 @@ class LifedomusApi:
         host: str,
         *,
         verify_ssl: bool = False,
-        request_timeout: float = OPTION_UPDATE_INTERVAL_DEFAULT,
+        request_timeout: float = LD_REQUEST_TIMEOUT_S,
     ) -> None:
         """Initialize the API client."""
         self._hass = hass
@@ -286,7 +287,7 @@ class LifedomusApi:
         return users
 
     def set_auth_context(
-        self, *, site_key: str, user_key: str, password: str | None
+        self, *, site_key: str, user_key: str, password: str
     ) -> None:
         """Set the authentication context used for User/Login and session refresh.
 
@@ -371,8 +372,10 @@ class LifedomusApi:
     ) -> str:
         """Perform a gateway request and return the raw response body.
 
-        A refused authentication triggers one session refresh through User/Login
-        before the request is retried with the new session key.
+        A status suggesting a rejected session key triggers one re-login through
+        User/Login before the request is retried. Every other failure is a
+        LifedomusApiError: authentication outcomes travel in the SOAP body and
+        are interpreted by async_refresh_session().
         """
         attempted_refresh = False
         while True:
@@ -385,13 +388,14 @@ class LifedomusApi:
                     data=payload or None,
                     timeout=self._timeout,
                 )
-            except ClientError as err:
+            except (ClientError, TimeoutError) as err:
                 raise LifedomusApiError(
                     f"HTTP error while calling {namespace}/{action} on {self._host}: {err}"
                 ) from err
 
             if (
-                resp.status in {401, 403, 500}
+                resp.status in SESSION_RETRY_STATUSES
+                and self._session_key is not None
                 and action != "Login"
                 and not attempted_refresh
             ):
@@ -399,8 +403,8 @@ class LifedomusApi:
                 attempted_refresh = True
                 continue
             if resp.status != HTTP_RESPONSE_OK:
-                raise LifedomusAuthError(
-                    f"Auth failed calling {namespace}/{action} on {self._host} (status {resp.status})"
+                raise LifedomusApiError(
+                    f"HTTP {resp.status} returned by {namespace}/{action} on {self._host}"
                 )
             return await resp.text()
 
@@ -425,30 +429,21 @@ class LifedomusApi:
         return body_el.findall(".//return")
 
     async def async_refresh_session(self) -> None:
-        """Refresh the session by performing a User/Login call.
+        """Open a session through User/Login and store its key.
 
-        This method validates the authentication context and performs a login request
-        to obtain a new session key. The SOAP request is delegated to async_request()
-        to keep request handling consistent across the client.
+        The gateway answers a rejected login with HTTP 200 and an empty
+        LoginResponse, so the absence of a session key is the authentication
+        failure signal.
 
         Raises:
-            LifedomusAuthError: If authentication context is missing or if the login fails.
-            LifedomusApiError: If the response does not contain a valid session key.
+            LifedomusAuthError: If the authentication context is incomplete or
+                the gateway returned no session key.
+            LifedomusApiError: On transport errors or a malformed session key.
         """
-        params: list[str] = []
-        if not self._site_key or self._site_key == "None":
-            params.append("site_key")
-        if not self._user_key or self._user_key == "None":
-            params.append("user_key")
-        if not self._password or self._password == "None":
-            params.append("password")
-
-        if params:
-            if len(params) == 1:
-                missing_str = params[0]
-            else:
-                missing_str = ", ".join(params[:-1]) + f" and {params[-1]}"
-            raise LifedomusAuthError(f"Cannot refresh session: missing {missing_str}")
+        if not (self._site_key and self._user_key and self._password):
+            raise LifedomusAuthError(
+                "Cannot refresh session: authentication context is incomplete"
+            )
 
         returns = await self.async_request(
             namespace="User",
@@ -459,12 +454,10 @@ class LifedomusApi:
                 "password": self._password,
             },
         )
-
-        if not returns or returns[0].text is None:
-            raise LifedomusApiError(
-                f"No session_key returned by User/Login on {self._host}"
+        if not returns or not returns[0].text:
+            raise LifedomusAuthError(
+                f"Login refused by {self._host}: no session key returned"
             )
-
         self._set_session_key(returns[0].text)
 
     async def async_execute_one_action(
@@ -506,7 +499,7 @@ class LifedomusApi:
             resp = await self._session.request(
                 "GET", url, headers=LD_HTTP_HEADERS, timeout=self._timeout
             )
-        except ClientError as err:
+        except (ClientError, TimeoutError) as err:
             raise LifedomusApiError(
                 f"HTTP error while fetching SecureConnect key on {self._host}: {err}"
             ) from err

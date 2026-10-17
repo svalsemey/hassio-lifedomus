@@ -7,6 +7,9 @@
         "description": "Seleziona un gateway o inserisci manualmente un host.",
         "data": {
           "host": "Gateway"
+        },
+        "data_description": {
+          "host": "Gateway trovato nella rete locale, oppure opzione di inserimento manuale."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Inserisci l'host (indirizzo IP o nome host) del tuo gateway Lifedomus.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Indirizzo IP o nome host del gateway; viene utilizzata la porta 8443."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Scegli il sito da configurare su questo gateway.",
         "data": {
           "site_key": "Sito"
+        },
+        "data_description": {
+          "site_key": "Installazione configurata sul gateway; ogni sito diventa una voce."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Scegli l'utente per questo sito.",
         "data": {
           "user_key": "Utente"
+        },
+        "data_description": {
+          "user_key": "Utente del gateway di cui Home Assistant utilizzerà i permessi."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Inserisci la password per l'utente selezionato.",
         "data": {
           "password": "Password"
+        },
+        "data_description": {
+          "password": "Password dell'utente come definita nella configurazione di Lifedomus."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Codice allarme",
           "clear_alarm_code": "Cancella codice allarme salvato"
+        },
+        "data_description": {
+          "alarm_code": "Codice a 6 cifre che garantisce all'utente l'accesso al pannello; necessario per attivare, arrestare, confermare gli eventi e commutare le zone.",
+          "clear_alarm_code": "Dimentica il codice salvato; le azioni di allarme non saranno più disponibili."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "Il gateway all'indirizzo {host} ha rifiutato la password salvata. Inserisci la password attuale dell'utente configurato.",
         "data": {
           "password": "Password"
+        },
+        "data_description": {
+          "password": "Password attuale dell'utente configurato per questa voce."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Inserisci l'host attuale (indirizzo IP o nome host) del gateway. Il codice allarme potrà essere rivisto nel passaggio successivo.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Nuovo indirizzo IP o nome host; deve portare allo stesso gateway e allo stesso sito."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Riconfigurazione completata. La voce è stata aggiornata.",
       "unique_id_mismatch": "L'host non porta al gateway e al sito di questa voce.",
       "unknown": "Errore sconosciuto."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Opzioni Lifedomus",
-        "description": "Impostazioni globali per l'integrazione Lifedomus.",
-        "data": {
-          "update_interval": "Intervallo di aggiornamento (s)"
-        }
-      }
     }
   },
   "exceptions": {

@@ -7,6 +7,9 @@
         "description": "Selectați un gateway sau introduceți manual un host.",
         "data": {
           "host": "Gateway"
+        },
+        "data_description": {
+          "host": "Gateway găsit în rețeaua locală sau opțiunea de introducere manuală."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Introduceți gazda (adresa IP sau numele) gateway-ului Lifedomus.",
         "data": {
           "host": "Gazdă"
+        },
+        "data_description": {
+          "host": "Adresa IP sau numele gazdei gateway-ului; se utilizează portul 8443."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Alegeți site-ul de configurat pe acest gateway.",
         "data": {
           "site_key": "Site"
+        },
+        "data_description": {
+          "site_key": "Instalație configurată pe gateway; fiecare site devine o intrare."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Alegeți utilizatorul pentru acest site.",
         "data": {
           "user_key": "Utilizator"
+        },
+        "data_description": {
+          "user_key": "Utilizatorul gateway-ului ale cărui drepturi le va folosi Home Assistant."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Introduceți parola pentru utilizatorul selectat.",
         "data": {
           "password": "Parolă"
+        },
+        "data_description": {
+          "password": "Parola utilizatorului, așa cum este definită în configurarea Lifedomus."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Cod alarmă",
           "clear_alarm_code": "Șterge codul de alarmă salvat"
+        },
+        "data_description": {
+          "alarm_code": "Cod din 6 cifre care oferă utilizatorului acces la panou; necesar pentru activare, oprire, confirmarea evenimentelor și comutarea zonelor.",
+          "clear_alarm_code": "Uită codul salvat; acțiunile de alarmă devin indisponibile."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "Gateway-ul de la {host} a refuzat parola salvată. Introduceți parola curentă a utilizatorului configurat.",
         "data": {
           "password": "Parolă"
+        },
+        "data_description": {
+          "password": "Parola curentă a utilizatorului configurat pentru această intrare."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Introduceți gazda curentă (adresa IP sau numele) gateway-ului. Codul de alarmă poate fi revizuit în pasul următor.",
         "data": {
           "host": "Gazdă"
+        },
+        "data_description": {
+          "host": "Noua adresă IP sau noul nume de gazdă; trebuie să ducă la același gateway și la același site."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Reconfigurare finalizată. Intrarea a fost actualizată.",
       "unique_id_mismatch": "Gazda nu duce la gateway-ul și site-ul acestei intrări.",
       "unknown": "Eroare necunoscută."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Opțiuni Lifedomus",
-        "description": "Setări globale pentru integrarea Lifedomus.",
-        "data": {
-          "update_interval": "Interval de actualizare (s)"
-        }
-      }
     }
   },
   "exceptions": {

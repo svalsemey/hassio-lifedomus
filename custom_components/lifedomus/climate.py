@@ -124,6 +124,9 @@ from .coordinator import LdCoordinator, LdCoordinatorConfig
 from .data import LifedomusConfigEntry, LifedomusRuntimeData
 from .entity import LifedomusEntity
 
+# Actions are serialized per platform to keep the load on the gateway moderate.
+PARALLEL_UPDATES = 1
+
 
 @dataclass(frozen=True, slots=True)
 class _PresetFamily:
@@ -427,6 +430,7 @@ CLIMATE_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdClimateDevice]] = (
 class LifedomusClimate(LifedomusEntity[LdClimateDevice], ClimateEntity):
     """Lifedomus climate entity."""
 
+    _attr_name = None
     _attr_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = LD_VALUE_THERMOSTAT_STEP
 
@@ -444,7 +448,6 @@ class LifedomusClimate(LifedomusEntity[LdClimateDevice], ClimateEntity):
     def _apply_device_snapshot(self, device: LdClimateDevice) -> None:
         """Apply the coordinator snapshot to HA attributes."""
         self._device = device
-        self._attr_name = device.label
         self._attr_current_temperature = device.current_temperature
         self._attr_target_temperature = device.target_temperature
         self._attr_min_temp = (

@@ -70,10 +70,7 @@ async def async_get_config_entry_diagnostics(
     """Return diagnostics for a config entry."""
     runtime = entry.runtime_data
     return {
-        "entry": {
-            "data": async_redact_data(entry.data, TO_REDACT),
-            "options": dict(entry.options),
-        },
+        "entry": async_redact_data(entry.data, TO_REDACT),
         "gateway": {
             "uuid": runtime.uuid,
             "version": await _async_raw_response(entry, "CoreServices", "GetVersion"),

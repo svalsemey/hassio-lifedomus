@@ -7,6 +7,9 @@
         "description": "Select a gateway or choose to enter a host manually.",
         "data": {
           "host": "Gateway"
+        },
+        "data_description": {
+          "host": "Gateway found on the local network, or the manual entry option."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Enter the host (IP address or hostname) of your Lifedomus gateway.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "IP address or hostname of the gateway; port 8443 is used."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Choose the site to configure on this gateway.",
         "data": {
           "site_key": "Site"
+        },
+        "data_description": {
+          "site_key": "Installation configured on the gateway; each site becomes one entry."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Choose the user for this site.",
         "data": {
           "user_key": "User"
+        },
+        "data_description": {
+          "user_key": "Gateway user whose rights Home Assistant will use."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Enter the password for the selected user.",
         "data": {
           "password": "Password"
+        },
+        "data_description": {
+          "password": "Password of the user as defined in the Lifedomus configuration."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Alarm code",
           "clear_alarm_code": "Clear stored alarm code"
+        },
+        "data_description": {
+          "alarm_code": "6-digit code granting user access to the panel; required for arming, stopping, acknowledging events and switching zones.",
+          "clear_alarm_code": "Forget the stored code; alarm actions become unavailable."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "The gateway at {host} rejected the stored password. Enter the current password of the configured user.",
         "data": {
           "password": "Password"
+        },
+        "data_description": {
+          "password": "Current password of the user configured for this entry."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Enter the current host (IP address or hostname) of the gateway. The alarm code can be reviewed in the next step.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "New IP address or hostname; it must lead to the same gateway and site."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Reconfiguration completed. The entry was updated.",
       "unique_id_mismatch": "The host does not lead to the gateway and site of this entry.",
       "unknown": "Unknown error."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Lifedomus options",
-        "description": "Global settings for the Lifedomus integration.",
-        "data": {
-          "update_interval": "Update interval (s)"
-        }
-      }
     }
   },
   "exceptions": {

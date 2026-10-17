@@ -58,6 +58,9 @@ from .entity import LifedomusEntity, LifedomusSystemVariableEntity
 
 _LOGGER = logging.getLogger(__name__)
 
+# Read-only entities fed by shared coordinators
+PARALLEL_UPDATES = 0
+
 # Map device clsid to HA device class.
 DEVICE_CLASS_BY_CLSID: Final[dict[str, BinarySensorDeviceClass]] = {
     "CLSID-DEVC-S-DT01": BinarySensorDeviceClass.PROBLEM,
@@ -272,6 +275,8 @@ DETECTOR_COORDINATOR_CONFIG: Final[LdCoordinatorConfig[LdDetectorDevice]] = (
 class LifedomusBinarySensor(LifedomusEntity[LdDetectorDevice], BinarySensorEntity):
     """Lifedomus detector entity."""
 
+    _attr_name = None
+
     def __init__(
         self,
         coordinator: LdCoordinator[LdDetectorDevice],
@@ -285,8 +290,7 @@ class LifedomusBinarySensor(LifedomusEntity[LdDetectorDevice], BinarySensorEntit
         self._apply_device_snapshot(device)
 
     def _apply_device_snapshot(self, device: LdDetectorDevice) -> None:
-        """Copy the label and boolean state from the snapshot."""
-        self._attr_name = device.label
+        """Copy the boolean state from the snapshot."""
         self._attr_is_on = device.is_on
 
 
@@ -300,7 +304,6 @@ class LifedomusHeatingDemandBinarySensor(
     coordinator and exposed as a single entity named after the device.
     """
 
-    _attr_has_entity_name = True
     _attr_name = None
     _attr_device_class = BinarySensorDeviceClass.HEAT
 
@@ -327,8 +330,6 @@ class LifedomusAlarmBinarySensor(LifedomusEntity[LdAlarmDevice], BinarySensorEnt
     'items' attribute; the unacknowledged events state exposes the alarm history
     entries. Details are fetched only while the state is active.
     """
-
-    _attr_has_entity_name = True
 
     def __init__(
         self,

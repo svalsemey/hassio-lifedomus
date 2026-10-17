@@ -7,6 +7,9 @@
         "description": "Izberite prehod ali ročno vnesite gostitelja.",
         "data": {
           "host": "Prehod"
+        },
+        "data_description": {
+          "host": "Prehod, najden v lokalnem omrežju, ali možnost ročnega vnosa."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Vnesite gostitelja (IP naslov ali ime gostitelja) za prehod Lifedomus.",
         "data": {
           "host": "Gostitelj"
+        },
+        "data_description": {
+          "host": "IP naslov ali ime gostitelja prehoda; uporabljajo se vrata 8443."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Izberite mesto za konfiguracijo na tem prehodu.",
         "data": {
           "site_key": "Mesto"
+        },
+        "data_description": {
+          "site_key": "Namestitev, konfigurirana na prehodu; vsako mesto postane en vnos."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Izberite uporabnika za to mesto.",
         "data": {
           "user_key": "Uporabnik"
+        },
+        "data_description": {
+          "user_key": "Uporabnik prehoda, katerega pravice bo uporabljal Home Assistant."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Vnesite geslo izbranega uporabnika.",
         "data": {
           "password": "Geslo"
+        },
+        "data_description": {
+          "password": "Geslo uporabnika, kot je določeno v konfiguraciji Lifedomus."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Alarmna koda",
           "clear_alarm_code": "Izbriši shranjeno alarmno kodo"
+        },
+        "data_description": {
+          "alarm_code": "6-mestna koda, ki uporabniku omogoča dostop do panela; potrebna za aktivacijo, ustavitev, potrjevanje dogodkov in preklapljanje con.",
+          "clear_alarm_code": "Pozabi shranjeno kodo; alarmna dejanja ne bodo več na voljo."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "Prehod na {host} je zavrnil shranjeno geslo. Vnesite trenutno geslo konfiguriranega uporabnika.",
         "data": {
           "password": "Geslo"
+        },
+        "data_description": {
+          "password": "Trenutno geslo uporabnika, konfiguriranega za ta vnos."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Vnesite trenutnega gostitelja (IP naslov ali ime gostitelja) prehoda. Alarmno kodo lahko pregledate v naslednjem koraku.",
         "data": {
           "host": "Gostitelj"
+        },
+        "data_description": {
+          "host": "Nov IP naslov ali ime gostitelja; mora voditi do istega prehoda in mesta."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Ponovna konfiguracija končana. Vnos je bil posodobljen.",
       "unique_id_mismatch": "Gostitelj ne vodi do prehoda in mesta tega vnosa.",
       "unknown": "Neznana napaka."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Možnosti Lifedomus",
-        "description": "Globalne nastavitve za integracijo Lifedomus.",
-        "data": {
-          "update_interval": "Interval posodobitve (s)"
-        }
-      }
     }
   },
   "exceptions": {

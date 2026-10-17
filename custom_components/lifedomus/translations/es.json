@@ -7,6 +7,9 @@
         "description": "Seleccione una pasarela o elija introducir un host manualmente.",
         "data": {
           "host": "Pasarela"
+        },
+        "data_description": {
+          "host": "Pasarela encontrada en la red local, u opción de entrada manual."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Introduzca el host (dirección IP o nombre de host) de su pasarela Lifedomus.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Dirección IP o nombre de host de la pasarela; se utiliza el puerto 8443."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Elija el sitio que desea configurar en esta pasarela.",
         "data": {
           "site_key": "Sitio"
+        },
+        "data_description": {
+          "site_key": "Instalación configurada en la pasarela; cada sitio se convierte en una entrada."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Elija el usuario para este sitio.",
         "data": {
           "user_key": "Usuario"
+        },
+        "data_description": {
+          "user_key": "Usuario de la pasarela cuyos derechos utilizará Home Assistant."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Introduzca la contraseña del usuario seleccionado.",
         "data": {
           "password": "Contraseña"
+        },
+        "data_description": {
+          "password": "Contraseña del usuario tal como se definió en la configuración de Lifedomus."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Código de alarma",
           "clear_alarm_code": "Borrar código de alarma guardado"
+        },
+        "data_description": {
+          "alarm_code": "Código de 6 dígitos que concede al usuario acceso al panel; necesario para activar, detener, reconocer eventos y conmutar zonas.",
+          "clear_alarm_code": "Olvidar el código almacenado; las acciones de alarma dejan de estar disponibles."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "La pasarela en {host} rechazó la contraseña almacenada. Introduzca la contraseña actual del usuario configurado.",
         "data": {
           "password": "Contraseña"
+        },
+        "data_description": {
+          "password": "Contraseña actual del usuario configurado para esta entrada."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Introduzca el host actual (dirección IP o nombre de host) de la pasarela. El código de alarma se podrá revisar en el siguiente paso.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Nueva dirección IP o nombre de host; debe llevar a la misma pasarela y al mismo sitio."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Reconfiguración completada. La entrada se actualizó.",
       "unique_id_mismatch": "El host no corresponde a la pasarela y al sitio de esta entrada.",
       "unknown": "Error desconocido."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Opciones de Lifedomus",
-        "description": "Configuración global de la integración Lifedomus.",
-        "data": {
-          "update_interval": "Intervalo de actualización (s)"
-        }
-      }
     }
   },
   "exceptions": {

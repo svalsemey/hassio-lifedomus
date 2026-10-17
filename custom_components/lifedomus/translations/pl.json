@@ -7,6 +7,9 @@
         "description": "Wybierz bramkę lub wprowadź hosta ręcznie.",
         "data": {
           "host": "Bramka"
+        },
+        "data_description": {
+          "host": "Bramka znaleziona w sieci lokalnej lub opcja ręcznego wprowadzenia."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Wprowadź hosta (adres IP lub nazwę hosta) swojej bramki Lifedomus.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Adres IP lub nazwa hosta bramki; używany jest port 8443."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Wybierz witrynę do skonfigurowania na tej bramce.",
         "data": {
           "site_key": "Witryna"
+        },
+        "data_description": {
+          "site_key": "Instalacja skonfigurowana na bramce; każda witryna staje się jednym wpisem."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Wybierz użytkownika dla tej witryny.",
         "data": {
           "user_key": "Użytkownik"
+        },
+        "data_description": {
+          "user_key": "Użytkownik bramki, którego uprawnień użyje Home Assistant."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Wprowadź hasło wybranego użytkownika.",
         "data": {
           "password": "Hasło"
+        },
+        "data_description": {
+          "password": "Hasło użytkownika zdefiniowane w konfiguracji Lifedomus."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Kod alarmu",
           "clear_alarm_code": "Wyczyść zapisany kod alarmu"
+        },
+        "data_description": {
+          "alarm_code": "6-cyfrowy kod zapewniający użytkownikowi dostęp do panelu; wymagany do uzbrajania, zatrzymywania, potwierdzania zdarzeń i przełączania stref.",
+          "clear_alarm_code": "Zapomnij zapisany kod; akcje alarmu staną się niedostępne."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "Bramka pod adresem {host} odrzuciła zapisane hasło. Wprowadź aktualne hasło skonfigurowanego użytkownika.",
         "data": {
           "password": "Hasło"
+        },
+        "data_description": {
+          "password": "Aktualne hasło użytkownika skonfigurowanego dla tego wpisu."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Wprowadź aktualnego hosta (adres IP lub nazwę hosta) bramki. Kod alarmu można sprawdzić w następnym kroku.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Nowy adres IP lub nazwa hosta; musi prowadzić do tej samej bramki i witryny."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Rekonfiguracja zakończona. Wpis został zaktualizowany.",
       "unique_id_mismatch": "Host nie prowadzi do bramki i witryny tego wpisu.",
       "unknown": "Nieznany błąd."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Opcje Lifedomus",
-        "description": "Ustawienia globalne integracji Lifedomus.",
-        "data": {
-          "update_interval": "Interwał aktualizacji (s)"
-        }
-      }
     }
   },
   "exceptions": {

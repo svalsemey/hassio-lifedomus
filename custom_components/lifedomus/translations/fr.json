@@ -7,6 +7,9 @@
         "description": "Sélectionnez une passerelle ou choisissez de saisir un hôte manuellement.",
         "data": {
           "host": "Passerelle"
+        },
+        "data_description": {
+          "host": "Passerelle trouvée sur le réseau local, ou option de saisie manuelle."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Entrez l’hôte (adresse IP ou nom DNS) de votre passerelle Lifedomus.",
         "data": {
           "host": "Hôte"
+        },
+        "data_description": {
+          "host": "Adresse IP ou nom d’hôte de la passerelle ; le port 8443 est utilisé."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Choisissez le site à configurer sur cette passerelle.",
         "data": {
           "site_key": "Site"
+        },
+        "data_description": {
+          "site_key": "Installation configurée sur la passerelle ; chaque site devient une entrée."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Choisissez l’utilisateur pour ce site.",
         "data": {
           "user_key": "Utilisateur"
+        },
+        "data_description": {
+          "user_key": "Utilisateur de la passerelle dont Home Assistant utilisera les droits."
         }
       },
       "password": {
@@ -35,25 +47,42 @@
         "description": "Saisissez le mot de passe de l’utilisateur sélectionné.",
         "data": {
           "password": "Mot de passe"
+        },
+        "data_description": {
+          "password": "Mot de passe de l’utilisateur tel que défini dans la configuration Lifedomus."
         }
       },
       "alarm_code": {
-        "title": "Centrale d'alarme détectée",
-        "description": "Une centrale d'alarme a été détectée sur ce site. Saisissez le code d'accès à 6 chiffres maintenant, ou laissez le champ vide pour ignorer. En reconfiguration, vous pouvez aussi effacer le code enregistré.",
+        "title": "Centrale d’alarme détectée",
+        "description": "Une centrale d’alarme a été détectée sur ce site. Saisissez le code d’accès à 6 chiffres maintenant, ou laissez le champ vide pour ignorer. En reconfiguration, vous pouvez aussi effacer le code enregistré.",
         "data": {
-          "alarm_code": "Code d'alarme",
-          "clear_alarm_code": "Effacer le code enregistré"
+          "alarm_code": "Code d’alarme",
+          "clear_alarm_code": "Effacer le code de l’alarme enregistré"
+        },
+        "data_description": {
+          "alarm_code": "Code à 6 chiffres donnant l’accès utilisateur à la centrale ; requis pour armer, arrêter, acquitter les événements et commuter les zones.",
+          "clear_alarm_code": "Oublier le code enregistré ; les actions d’alarme deviennent indisponibles."
         }
       },
       "reauth_confirm": {
         "title": "Ré-authentification",
-        "description": "La passerelle {host} a refusé le mot de passe enregistré. Saisissez le mot de passe actuel de l'utilisateur configuré.",
-        "data": { "password": "Mot de passe" }
+        "description": "La passerelle {host} a refusé le mot de passe enregistré. Saisissez le mot de passe actuel de l’utilisateur configuré.",
+        "data": {
+          "password": "Mot de passe"
+        },
+        "data_description": {
+          "password": "Mot de passe actuel de l’utilisateur configuré pour cette entrée."
+        }
       },
       "reconfigure": {
         "title": "Reconfigurer la passerelle",
-        "description": "Saisissez l'hôte actuel (adresse IP ou nom) de la passerelle. Le code d'alarme pourra être revu à l'étape suivante.",
-        "data": { "host": "Hôte" }
+        "description": "Saisissez l’hôte actuel (adresse IP ou nom) de la passerelle. Le code d’alarme pourra être revu à l’étape suivante.",
+        "data": {
+          "host": "Hôte"
+        },
+        "data_description": {
+          "host": "Nouvelle adresse IP ou nom d’hôte ; doit mener à la même passerelle et au même site."
+        }
       }
     },
     "error": {
@@ -71,17 +100,6 @@
       "reconfigure_successful": "Reconfiguration terminée. L’entrée a été mise à jour.",
       "unique_id_mismatch": "Cet hôte ne correspond pas à la passerelle et au site de cette entrée.",
       "unknown": "Erreur inconnue."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Options Lifedomus",
-        "description": "Paramètres globaux de l’intégration Lifedomus.",
-        "data": {
-          "update_interval": "Intervalle de mise à jour (s)"
-        }
-      }
     }
   },
   "exceptions": {

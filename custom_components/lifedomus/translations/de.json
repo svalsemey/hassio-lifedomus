@@ -7,6 +7,9 @@
         "description": "Wählen Sie ein Gateway aus oder geben Sie den Host manuell ein.",
         "data": {
           "host": "Gateway"
+        },
+        "data_description": {
+          "host": "Im lokalen Netzwerk gefundenes Gateway oder Option zur manuellen Eingabe."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Geben Sie den Host (IP-Adresse oder Hostname) Ihres Lifedomus-Gateways ein.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "IP-Adresse oder Hostname des Gateways; Port 8443 wird verwendet."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Wählen Sie den Standort, der auf diesem Gateway konfiguriert werden soll.",
         "data": {
           "site_key": "Standort"
+        },
+        "data_description": {
+          "site_key": "Auf dem Gateway konfigurierte Installation; jeder Standort wird zu einem Eintrag."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Wählen Sie den Benutzer für diesen Standort.",
         "data": {
           "user_key": "Benutzer"
+        },
+        "data_description": {
+          "user_key": "Gateway-Benutzer, dessen Rechte Home Assistant verwendet."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Geben Sie das Passwort für den ausgewählten Benutzer ein.",
         "data": {
           "password": "Passwort"
+        },
+        "data_description": {
+          "password": "Passwort des Benutzers, wie in der Lifedomus-Konfiguration definiert."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Alarmcode",
           "clear_alarm_code": "Gespeicherten Alarmcode löschen"
+        },
+        "data_description": {
+          "alarm_code": "6-stelliger Code, der dem Benutzer Zugriff auf die Zentrale gewährt; erforderlich zum Scharfschalten, Stoppen, Quittieren von Ereignissen und Umschalten von Zonen.",
+          "clear_alarm_code": "Gespeicherten Code vergessen; Alarmaktionen sind dann nicht mehr verfügbar."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "Das Gateway unter {host} hat das gespeicherte Passwort abgelehnt. Geben Sie das aktuelle Passwort des konfigurierten Benutzers ein.",
         "data": {
           "password": "Passwort"
+        },
+        "data_description": {
+          "password": "Aktuelles Passwort des für diesen Eintrag konfigurierten Benutzers."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Geben Sie den aktuellen Host (IP-Adresse oder Hostname) des Gateways ein. Der Alarmcode kann im nächsten Schritt überprüft werden.",
         "data": {
           "host": "Host"
+        },
+        "data_description": {
+          "host": "Neue IP-Adresse oder neuer Hostname; muss zum selben Gateway und Standort führen."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Neukonfiguration abgeschlossen. Der Eintrag wurde aktualisiert.",
       "unique_id_mismatch": "Der Host führt nicht zum Gateway und Standort dieses Eintrags.",
       "unknown": "Unbekannter Fehler."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Lifedomus-Optionen",
-        "description": "Globale Einstellungen für die Lifedomus-Integration.",
-        "data": {
-          "update_interval": "Aktualisierungsintervall (s)"
-        }
-      }
     }
   },
   "exceptions": {

@@ -7,6 +7,9 @@
         "description": "Bir ağ geçidi seçin veya bir ana bilgisayarı manuel olarak girin.",
         "data": {
           "host": "Ağ geçidi"
+        },
+        "data_description": {
+          "host": "Yerel ağda bulunan ağ geçidi veya manuel giriş seçeneği."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "Lifedomus ağ geçidinizin ana bilgisayarını (IP adresi veya ana bilgisayar adı) girin.",
         "data": {
           "host": "Ana bilgisayar"
+        },
+        "data_description": {
+          "host": "Ağ geçidinin IP adresi veya ana bilgisayar adı; 8443 numaralı bağlantı noktası kullanılır."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "Bu ağ geçidinde yapılandırılacak siteyi seçin.",
         "data": {
           "site_key": "Site"
+        },
+        "data_description": {
+          "site_key": "Ağ geçidinde yapılandırılmış kurulum; her site bir girdi olur."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "Bu site için kullanıcıyı seçin.",
         "data": {
           "user_key": "Kullanıcı"
+        },
+        "data_description": {
+          "user_key": "Home Assistant tarafından hakları kullanılacak ağ geçidi kullanıcısı."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "Seçilen kullanıcı için parolayı girin.",
         "data": {
           "password": "Parola"
+        },
+        "data_description": {
+          "password": "Kullanıcının parolası, Lifedomus yapılandırmasında tanımlandığı şekilde."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "Alarm kodu",
           "clear_alarm_code": "Kaydedilmiş alarm kodunu temizle"
+        },
+        "data_description": {
+          "alarm_code": "Kullanıcıya panele erişim sağlayan 6 haneli kod; etkinleştirme, durdurma, olayları onaylama ve bölgeleri değiştirme için gereklidir.",
+          "clear_alarm_code": "Kaydedilmiş kodu unut; alarm eylemleri kullanılamaz hale gelir."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "{host} adresindeki ağ geçidi kaydedilmiş parolayı reddetti. Yapılandırılmış kullanıcının geçerli parolasını girin.",
         "data": {
           "password": "Parola"
+        },
+        "data_description": {
+          "password": "Bu girdi için yapılandırılmış kullanıcının geçerli parolası."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "Ağ geçidinin geçerli ana bilgisayarını (IP adresi veya ana bilgisayar adı) girin. Alarm kodu bir sonraki adımda gözden geçirilebilir.",
         "data": {
           "host": "Ana bilgisayar"
+        },
+        "data_description": {
+          "host": "Yeni IP adresi veya ana bilgisayar adı; aynı ağ geçidine ve siteye ulaşmalıdır."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "Yeniden yapılandırma tamamlandı. Girdi güncellendi.",
       "unique_id_mismatch": "Ana bilgisayar bu girdinin ağ geçidine ve sitesine ulaşmıyor.",
       "unknown": "Bilinmeyen hata."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Lifedomus seçenekleri",
-        "description": "Lifedomus entegrasyonu için genel ayarlar.",
-        "data": {
-          "update_interval": "Güncelleme aralığı (sn)"
-        }
-      }
     }
   },
   "exceptions": {

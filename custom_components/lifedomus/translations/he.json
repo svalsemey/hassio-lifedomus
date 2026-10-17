@@ -7,6 +7,9 @@
         "description": "בחרו שער או הזינו מארח ידנית.",
         "data": {
           "host": "שער"
+        },
+        "data_description": {
+          "host": "שער שנמצא ברשת המקומית, או אפשרות ההזנה הידנית."
         }
       },
       "gateway_manual": {
@@ -14,6 +17,9 @@
         "description": "הזינו את המארח (כתובת IP או שם מארח) של שער Lifedomus.",
         "data": {
           "host": "מארח"
+        },
+        "data_description": {
+          "host": "כתובת IP או שם מארח של השער; נעשה שימוש ביציאה 8443."
         }
       },
       "site_select": {
@@ -21,6 +27,9 @@
         "description": "בחרו את האתר להגדרה בשער זה.",
         "data": {
           "site_key": "אתר"
+        },
+        "data_description": {
+          "site_key": "התקנה שהוגדרה בשער; כל אתר הופך לערך אחד."
         }
       },
       "user_select": {
@@ -28,6 +37,9 @@
         "description": "בחרו את המשתמש עבור אתר זה.",
         "data": {
           "user_key": "משתמש"
+        },
+        "data_description": {
+          "user_key": "משתמש בשער שההרשאות שלו ישמשו את Home Assistant."
         }
       },
       "password": {
@@ -35,6 +47,9 @@
         "description": "הזינו את הסיסמה עבור המשתמש שנבחר.",
         "data": {
           "password": "סיסמה"
+        },
+        "data_description": {
+          "password": "הסיסמה של המשתמש כפי שהוגדרה בהגדרות Lifedomus."
         }
       },
       "alarm_code": {
@@ -43,6 +58,10 @@
         "data": {
           "alarm_code": "קוד אזעקה",
           "clear_alarm_code": "מחק קוד אזעקה שמור"
+        },
+        "data_description": {
+          "alarm_code": "קוד בן 6 ספרות המעניק למשתמש גישה ללוח; נדרש להפעלה, עצירה, אישור אירועים והחלפת אזורים.",
+          "clear_alarm_code": "שכחו את הקוד השמור; פעולות האזעקה לא יהיו זמינות."
         }
       },
       "reauth_confirm": {
@@ -50,6 +69,9 @@
         "description": "השער בכתובת {host} דחה את הסיסמה השמורה. הזינו את הסיסמה הנוכחית של המשתמש שהוגדר.",
         "data": {
           "password": "סיסמה"
+        },
+        "data_description": {
+          "password": "הסיסמה הנוכחית של המשתמש שהוגדר עבור ערך זה."
         }
       },
       "reconfigure": {
@@ -57,6 +79,9 @@
         "description": "הזינו את המארח הנוכחי (כתובת IP או שם מארח) של השער. ניתן לעיין בקוד האזעקה בשלב הבא.",
         "data": {
           "host": "מארח"
+        },
+        "data_description": {
+          "host": "כתובת IP או שם מארח חדשים; חייבים להוביל לאותו שער ולאותו אתר."
         }
       }
     },
@@ -75,17 +100,6 @@
       "reconfigure_successful": "ההגדרה מחדש הושלמה. הערך עודכן.",
       "unique_id_mismatch": "המארח אינו מוביל לשער ולאתר של ערך זה.",
       "unknown": "שגיאה לא ידועה."
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "אפשרויות Lifedomus",
-        "description": "הגדרות כלליות לשילוב Lifedomus.",
-        "data": {
-          "update_interval": "מרווח עדכון (ש׳)"
-        }
-      }
     }
   },
   "exceptions": {

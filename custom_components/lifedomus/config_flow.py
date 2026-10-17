@@ -7,8 +7,7 @@ Flows provided by this module:
  - reauth: ask for a new password once the gateway rejects the stored one.
  - reconfigure: change the gateway host and keep, replace or clear the stored
    alarm code.
- - options: polling interval; the entry is reloaded automatically on change.
-"""
+ """
 
 from __future__ import annotations
 
@@ -19,16 +18,8 @@ from typing import Any, Final
 
 import voluptuous as vol
 
-from homeassistant.config_entries import (
-    SOURCE_RECONFIGURE,
-    ConfigEntry,
-    ConfigFlow,
-    ConfigFlowResult,
-    OptionsFlow,
-    OptionsFlowWithReload,
-)
+from homeassistant.config_entries import SOURCE_RECONFIGURE, ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_PASSWORD
-from homeassistant.core import callback
 
 from .api import LifedomusApi, LifedomusApiError, LifedomusAuthError
 from .const import (
@@ -43,8 +34,6 @@ from .const import (
     DOMAIN,
     MANUAL_SELECT_LABEL,
     MANUAL_SELECT_VALUE,
-    OPTION_UPDATE_INTERVAL,
-    OPTION_UPDATE_INTERVAL_DEFAULT,
     LdDeviceCategory,
 )
 from .discovery import async_discover_lifedomus
@@ -53,20 +42,11 @@ _LOGGER = logging.getLogger(__name__)
 
 CLEAR_ALARM_CODE: Final = "clear_alarm_code"
 ALARM_CODE_PATTERN: Final = re.compile(r"[0-9]{6}")
-# Requests issued by the flow fail fast so the user is not left waiting.
-FLOW_REQUEST_TIMEOUT_S: Final = 10.0
 
 STEP_HOST_SCHEMA: Final = vol.Schema(
     {vol.Required(CONF_HOST): vol.All(str, vol.Strip, vol.Length(min=1))}
 )
 STEP_PASSWORD_SCHEMA: Final = vol.Schema({vol.Required(CONF_PASSWORD): str})
-OPTIONS_SCHEMA: Final = vol.Schema(
-    {
-        vol.Required(
-            OPTION_UPDATE_INTERVAL, default=OPTION_UPDATE_INTERVAL_DEFAULT
-        ): vol.All(vol.Coerce(int), vol.Range(min=5, max=3600))
-    }
-)
 
 
 class LifedomusConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -91,20 +71,9 @@ class LifedomusConfigFlow(ConfigFlow, domain=DOMAIN):
         # None keeps the stored code during reconfiguration; "" clears it.
         self._alarm_code: str | None = None
 
-    @staticmethod
-    @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        """Return the options flow handler for Lifedomus."""
-        return LifedomusOptionsFlowHandler()
-
     def _new_api(self) -> LifedomusApi:
         """Return an unauthenticated client for the selected host."""
-        return LifedomusApi(
-            self.hass,
-            self._host,
-            verify_ssl=False,
-            request_timeout=FLOW_REQUEST_TIMEOUT_S,
-        )
+        return LifedomusApi(self.hass, self._host)
 
     async def _async_load_gateway(self) -> str | None:
         """Fetch the gateway identity and its sites; return an error key on failure."""
@@ -395,21 +364,4 @@ class LifedomusConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_PASSWORD: self._password,
                 CONF_ALARM_CODE: self._alarm_code or "",
             },
-        )
-
-
-class LifedomusOptionsFlowHandler(OptionsFlowWithReload):
-    """Handle Lifedomus options; the entry is reloaded when they change."""
-
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Edit the polling interval."""
-        if user_input is not None:
-            return self.async_create_entry(data=user_input)
-        return self.async_show_form(
-            step_id="init",
-            data_schema=self.add_suggested_values_to_schema(
-                OPTIONS_SCHEMA, self.config_entry.options
-            ),
         )
