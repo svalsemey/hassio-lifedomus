@@ -431,7 +431,7 @@ class LifedomusClimate(LifedomusEntity[LdClimateDevice], ClimateEntity):
     """Lifedomus climate entity."""
 
     _attr_name = None
-    _attr_temperature_unit = UnitOfTemperature.CELSIUS
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
     _attr_target_temperature_step = LD_VALUE_THERMOSTAT_STEP
 
     def __init__(
@@ -448,8 +448,8 @@ class LifedomusClimate(LifedomusEntity[LdClimateDevice], ClimateEntity):
     def _apply_device_snapshot(self, device: LdClimateDevice) -> None:
         """Apply the coordinator snapshot to HA attributes."""
         self._device = device
-        self._attr_current_temperature = device.current_temperature
-        self._attr_target_temperature = device.target_temperature
+        self._attr_native_current_temperature = device.current_temperature
+        self._attr_native_target_temperature = device.target_temperature
         self._attr_min_temp = (
             device.min_temp if device.min_temp is not None else LD_VALUE_THERMOSTAT_MIN
         )
@@ -532,7 +532,7 @@ class LifedomusClimate(LifedomusEntity[LdClimateDevice], ClimateEntity):
 
     async def _async_send_setpoint(self, temp: float) -> None:
         """Clamp and step the setpoint, publish it optimistically and send it on GENERALCONST."""
-        self._attr_target_temperature = max(
+        self._attr_native_target_temperature = max(
             self.min_temp,
             min(
                 self.max_temp,
@@ -543,7 +543,9 @@ class LifedomusClimate(LifedomusEntity[LdClimateDevice], ClimateEntity):
         await self._async_execute_action(
             LD_PROP_THERMOSTAT_SETPOINT,
             LD_ACTION_VALUE,
-            build_action_descriptor({"temperature": self._attr_target_temperature}),
+            build_action_descriptor(
+                {"temperature": self._attr_native_target_temperature}
+            ),
         )
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
@@ -610,8 +612,8 @@ class LifedomusClimate(LifedomusEntity[LdClimateDevice], ClimateEntity):
             # Re-sending the setpoint is the only way to resume heating.
             self._attr_hvac_mode = HVACMode.HEAT
             await self._async_send_setpoint(
-                self._attr_target_temperature
-                if self._attr_target_temperature is not None
+                self._attr_native_target_temperature
+                if self._attr_native_target_temperature is not None
                 else self.min_temp
             )
 
